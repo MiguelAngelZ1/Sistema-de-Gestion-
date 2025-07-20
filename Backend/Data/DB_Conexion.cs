@@ -22,7 +22,7 @@ namespace Backend.Data
                 if (!string.IsNullOrEmpty(databaseUrl))
                 {
                     Console.WriteLine($"Usando DATABASE_URL: {databaseUrl.Substring(0, Math.Min(50, databaseUrl.Length))}...");
-                    _connectionString = databaseUrl;
+                    _connectionString = ConvertPostgreSQLUrl(databaseUrl);
                 }
                 else
                 {
@@ -35,6 +35,31 @@ namespace Backend.Data
                 // Cadena de conexión por defecto si no se proporciona configuración
                 Console.WriteLine("Configuración nula, usando cadena por defecto");
                 _connectionString = "server=localhost;database=db_app_cps;user=root;password=;";
+            }
+        }
+
+        private string ConvertPostgreSQLUrl(string databaseUrl)
+        {
+            try
+            {
+                // Analizar URL tipo: postgresql://user:password@host:port/database
+                var uri = new Uri(databaseUrl);
+                var host = uri.Host;
+                var port = uri.Port > 0 ? uri.Port : 5432;
+                var database = uri.LocalPath.TrimStart('/');
+                var userInfo = uri.UserInfo.Split(':');
+                var username = userInfo[0];
+                var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+                var connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+                Console.WriteLine($"Cadena convertida: Host={host};Port={port};Database={database};Username={username};Password=***;SSL Mode=Require;Trust Server Certificate=true;");
+                return connectionString;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error convirtiendo URL PostgreSQL: {ex.Message}");
+                Console.WriteLine($"URL original: {databaseUrl}");
+                throw new ArgumentException($"Formato de URL PostgreSQL inválido: {ex.Message}", ex);
             }
         }
 
