@@ -71,6 +71,12 @@ namespace Backend.Data
             }
         }
 
+        // Método para obtener la cadena de conexión configurada
+        public string GetConnectionString()
+        {
+            return _connectionString;
+        }
+
         public NpgsqlConnection AbrirConexion()
         {
             if (string.IsNullOrEmpty(_connectionString))

@@ -30,8 +30,12 @@ namespace Backend.Controllers
         {
             try
             {
+                // Usar la conexión configurada correctamente
+                var dbConnection = new DB_Conexion();
+                var connectionString = dbConnection.GetConnectionString();
+                
                 // Primero eliminamos las referencias en persona
-                using (var connection = new NpgsqlConnection("server=localhost;database=db_app_cps;user=root;password=;"))
+                using (var connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
                     using (var cmd = new NpgsqlCommand("DELETE FROM persona WHERE id_grado = @id", connection))
