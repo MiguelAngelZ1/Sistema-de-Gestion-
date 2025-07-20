@@ -1,0 +1,14 @@
+# Redirects for Sistema de Control y Gestión
+
+# Página principal
+/ /Areas/Home/index.html 200
+
+# Rutas específicas
+/home /Areas/Home/index.html 200
+/grado /Areas/Grado/index.html 200
+/personal /Areas/Personal/index.html 200
+/equipos /Areas/Equipos/index.html 200
+/armesp /Areas/ArmEsp/index.html 200
+
+# Fallback para cualquier ruta no encontrada
+/* /Areas/Home/index.html 200

@@ -1,5 +1,5 @@
-// URL base de la API
-const apiUrl = 'http://localhost:5069/api/ArmEsp';
+// URL base de la API - Usar configuración centralizada
+const apiUrl = CONFIG.API_BASE_URL + '/ArmEsp';
 
 // Variables globales
 let armEspData = [];

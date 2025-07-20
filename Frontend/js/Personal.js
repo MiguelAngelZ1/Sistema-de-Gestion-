@@ -1,6 +1,7 @@
-const apiUrl = "http://localhost:5069/api/Personal";
-const apiGrados = "http://localhost:5069/api/Grado";
-const apiArmEsp = "http://localhost:5069/api/ArmEsp";
+// Usar configuración centralizada de APIs
+const apiUrl = CONFIG.API_BASE_URL + "/Personal";
+const apiGrados = CONFIG.API_BASE_URL + "/Grado";
+const apiArmEsp = CONFIG.API_BASE_URL + "/ArmEsp";
 
 // Variables globales
 let grados = [];

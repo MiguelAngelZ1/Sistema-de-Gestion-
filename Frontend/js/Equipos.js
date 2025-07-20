@@ -3,11 +3,11 @@
 // CONFIGURACION E INICIALIZACION
 //-----------------------------------------------------------------------------------------------------
 
-// URL base de la API para los equipos. La URL ahora es en plural.
-const API_URL = "http://localhost:5069/api/equipos";
-const API_URL_PERSONA = "http://localhost:5069/api/personal";
-const API_URL_ESTADOS = "http://localhost:5069/api/estadoequipo";
-const API_URL_TIPO_EQUIPO = "http://localhost:5069/api/tipoequipo";
+// URL base de la API - Usar configuración centralizada
+const API_URL = CONFIG.API_BASE_URL + "/equipos";
+const API_URL_PERSONA = CONFIG.API_BASE_URL + "/personal";
+const API_URL_ESTADOS = CONFIG.API_BASE_URL + "/estadoequipo";
+const API_URL_TIPO_EQUIPO = CONFIG.API_BASE_URL + "/tipoequipo";
 
 // Almacena una instancia del modal de Bootstrap para poder manipularlo desde el código.
 let modalEquipo; // Obsoleto, pero se mantiene por si se reutiliza
