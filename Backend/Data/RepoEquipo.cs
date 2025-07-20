@@ -716,7 +716,7 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                     // Obtener todas las unidades con sus estados para este NNE
                     var query = @"
                         SELECT 
-                            COUNT(*) as Total,
+                            CAST(COUNT(*) AS INTEGER) as Total,
                             e.nombre as EstadoNombre
                         FROM unidades_equipo u
                         INNER JOIN equipos eq ON u.id_equipo = eq.id
@@ -732,38 +732,42 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                     foreach (var stat in estadisticas)
                     {
                         var estadoNombre = (string)stat.EstadoNombre;
-                        var cantidad = (long)stat.Total;
+                        
+                        // Con CAST(COUNT(*) AS INTEGER) deberíamos recibir siempre un int
+                        var cantidad = Convert.ToInt32(stat.Total);
+                        
+                        Console.WriteLine($"[DEBUG-Inventario] Estado: {estadoNombre}, Cantidad: {cantidad}");
                         
                         // Aplicar la lógica de clasificación según el requerimiento
                         // Estados reales: E/S, F/S, BAJA, MANT, CAMBIO ELON, EXT
                         if (estadoNombre.StartsWith("E/S"))
                         {
                             // Solo "E/S (En Servicio)" se considera "En Servicio"
-                            resumen.EnServicio += (int)cantidad;
+                            resumen.EnServicio += cantidad;
                         }
                         else if (estadoNombre.StartsWith("F/S"))
                         {
                             // "F/S (Fuera de Servicio)" se muestra como "Fuera de Servicio" sin motivo específico
-                            resumen.FueraDeServicio += (int)cantidad;
+                            resumen.FueraDeServicio += cantidad;
                             detalleFueraServicio.Add(new DetalleFueraDeServicioDto
                             {
                                 Estado = "F/S (Fuera de Servicio)",
-                                Cantidad = (int)cantidad
+                                Cantidad = cantidad
                             });
                         }
                         else
                         {
                             // Cualquier otro estado (BAJA, MANT, CAMBIO ELON, EXT, etc.) 
                             // se considera "Fuera de Servicio" pero se muestra el motivo real
-                            resumen.FueraDeServicio += (int)cantidad;
+                            resumen.FueraDeServicio += cantidad;
                             detalleFueraServicio.Add(new DetalleFueraDeServicioDto
                             {
                                 Estado = estadoNombre,
-                                Cantidad = (int)cantidad
+                                Cantidad = cantidad
                             });
                         }
                         
-                        resumen.Total += (int)cantidad;
+                        resumen.Total += cantidad;
                     }
 
                     resumen.DetalleFueraDeServicio = detalleFueraServicio;
