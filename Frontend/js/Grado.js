@@ -1,6 +1,6 @@
 // Importar configuración de la API
 // const apiUrl = "http://localhost:5069/api/grado";
-const apiUrl = CONFIG.API_BASE_URL + "/grado";
+const apiUrl = CONFIG.API_BASE_URL + "/Grado";
 
 // Cargar los grados al iniciar la página
 document.addEventListener("DOMContentLoaded", () => {

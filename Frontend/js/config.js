@@ -8,12 +8,12 @@ const CONFIG = {
     
     // Endpoints específicos
     endpoints: {
-        grado: "/grado",
-        personal: "/Personal", 
-        armEsp: "/ArmEsp",
-        equipos: "/equipos",
-        estadoEquipo: "/estadoequipo",
-        tipoEquipo: "/tipoequipo"
+        grado: "/Grado",        // GradoController → /api/Grado
+        personal: "/Personal",   // PersonalController → /api/Personal 
+        armEsp: "/ArmEsp",      // ArmEspController → /api/ArmEsp
+        equipos: "/equipos",    // EquipoController usa [Route("api/equipos")]
+        estadoEquipo: "/estadoequipo",  // EstadoEquipoController usa [Route("api/estadoequipo")]
+        tipoEquipo: "/tipoequipo"       // TipoEquipoController usa [Route("api/tipoequipo")]
     }
 };
 
