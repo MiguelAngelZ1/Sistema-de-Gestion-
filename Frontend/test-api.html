@@ -82,11 +82,16 @@
 
         async function testGrado() {
             const url = CONFIG.API_BASE_URL + '/Grado';
+            console.log('Testing Grado endpoint:', url);
             showResult('gradoResult', 'loading');
             
             try {
                 const response = await fetch(url);
+                console.log('Grado response status:', response.status);
+                console.log('Grado response headers:', [...response.headers.entries()]);
+                
                 const data = await response.json();
+                console.log('Grado response data:', data);
                 
                 if (response.ok) {
                     showResult('gradoResult', 'success', data);
@@ -94,6 +99,7 @@
                     showResult('gradoResult', 'error', data, `HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (error) {
+                console.error('Grado fetch error:', error);
                 showResult('gradoResult', 'error', null, error.message);
             }
         }
@@ -184,9 +190,12 @@
 
         // Ejecutar tests automáticamente al cargar la página
         window.addEventListener('load', () => {
-            setTimeout(testGrado, 500);
-            setTimeout(testPersonal, 1000);
-            setTimeout(testArmEsp, 1500);
+            setTimeout(() => {
+                console.log('Backend URL:', CONFIG.API_BASE_URL);
+                testGrado();
+            }, 500);
+            setTimeout(testArmEsp, 1000);
+            setTimeout(testPersonal, 1500);  
             setTimeout(testEquipos, 2000);
         });
     </script>
