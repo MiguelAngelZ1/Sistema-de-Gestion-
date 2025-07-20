@@ -619,8 +619,12 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                             UPDATE unidades_equipo 
                             SET id_estado = @EstadoId, 
                                 id_persona = @PersonaId 
-                            WHERE id_equipo = @EquipoId 
-                            LIMIT 1";
+                            WHERE id IN (
+                                SELECT id FROM unidades_equipo 
+                                WHERE id_equipo = @EquipoId 
+                                ORDER BY id 
+                                LIMIT 1
+                            )";
                         var rowsUnidadUpdate = await connection.ExecuteAsync(updateUnidad, new {
                             EstadoId = data.PrimeraUnidad.EstadoId,
                             PersonaId = personaIdFinal,
