@@ -279,7 +279,7 @@ function configurarModalAgregarPersona() {
       const persona = {
         Nombre: nombre,
         Apellido: apellido,
-        Dni: dni,
+        dni: dni, // Cambiar a minúsculas para que coincida con el backend
         GradoId: gradoId,
         NombreGrado: gradoSeleccionado.descripcion || "",
         NombreGradoCompleto: gradoSeleccionado.gradoCompleto || "",
@@ -300,6 +300,7 @@ function configurarModalAgregarPersona() {
         const btnGuardar = form.querySelector('button[type="submit"]');
         const textoOriginal = btnGuardar.innerHTML;
         btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
 
         // Llamar a la API para guardar
         const response = await fetch(apiUrl, {
@@ -311,8 +312,16 @@ function configurarModalAgregarPersona() {
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Error al guardar el personal");
+          let errorMessage = "Error al guardar el personal";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorData.title || errorMessage;
+          } catch (parseError) {
+            // Si no se puede parsear la respuesta JSON, usar el texto de respuesta
+            const errorText = await response.text();
+            errorMessage = errorText || `Error ${response.status}: ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
         }
 
         // Mostrar mensaje de éxito
@@ -338,13 +347,12 @@ function configurarModalAgregarPersona() {
           "Error",
           error.message || "No se pudo guardar el personal"
         );
-      } finally {
-        // Restaurar el botón
+        
+        // Restaurar el botón en caso de error
         const btnGuardar = form.querySelector('button[type="submit"]');
         if (btnGuardar) {
           btnGuardar.disabled = false;
-          btnGuardar.innerHTML =
-            textoOriginal || '<i class="bi bi-save me-1"></i> Guardar';
+          btnGuardar.innerHTML = '<i class="bi bi-save me-1"></i> Guardar';
         }
       }
     });
