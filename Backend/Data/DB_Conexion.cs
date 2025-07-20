@@ -21,16 +21,19 @@ namespace Backend.Data
                 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
                 if (!string.IsNullOrEmpty(databaseUrl))
                 {
+                    Console.WriteLine($"Usando DATABASE_URL: {databaseUrl.Substring(0, Math.Min(50, databaseUrl.Length))}...");
                     _connectionString = databaseUrl;
                 }
                 else
                 {
+                    Console.WriteLine("DATABASE_URL no encontrada, usando DefaultConnection");
                     _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "server=localhost;database=db_app_cps;user=root;password=;";
                 }
             }
             else
             {
                 // Cadena de conexión por defecto si no se proporciona configuración
+                Console.WriteLine("Configuración nula, usando cadena por defecto");
                 _connectionString = "server=localhost;database=db_app_cps;user=root;password=;";
             }
         }
@@ -42,10 +45,20 @@ namespace Backend.Data
                 throw new InvalidOperationException("No se ha configurado la cadena de conexión");
             }
 
-            var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-            Console.WriteLine("Conexión exitosa a la base de datos");
-            return connection;
+            try
+            {
+                Console.WriteLine("Intentando conectar a la base de datos...");
+                var connection = new MySqlConnection(_connectionString);
+                connection.Open();
+                Console.WriteLine("Conexión exitosa a la base de datos");
+                return connection;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al conectar a la base de datos: {ex.Message}");
+                Console.WriteLine($"Cadena de conexión utilizada: {_connectionString.Substring(0, Math.Min(50, _connectionString.Length))}...");
+                throw;
+            }
         }
     }
 }
