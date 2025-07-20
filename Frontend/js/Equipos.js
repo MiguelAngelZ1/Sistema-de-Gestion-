@@ -1,0 +1,2387 @@
+//-----------------------------------------------------------------------------------------------------
+// EQUIPOS.JS - VERSIÓN 2.7 - CAMPOS MARCA Y MODELO AGREGADOS
+// CONFIGURACION E INICIALIZACION
+//-----------------------------------------------------------------------------------------------------
+
+// URL base de la API para los equipos. La URL ahora es en plural.
+const API_URL = "http://localhost:5069/api/equipos";
+const API_URL_PERSONA = "http://localhost:5069/api/personal";
+const API_URL_ESTADOS = "http://localhost:5069/api/estadoequipo";
+const API_URL_TIPO_EQUIPO = "http://localhost:5069/api/tipoequipo";
+
+// Almacena una instancia del modal de Bootstrap para poder manipularlo desde el código.
+let modalEquipo; // Obsoleto, pero se mantiene por si se reutiliza
+let modalDetalles;
+let modalInventario; // Obsoleto
+let modalCrearModelo;
+let modalAgregarUnidad;
+
+// Almacena el contexto del modelo de equipo que se está viendo en el modal de detalles.
+let equipoIdActual = null;
+let equipoNneActual = null;
+
+// Se ejecuta cuando el contenido del DOM ha sido completamente cargado.
+// Es el punto de entrada de la aplicación.
+document.addEventListener("DOMContentLoaded", () => {
+  // Inicializa los modales de Bootstrap.
+  // modalEquipo = new bootstrap.Modal(document.getElementById('modalEquipo')); // Modal obsoleto
+  modalDetalles = new bootstrap.Modal(
+    document.getElementById("modalDetallesEquipo")
+  );
+  window.modalDetalles = modalDetalles; // <-- Asegura que sea global y accesible
+  // modalInventario = new bootstrap.Modal(document.getElementById('modalInventario')); // Modal obsoleto
+  modalCrearModelo = new bootstrap.Modal(
+    document.getElementById("modalCrearModelo")
+  );
+  modalAgregarUnidad = new bootstrap.Modal(
+    document.getElementById("modalAgregarUnidad")
+  );
+
+  // Asigna los eventos a los elementos del DOM.
+  asignarEventListeners();
+
+  // Carga inicial de los datos.
+  cargarEquipos();
+  cargarEstadosParaModal(); // Cargar los estados para el modal de unidades.
+  cargarTiposEquipo(); // Cargar los tipos para el modal de creación de modelos.
+});
+
+//-----------------------------------------------------------------------------------------------------
+// FUNCION AUXILIAR PARA RECARGAR EQUIPO DESDE LA API
+//-----------------------------------------------------------------------------------------------------
+async function recargarEquipoActual(nne, nroSerie) {
+  let url = "";
+  if (nne) {
+    url = `http://localhost:5069/api/equipos/nne/${nne}`;
+  } else if (nroSerie) {
+    url = `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+      nroSerie
+    )}`;
+  }
+  if (url) {
+    const resp = await fetch(url);
+    if (resp.ok) {
+      const data = await resp.json();
+      window.__equipoDetallesActual = data;
+      console.log("[recargarEquipoActual] Equipo actualizado:", data);
+    }
+  }
+}
+//-----------------------------------------------------------------------------------------------------
+// MANEJO DE EVENTOS
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Asigna los manejadores de eventos a los elementos del DOM.
+ */
+let datosOriginalesEdicion = null;
+
+function asignarEventListeners() {
+  // Nuevo botón editar
+  const btnEditar = document.getElementById("btn-editar");
+  if (btnEditar) btnEditar.addEventListener("click", activarModoEdicion);
+
+  // Nuevo botón guardar
+  const btnGuardar = document.getElementById("btn-guardar-cambios");
+  if (btnGuardar) btnGuardar.addEventListener("click", guardarCambiosDetalles);
+
+  // Botón cancelar edición
+  const btnCancelarEdicion = document.getElementById("btn-cancelar-edicion");
+  if (btnCancelarEdicion)
+    btnCancelarEdicion.addEventListener("click", cancelarEdicionDetalles);
+
+  // Botón agregar especificación técnica en modo edición
+  const btnAgregarEspecificacion = document.getElementById(
+    "btn-agregar-especificacion-detalle"
+  );
+  if (btnAgregarEspecificacion)
+    btnAgregarEspecificacion.addEventListener(
+      "click",
+      agregarCampoEspecificacionDetalle
+    );
+}
+
+const btnAbrirModalCrearModelo = document.getElementById(
+  "btnAbrirModalCrearModelo"
+);
+if (btnAbrirModalCrearModelo)
+  btnAbrirModalCrearModelo.addEventListener("click", abrirModalCrearModelo);
+
+const formCrearModelo = document.getElementById("formCrearModelo");
+if (formCrearModelo) formCrearModelo.addEventListener("submit", guardarModelo);
+
+const btnAgregarEspecificacion = document.getElementById(
+  "btn-agregar-especificacion"
+);
+if (btnAgregarEspecificacion)
+  btnAgregarEspecificacion.addEventListener(
+    "click",
+    agregarCampoEspecificacion
+  );
+
+const btnAbrirModalUnidad = document.getElementById("btn-abrir-modal-unidad");
+if (btnAbrirModalUnidad)
+  btnAbrirModalUnidad.addEventListener("click", abrirModalAgregarUnidad);
+
+const formAgregarUnidad = document.getElementById("formAgregarUnidad");
+if (formAgregarUnidad)
+  formAgregarUnidad.addEventListener("submit", guardarUnidad);
+// Evento para abrir el modal de creación de equipo.
+// document.getElementById('btnAbrirModalCrear').addEventListener('click', abrirModalCrear); // Deshabilitado temporalmente
+
+// Evento para guardar los datos del formulario (crear o editar).
+// document.getElementById('formEquipo').addEventListener('submit', guardarEquipo); // Deshabilitado temporalmente
+
+//-----------------------------------------------------------------------------------------------------
+// FUNCIONES PARA INTERACTUAR CON LA API (POST, PUT, DELETE)
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Elimina un equipo de la API por su NNE o número de serie.
+ * @param {string} nne - El NNE del equipo a eliminar (opcional).
+ * @param {string} nroSerie - El número de serie del equipo a eliminar (opcional).
+ * @returns {Promise<boolean>} Una promesa que se resuelve a true si la eliminación fue exitosa.
+ */
+async function eliminarEquipo(nne, nroSerie) {
+  try {
+    let url;
+    let identificador;
+
+    if (nne) {
+      url = `${API_URL}/nne/${nne}`;
+      identificador = `NNE ${nne}`;
+    } else if (nroSerie) {
+      url = `${API_URL}/nroSerie/${nroSerie}`;
+      identificador = `número de serie ${nroSerie}`;
+    } else {
+      throw new Error("Debe proporcionar NNE o número de serie");
+    }
+
+    console.log(`Eliminando equipo con ${identificador}`);
+    const respuesta = await fetch(url, {
+      method: "DELETE",
+    });
+
+    if (!respuesta.ok) {
+      const errorText = await respuesta.text();
+      throw new Error(`Error ${respuesta.status}: ${errorText}`);
+    }
+
+    console.log(`Equipo con ${identificador} eliminado exitosamente`);
+    return true;
+  } catch (error) {
+    console.error(`Error al eliminar el equipo:`, error);
+    mostrarAlerta("No se pudo eliminar el equipo.", "error");
+    return false;
+  }
+}
+
+/**
+ * Crea un nuevo equipo en la API.
+ * @param {Object} equipo - El objeto de equipo a crear.
+ * @returns {Promise<Object>} Una promesa que se resuelve con el objeto de equipo creado.
+ */
+async function crearModelo(equipo) {
+  try {
+    const respuesta = await fetch(API_URL, {
+      // Llama a POST /api/equipos
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(equipo),
+    });
+
+    if (!respuesta.ok) {
+      let mensajeError = `Error HTTP ${respuesta.status}: ${respuesta.statusText}`;
+
+      try {
+        // Intentar leer como JSON primero
+        const errorData = await respuesta.json();
+        mensajeError = errorData.message || errorData.error || mensajeError;
+      } catch (jsonError) {
+        // Si no es JSON válido, intentar leer como texto
+        try {
+          const errorText = await respuesta.text();
+          if (errorText.trim()) {
+            mensajeError =
+              errorText.length > 200
+                ? errorText.substring(0, 200) + "..."
+                : errorText;
+          }
+        } catch (textError) {
+          console.warn("No se pudo leer el cuerpo de la respuesta de error");
+        }
+      }
+
+      throw new Error(mensajeError);
+    }
+
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al crear el modelo de equipo:", error);
+    mostrarAlerta(`No se pudo crear el modelo: ${error.message}`, "error");
+    return null;
+  }
+}
+
+//-----------------------------------------------------------------------------------------------------
+// FUNCIONES PARA INTERACTUAR CON LA API (GET)
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Obtiene todos los equipos de un grupo por su NNE desde la API.
+ * @param {string} nne - El NNE del grupo de equipos a obtener.
+ * @returns {Promise<Array|null>} Una promesa que se resuelve con un array de equipos o null si no se encuentran.
+ */
+async function obtenerEquipoDetalladoPorNNE(nne) {
+  try {
+    // La URL ahora es /api/equipos/nne/{nne}
+    const respuesta = await fetch(`${API_URL}/nne/${nne.trim()}`);
+    if (!respuesta.ok) {
+      if (respuesta.status === 404) return null;
+      throw new Error(`Error de red: ${respuesta.statusText}`);
+    }
+    return await respuesta.json();
+  } catch (error) {
+    console.error(`Error CRÍTICO en fetch para NNE ${nne}:`, error);
+    mostrarAlerta("No se pudo obtener el detalle del equipo.", "error");
+    return null;
+  }
+}
+
+/**
+ * Obtiene todos los equipos de la API.
+ * @returns {Promise<Array>} Una promesa que se resuelve con un array de objetos de equipo.
+ */
+async function obtenerEquipos() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      console.error(
+        "Error del servidor:",
+        response.status,
+        await response.text()
+      );
+      return []; // Devolver array vacío en caso de error
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error al obtener los equipos:", error);
+    mostrarAlerta(
+      "Error al cargar los equipos. Por favor, intente más tarde.",
+      "error"
+    );
+    return [];
+  }
+}
+
+/**
+ * Obtiene toda la lista de personal desde la API.
+ * @returns {Promise<Array>} Una promesa que se resuelve con un array de objetos de persona.
+ */
+/**
+ * Obtiene la lista de estados de equipo y la carga en el select correspondiente.
+ */
+async function cargarEstadosParaModal() {
+  const select = document.getElementById("crear-estado-equipo");
+  try {
+    const estados = await fetch(API_URL_ESTADOS).then((res) =>
+      res.ok ? res.json() : Promise.reject(res)
+    );
+    select.innerHTML =
+      '<option value="" selected disabled>Seleccionar un estado...</option>';
+    estados.forEach((estado) => {
+      const option = document.createElement("option");
+      option.value = estado.id;
+      option.textContent = estado.nombre;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error al cargar los estados de equipo:", error);
+    select.innerHTML =
+      '<option value="" selected disabled>Error al cargar</option>';
+  }
+}
+
+/**
+ * Obtiene la lista de personal y la carga en el select de responsables.
+ */
+async function cargarPersonalParaModal() {
+  const select = document.getElementById("unidad-responsable");
+  try {
+    const personal = await fetch(API_URL_PERSONA).then((res) =>
+      res.ok ? res.json() : Promise.reject(res)
+    );
+    select.innerHTML = '<option value="">Seleccionar responsable...</option>'; // Opción para no asignar a nadie
+    personal.forEach((p) => {
+      const option = document.createElement("option");
+      option.value = p.id_persona;
+      option.textContent = `${p.nombreGrado || ""} ${p.nombreArmEsp || ""} ${
+        p.nombre
+      } ${p.apellido}`.trim();
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error al cargar el personal:", error);
+    select.innerHTML =
+      '<option value="" selected disabled>Error al cargar</option>';
+  }
+}
+
+async function obtenerTodoElPersonal() {
+  try {
+    const respuesta = await fetch(API_URL_PERSONA);
+    if (!respuesta.ok)
+      throw new Error("No se pudo obtener la lista de personal");
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al obtener personal:", error);
+    mostrarAlerta("No se pudo cargar la lista de personal.", "error");
+    return [];
+  }
+}
+
+//-----------------------------------------------------------------------------------------------------
+// FUNCIONES DEL DOM (MANEJO DE MODALES Y FORMULARIOS)
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Abre el modal para crear un nuevo equipo, reseteando el formulario.
+ */
+async function abrirModalCrearModelo() {
+  const form = document.getElementById("formCrearModelo");
+  form.reset();
+  document.getElementById("especificaciones-dinamicas-container").innerHTML =
+    "";
+  agregarCampoEspecificacion();
+
+  // Cargar datos para los desplegables ANTES de mostrar el modal
+  await Promise.all([cargarEstadosParaModal(), cargarPersonalParaModal()]);
+
+  modalCrearModelo.show();
+}
+
+/**
+ * Maneja el envío del formulario para crear o actualizar un equipo.
+ * @param {Event} event - El objeto de evento del formulario.
+ */
+/**
+ * Agrega un nuevo par de campos (clave-valor) para una especificación técnica.
+ */
+function agregarCampoEspecificacion() {
+  const container = document.getElementById(
+    "especificaciones-dinamicas-container"
+  );
+  const div = document.createElement("div");
+  div.className = "row mb-2 align-items-center especificacion-fila";
+  div.innerHTML = `
+        <div class="col-md-5">
+            <input type="text" class="form-control especificacion-clave" placeholder="Clave (ej. RAM)">
+        </div>
+        <div class="col-md-5">
+            <input type="text" class="form-control especificacion-valor" placeholder="Valor (ej. 16GB)">
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.especificacion-fila').remove()">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+  container.appendChild(div);
+}
+
+/**
+ * Maneja el envío del formulario para crear un nuevo modelo de equipo.
+ * @param {Event} event - El objeto de evento del formulario.
+ */
+async function guardarModelo(event) {
+  event.preventDefault();
+
+  // 1. Recolectar Especificaciones (incluyendo marca y modelo)
+  const especificaciones = [];
+  // Añadir marca y modelo como las primeras especificaciones
+  especificaciones.push({
+    Clave: "Marca",
+    Valor: document.getElementById("crear-marca").value.trim(),
+  });
+  especificaciones.push({
+    Clave: "Modelo",
+    Valor: document.getElementById("crear-modelo").value.trim(),
+  });
+
+  document.querySelectorAll(".especificacion-fila").forEach((fila) => {
+    const clave = fila.querySelector(".especificacion-clave").value.trim();
+    const valor = fila.querySelector(".especificacion-valor").value.trim();
+    if (clave && valor) {
+      especificaciones.push({ Clave: clave, Valor: valor });
+    }
+  });
+
+  // 2. Recolectar datos de la Primera Unidad
+  const primeraUnidad = {
+    NumeroSerie: document.getElementById("crear-nro-serie").value.trim(),
+    EstadoId: parseInt(
+      document.getElementById("crear-estado-equipo").value,
+      10
+    ),
+    IdPersona:
+      parseInt(document.getElementById("unidad-responsable").value, 10) || null,
+  };
+
+  // 3. Recolectar datos del Modelo (ahora llamados Datos Principales y de Tipo)
+  const tipoEquipoIdValue = document.getElementById("crear-tipo-equipo").value;
+  const modelo = {
+    Ine: document.getElementById("crear-ine").value.trim(),
+    Nne: document.getElementById("crear-nne").value.trim(),
+    TipoEquipoId: tipoEquipoIdValue || "",
+    Observaciones: document.getElementById("crear-observaciones").value.trim(),
+    Marca: document.getElementById("crear-marca").value.trim(),
+    Modelo: document.getElementById("crear-modelo").value.trim(),
+    Ubicacion: document.getElementById("crear-ubicacion").value.trim(),
+  };
+
+  // Validación de tipoEquipoId
+  if (!modelo.TipoEquipoId) {
+    mostrarAlerta("Debes seleccionar un tipo de equipo válido.", "error");
+    return;
+  }
+
+  // Validación de tipoEquipoId
+  if (!modelo.TipoEquipoId) {
+    mostrarAlerta("Debes seleccionar un tipo de equipo válido.", "error");
+    return;
+  }
+
+  // 4. Construir el objeto de Alta Completa
+  const altaCompletaData = {
+    ...modelo,
+    Especificaciones: especificaciones,
+    PrimeraUnidad: primeraUnidad,
+  };
+
+  // 5. Enviar a la API
+  console.log(
+    "Datos que se van a enviar:",
+    JSON.stringify(altaCompletaData, null, 2)
+  );
+  const resultado = await crearModelo(altaCompletaData);
+
+  if (resultado) {
+    modalCrearModelo.hide();
+    mostrarAlerta("Equipo creado con éxito.", "success");
+    cargarEquipos(); // Recargar la tabla para mostrar el nuevo equipo
+  }
+}
+
+/**
+ * Obtiene la lista de tipos de equipo desde la API y los carga en el select del formulario de creación.
+ */
+async function cargarTiposEquipo() {
+  try {
+    const tipos = await fetch(API_URL_TIPO_EQUIPO).then((res) =>
+      res.ok ? res.json() : Promise.reject(res)
+    );
+    const select = document.getElementById("crear-tipo-equipo");
+    select.innerHTML =
+      '<option value="" selected disabled>Seleccionar una categoría...</option>';
+    tipos.forEach((tipo) => {
+      const option = document.createElement("option");
+      option.value = tipo.id;
+      option.textContent = tipo.nombre;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error al cargar los tipos de equipo:", error);
+    const select = document.getElementById("modelo-tipo");
+    select.innerHTML =
+      '<option value="" selected disabled>Error al cargar categorías</option>';
+    mostrarAlerta("No se pudieron cargar las categorías de equipo.", "error");
+  }
+}
+
+/**
+ * Obtiene la lista de estados de equipo desde la API y los carga en el select.
+ */
+async function cargarEstadosEquipos() {
+  try {
+    const estados = await fetch(API_URL_ESTADOS).then((res) =>
+      res.ok ? res.json() : Promise.reject(res)
+    );
+    const select = document.getElementById("unidad-estado");
+    select.innerHTML = '<option value="">Seleccionar un estado...</option>'; // Opción por defecto
+    estados.forEach((estado) => {
+      const option = document.createElement("option");
+      option.value = estado.id;
+      option.textContent = estado.descripcion;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error al cargar los estados de equipo:", error);
+    mostrarAlerta("No se pudieron cargar los estados de equipo.", "error");
+  }
+}
+
+/**
+ * Abre el modal para agregar una nueva unidad, asegurándose de que el ID del equipo esté establecido.
+ */
+function abrirModalAgregarUnidad() {
+  if (!equipoIdActual) {
+    mostrarAlerta("No se ha seleccionado un modelo de equipo válido.", "error");
+    return;
+  }
+  const form = document.getElementById("formAgregarUnidad");
+  form.reset();
+  document.getElementById("unidad-equipo-id").value = equipoIdActual;
+  modalAgregarUnidad.show();
+}
+
+/**
+ * Envía la solicitud para crear una nueva unidad física.
+ * @param {Object} unidad - La nueva unidad a crear.
+ * @returns {Promise<Object>} La respuesta de la API.
+ */
+async function crearUnidad(unidad) {
+  try {
+    const respuesta = await fetch(`${API_URL}/unidades`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(unidad),
+    });
+    if (!respuesta.ok) {
+      const errorData = await respuesta.json();
+      throw new Error(errorData.message || "Error al crear la unidad.");
+    }
+    return await respuesta.json();
+  } catch (error) {
+    console.error("Error al crear la unidad:", error);
+    mostrarAlerta(`No se pudo crear la unidad: ${error.message}`, "error");
+    return null;
+  }
+}
+
+/**
+ * Maneja el envío del formulario para agregar una nueva unidad.
+ * @param {Event} event - El evento de submit del formulario.
+ */
+async function guardarUnidad(event) {
+  event.preventDefault();
+
+  const unidad = {
+    id_equipo: document.getElementById("unidad-equipo-id").value,
+    nro_serie: document.getElementById("unidad-nro-serie").value,
+    id_estado: document.getElementById("unidad-estado").value,
+    id_persona: document.getElementById("unidad-responsable").value || null,
+  };
+
+  if (!unidad.id_equipo || !unidad.nro_serie || !unidad.id_estado) {
+    mostrarAlerta("Por favor, complete todos los campos requeridos.", "error");
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(`${API_URL}/unidades`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(unidad),
+    });
+
+    if (!respuesta.ok) {
+      const errorData = await respuesta.json();
+      throw new Error(errorData.message || "Error al crear la unidad.");
+    }
+
+    modalAgregarUnidad.hide();
+    mostrarAlerta("Unidad agregada con éxito.", "success");
+    cargarModelos(); // Recargamos la tabla principal para reflejar el cambio en el contador de unidades.
+  } catch (error) {
+    console.error("Error al guardar la unidad:", error);
+    mostrarAlerta(`No se pudo crear la unidad: ${error.message}`, "error");
+  }
+}
+
+//-----------------------------------------------------------------------------------------------------
+// MANEJO DE ACCIONES DE LA TABLA (DETALLES, INVENTARIO, ELIMINACIÓN)
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Muestra el modal de inventario con el recuento de equipos por estado.
+ * @param {string} nne - El NNE del grupo de equipos.
+ */
+async function mostrarInventario(nne) {
+  // Limpiar campos
+  document.getElementById("totalEquiposNNE").textContent = "...";
+  document.getElementById("enServicioNNE").textContent = "...";
+  document.getElementById("fueraServicioNNE").textContent = "...";
+  document.getElementById(
+    "nneTitle"
+  ).textContent = `Inventario del NNE: ${nne}`;
+
+  // Limpiar y ocultar sección de motivos
+  const seccionMotivos = document.getElementById("seccionMotivosFueraServicio");
+  const listaMotivos = document.getElementById("listaMotivosFueraServicio");
+  seccionMotivos.style.display = "none";
+  listaMotivos.innerHTML = "";
+
+  try {
+    const resp = await fetch(
+      `http://localhost:5069/api/equipos/nne/${encodeURIComponent(
+        nne
+      )}/inventarioresumen`
+    );
+    console.log("[DEBUG-Inventario] Response status:", resp.status);
+    if (!resp.ok)
+      throw new Error("No se pudo obtener el resumen de inventario");
+    const resumen = await resp.json();
+    console.log("[DEBUG-Inventario] Resumen recibido:", resumen);
+
+    // Actualizar los números principales
+    document.getElementById("totalEquiposNNE").textContent = resumen.total;
+    document.getElementById("enServicioNNE").textContent = resumen.enServicio;
+    document.getElementById("fueraServicioNNE").textContent =
+      resumen.fueraDeServicio;
+
+    console.log("[DEBUG-Inventario] Valores asignados:", {
+      total: resumen.total,
+      enServicio: resumen.enServicio,
+      fueraDeServicio: resumen.fueraDeServicio,
+    });
+
+    // Mostrar detalle de motivos fuera de servicio si existen
+    if (
+      resumen.detalleFueraDeServicio &&
+      resumen.detalleFueraDeServicio.length > 0
+    ) {
+      // Mostrar la sección de motivos
+      seccionMotivos.style.display = "block";
+
+      // Crear la lista de motivos
+      const motivosHTML = resumen.detalleFueraDeServicio
+        .map(
+          (motivo) => `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-danger">
+                        <i class="bi bi-dot"></i>
+                        <strong>${motivo.estado}:</strong>
+                    </span>
+                    <span class="badge bg-danger">${motivo.cantidad}</span>
+                </div>
+            `
+        )
+        .join("");
+
+      listaMotivos.innerHTML = motivosHTML;
+    }
+  } catch (error) {
+    document.getElementById("totalEquiposNNE").textContent = "0";
+    document.getElementById("enServicioNNE").textContent = "0";
+    document.getElementById("fueraServicioNNE").textContent = "0";
+    console.error("Error al obtener inventario:", error);
+  }
+  // Mostrar el modal
+  if (typeof modalInventario === "undefined" || !modalInventario) {
+    modalInventario = new bootstrap.Modal(
+      document.getElementById("modalInventario")
+    );
+  }
+  modalInventario.show();
+}
+
+/**
+ * Muestra el modal con los detalles de cada unidad de un grupo de equipos.
+ * @param {string} nne - El NNE del grupo de equipos.
+ */
+
+/**
+ * Cambia la vista del modal de detalles a modo de edición.
+ */
+function activarModoEdicion() {
+  // Guardar copia de los datos originales para restaurar si cancela
+  datosOriginalesEdicion = {
+    ine: document.getElementById("input-ine").value,
+    nne: document.getElementById("input-nne").value,
+    nroSerie: document.getElementById("input-nro-serie").value,
+    estadoId: document.getElementById("input-estado").value,
+    tipoEquipoId: document.getElementById("input-tipo").value,
+    ubicacion: document.getElementById("input-ubicacion").value,
+    observaciones: document.getElementById("input-observaciones").value,
+    especificaciones: obtenerEspecificacionesOriginales(),
+  };
+  // Logs para depuración
+
+  console.log("Activando modo edición");
+  console.log("Equipo actual:", window.__equipoDetallesActual);
+  // Llenar los inputs de ubicación y observaciones al entrar en modo edición
+  if (window.__equipoDetallesActual) {
+    const inputUbicacion = document.getElementById("input-ubicacion");
+    if (inputUbicacion)
+      inputUbicacion.value = window.__equipoDetallesActual.ubicacion || "";
+    const inputObservaciones = document.getElementById("input-observaciones");
+    if (inputObservaciones)
+      inputObservaciones.value =
+        window.__equipoDetallesActual.observaciones || "";
+  }
+  // Logs para depuración
+  const inputUbicacion = document.getElementById("input-ubicacion");
+  const inputObservaciones = document.getElementById("input-observaciones");
+  console.log(
+    "[Antes de activar edición] Ubicación input:",
+    inputUbicacion ? inputUbicacion.value : "(no input)"
+  );
+  console.log(
+    "[Antes de activar edición] Observaciones input:",
+    inputObservaciones ? inputObservaciones.value : "(no input)"
+  );
+  const modalBody = document.querySelector("#modalDetallesEquipo .modal-body");
+  modalBody
+    .querySelectorAll(".campo-display")
+    .forEach((el) => el.classList.add("d-none"));
+  modalBody
+    .querySelectorAll(".campo-edit")
+    .forEach((el) => el.classList.remove("d-none"));
+  document.getElementById("btn-editar").classList.add("d-none");
+  document.getElementById("btn-guardar-cambios").classList.remove("d-none");
+  document.getElementById("btn-cancelar-edicion").classList.remove("d-none");
+
+  // Logs para depuración después de activar edición
+  console.log(
+    "[Después de activar edición] Ubicación input:",
+    inputUbicacion ? inputUbicacion.value : "(no input)"
+  );
+  console.log(
+    "[Después de activar edición] Observaciones input:",
+    inputObservaciones ? inputObservaciones.value : "(no input)"
+  );
+
+  // Poblar los selects de Estado, Tipo y Responsable
+  cargarSelectEstadoTipoResponsable();
+  // Hacer editables las especificaciones técnicas
+  habilitarEdicionEspecificaciones();
+}
+
+async function cargarSelectEstadoTipoResponsable() {
+  // Obtener el equipo actual para extraer los IDs
+  const equipo = window.__equipoDetallesActual;
+  // Estado
+  const estadoSelect = document.getElementById("input-estado");
+  if (estadoSelect) {
+    estadoSelect.innerHTML = "";
+    const res = await fetch(API_URL_ESTADOS);
+    const estados = await res.json();
+    // Usar el estadoId actual del equipo (preferir unidad si existe)
+    const estadoIdActual =
+      equipo?.unidades?.[0]?.estadoId ?? equipo?.estadoId ?? "";
+    estados.forEach((e) => {
+      const opt = document.createElement("option");
+      opt.value = e.id || e.estadoId || e.estado_id;
+      opt.textContent = e.nombre || e.estado || e.nombre_estado;
+      if (String(opt.value) === String(estadoIdActual)) opt.selected = true;
+      estadoSelect.appendChild(opt);
+    });
+    console.log(
+      "[cargarSelectEstadoTipoResponsable] EstadoId actual:",
+      estadoIdActual,
+      "Valor seleccionado:",
+      estadoSelect.value
+    );
+  }
+  // Tipo de equipo
+  const tipoSelect = document.getElementById("input-tipo");
+  if (tipoSelect) {
+    tipoSelect.innerHTML = "";
+    const res = await fetch(API_URL_TIPO_EQUIPO);
+    const tipos = await res.json();
+    // Usar el tipoId actual del equipo
+    const tipoIdActual = equipo?.tipoId || equipo?.tipoEquipoId || "";
+    tipos.forEach((t) => {
+      const opt = document.createElement("option");
+      opt.value = t.id || t.tipoEquipoId || t.tipo_equipo_id;
+      opt.textContent = t.nombre || t.tipo || t.nombre_tipo;
+      if (String(opt.value) === String(tipoIdActual)) opt.selected = true;
+      tipoSelect.appendChild(opt);
+    });
+    console.log(
+      "[cargarSelectEstadoTipoResponsable] TipoId actual:",
+      tipoIdActual,
+      "Valor seleccionado:",
+      tipoSelect.value
+    );
+  }
+  // Responsable
+  const responsableSelect = document.getElementById("input-responsable");
+  if (responsableSelect) {
+    responsableSelect.innerHTML = "";
+
+    // Agregar opción 'Sin asignar' primero
+    const opcionSinAsignar = document.createElement("option");
+    opcionSinAsignar.value = "";
+    opcionSinAsignar.textContent = "Sin asignar";
+    responsableSelect.appendChild(opcionSinAsignar);
+
+    const res = await fetch(API_URL_PERSONA);
+    const personas = await res.json();
+    // Usar el personaId actual de la unidad (si existe)
+    const responsableIdActual =
+      equipo?.unidades?.[0]?.personaId ?? equipo?.responsableId ?? "";
+
+    let responsableSeleccionado = false;
+    personas.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value =
+        p.id_persona ||
+        p.IdPersona ||
+        p.idPersona ||
+        p.id ||
+        p.personaId ||
+        p.persona_id;
+      opt.textContent = `${p.NombreGrado || p.nombreGrado || ""} ${
+        p.NombreArmEsp || p.nombreArmEsp || ""
+      } ${p.Nombre || p.nombre || ""} ${p.Apellido || p.apellido || ""}`
+        .replace(/\s+/g, " ")
+        .trim();
+
+      console.log("[cargarSelectEstadoTipoResponsable] Persona:", p);
+      console.log(
+        "[cargarSelectEstadoTipoResponsable] opt.value asignado:",
+        opt.value
+      );
+      console.log(
+        "[cargarSelectEstadoTipoResponsable] opt.textContent:",
+        opt.textContent
+      );
+      if (
+        String(opt.value) === String(responsableIdActual) &&
+        opt.value !== ""
+      ) {
+        opt.selected = true;
+        responsableSeleccionado = true;
+      }
+      responsableSelect.appendChild(opt);
+    });
+
+    // Si no hay responsable seleccionado, seleccionar 'Sin asignar'
+    if (!responsableSeleccionado) {
+      opcionSinAsignar.selected = true;
+    }
+
+    console.log(
+      "[cargarSelectEstadoTipoResponsable] ResponsableId actual:",
+      responsableIdActual,
+      "Valor seleccionado:",
+      responsableSelect.value
+    );
+  }
+}
+
+function habilitarEdicionEspecificaciones() {
+  const ul = document.getElementById("detalle-especificaciones");
+  if (!ul) return;
+  ul.querySelectorAll("li").forEach((li) => {
+    if (!li.querySelector("input")) {
+      const txt = li.textContent.split(":");
+      if (txt.length >= 2) {
+        const clave = txt[0].replace(/^\s*\u2022\s*/, "").trim();
+        const valor = txt.slice(1).join(":").trim();
+        li.innerHTML = `
+          <div class="especificacion-editable">
+            <input class="especificacion-clave" value="${clave}" placeholder="Clave">
+            <span class="especificacion-separador">:</span>
+            <input class="especificacion-valor" value="${valor}" placeholder="Valor">
+            <button class="btn btn-danger btn-sm btn-eliminar-especificacion">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        `;
+        li.querySelector(".btn-eliminar-especificacion").addEventListener(
+          "click",
+          () => li.remove()
+        );
+      }
+    }
+  });
+}
+
+function agregarCampoEspecificacionDetalle() {
+  console.log(
+    "[agregarCampoEspecificacionDetalle] Iniciando agregado de especificación"
+  );
+  const ul = document.getElementById("detalle-especificaciones");
+  if (!ul) {
+    console.error(
+      "[agregarCampoEspecificacionDetalle] No se encontró el elemento detalle-especificaciones"
+    );
+    return;
+  }
+  console.log(
+    "[agregarCampoEspecificacionDetalle] Elemento ul encontrado:",
+    ul
+  );
+
+  const li = document.createElement("li");
+  li.className = "list-group-item ps-0 especificacion-nueva";
+  li.innerHTML = `
+    <div class="especificacion-editable">
+      <input class="especificacion-clave" placeholder="Clave">
+      <span class="especificacion-separador">:</span>
+      <input class="especificacion-valor" placeholder="Valor">
+      <button class="btn btn-danger btn-sm btn-eliminar-especificacion">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `;
+
+  const btnEliminar = li.querySelector(".btn-eliminar-especificacion");
+  if (btnEliminar) {
+    btnEliminar.addEventListener("click", () => {
+      console.log(
+        "[agregarCampoEspecificacionDetalle] Eliminando especificación"
+      );
+      li.remove();
+    });
+  }
+
+  ul.appendChild(li);
+  console.log(
+    "[agregarCampoEspecificacionDetalle] Especificación agregada. Total elementos:",
+    ul.children.length
+  );
+}
+
+/**
+ * Guarda los cambios realizados en el modal de detalles.
+ */
+let nroSerieOriginal = null;
+
+async function guardarCambiosDetalles() {
+  const modalEl = document.getElementById("modalDetallesEquipo");
+  const nne = document.getElementById("detalle-nne").textContent.trim();
+  const nroSerie = document.getElementById("input-nro-serie").value.trim();
+  const equipoData = {
+    ine: document.getElementById("input-ine").value,
+    nne: document.getElementById("input-nne").value,
+    nroSerie: nroSerie,
+    marca: (function () {
+      const input = document.getElementById("input-marca");
+      if (input && !input.classList.contains("d-none"))
+        return input.value.trim();
+      const el = document.getElementById("detalle-marca");
+      if (el) return el.textContent.trim() === "-" ? "" : el.textContent.trim();
+      return window.__equipoDetallesActual?.marca || "";
+    })(),
+    modelo: (function () {
+      const input = document.getElementById("input-modelo");
+      if (input && !input.classList.contains("d-none"))
+        return input.value.trim();
+      const el = document.getElementById("detalle-modelo");
+      if (el) return el.textContent.trim() === "-" ? "" : el.textContent.trim();
+      return window.__equipoDetallesActual?.modelo || "";
+    })(),
+    tipoEquipoId: String(document.getElementById("input-tipo").value),
+    ubicacion: document.getElementById("input-ubicacion").value,
+    observaciones: document.getElementById("input-observaciones").value,
+    especificaciones: null, // Se asignará después
+  };
+
+  // Obtener especificaciones del DOM
+  let especificacionesProcesadas = []; // Declarar fuera del try-catch
+
+  console.log(
+    "[guardarCambiosDetalles] LLAMANDO A obtenerEspecificacionesOriginales()"
+  );
+  console.log(
+    "[guardarCambiosDetalles] - DOM antes de obtener especificaciones:",
+    document.getElementById("detalle-especificaciones")?.innerHTML
+  );
+
+  try {
+    const especificacionesBruto = obtenerEspecificacionesOriginales();
+    console.log(
+      "[guardarCambiosDetalles] RESULTADO de obtenerEspecificacionesOriginales():",
+      especificacionesBruto
+    );
+
+    // Agregar log detallado de cada especificación antes de transformar
+    console.log(
+      "[guardarCambiosDetalles] DETALLES de especificaciones brutas:"
+    );
+    especificacionesBruto.forEach((spec, index) => {
+      console.log(`[guardarCambiosDetalles] Spec ${index}:`, spec);
+      console.log(
+        `[guardarCambiosDetalles] Spec ${index} - clave:`,
+        spec.clave
+      );
+      console.log(
+        `[guardarCambiosDetalles] Spec ${index} - valor:`,
+        spec.valor
+      );
+      console.log(
+        `[guardarCambiosDetalles] Spec ${index} - Clave:`,
+        spec.Clave
+      );
+      console.log(
+        `[guardarCambiosDetalles] Spec ${index} - Valor:`,
+        spec.Valor
+      );
+    });
+
+    // Transformar las especificaciones al formato que espera el backend (solo Clave y Valor)
+    especificacionesProcesadas = especificacionesBruto.map((spec) => ({
+      Clave: spec.clave || spec.Clave,
+      Valor: spec.valor || spec.Valor,
+    }));
+
+    console.log(
+      "[guardarCambiosDetalles] Especificaciones transformadas para backend:",
+      especificacionesProcesadas
+    );
+    console.log(
+      "[guardarCambiosDetalles] - cantidad de especificaciones:",
+      especificacionesProcesadas.length
+    );
+  } catch (error) {
+    console.error(
+      "[guardarCambiosDetalles] ERROR al obtener especificaciones:",
+      error
+    );
+    console.error("[guardarCambiosDetalles] Stack trace:", error.stack);
+    especificacionesProcesadas = [];
+  }
+
+  // Primera unidad con responsable y estado
+  const responsableElement = document.getElementById("input-responsable");
+  const responsableId = responsableElement?.value || null;
+  const estadoId = document.getElementById("input-estado")?.value || null;
+  const nroSerieUnidad =
+    document.getElementById("input-nro-serie")?.value || null;
+
+  console.log("[guardarCambiosDetalles] RESPONSABLE DEBUG:");
+  console.log(
+    "[guardarCambiosDetalles] - responsableElement:",
+    responsableElement
+  );
+  console.log(
+    "[guardarCambiosDetalles] - responsableElement.value:",
+    responsableElement?.value
+  );
+  console.log("[guardarCambiosDetalles] - responsableId (raw):", responsableId);
+  console.log(
+    "[guardarCambiosDetalles] - responsableId !== null:",
+    responsableId !== null
+  );
+  console.log(
+    '[guardarCambiosDetalles] - responsableId !== "null":',
+    responsableId !== "null"
+  );
+  console.log(
+    '[guardarCambiosDetalles] - responsableId !== "":',
+    responsableId !== ""
+  );
+
+  const idPersonaFinal =
+    responsableId && responsableId !== "null" && responsableId !== ""
+      ? parseInt(responsableId)
+      : null;
+  console.log("[guardarCambiosDetalles] - idPersonaFinal:", idPersonaFinal);
+
+  equipoData.primeraUnidad = {
+    numeroSerie: nroSerieUnidad,
+    estadoId: estadoId ? parseInt(estadoId) : null,
+    idPersona: idPersonaFinal,
+  };
+
+  console.log("[guardarCambiosDetalles] Payload equipoData:", equipoData);
+  console.log(
+    "[guardarCambiosDetalles] primeraUnidad:",
+    equipoData.primeraUnidad
+  );
+  // Si no hay NNE, usar nroSerie para actualizar y refrescar
+  console.log("[guardarCambiosDetalles] nne:", nne);
+  console.log("[guardarCambiosDetalles] nroSerie:", nroSerie);
+  console.log(
+    "[guardarCambiosDetalles] window.__equipoDetallesActual:",
+    window.__equipoDetallesActual
+  );
+  let exito = false;
+  // Si se está editando el número de serie, prioriza el endpoint por nroSerie
+  if (nroSerie && nroSerieOriginal) {
+    console.log(
+      "[guardarCambiosDetalles] Forzando uso de actualizarEquipoPorNroSerie"
+    );
+    console.log(
+      "[guardarCambiosDetalles] nroSerieOriginal usado en URL:",
+      nroSerieOriginal
+    );
+    exito = await actualizarEquipoPorNroSerie(nroSerieOriginal, equipoData);
+  } else if (nne && nne !== "-") {
+    console.log("[guardarCambiosDetalles] Usando actualizarEquipo con NNE");
+    exito = await actualizarEquipo(nne, equipoData);
+  } else {
+    console.error(
+      "[guardarCambiosDetalles] No hay identificador válido para actualizar (ni NNE ni nroSerieOriginal)"
+    );
+    mostrarAlerta(
+      "No se pudo determinar el identificador del equipo para actualizar. Contacte al administrador.",
+      "error"
+    );
+  }
+  if (exito) {
+    mostrarAlerta("Detalles actualizados con éxito.", "success");
+    // Refresca los datos del modal antes de cerrar
+    if (nne && nne !== "-") {
+      await window.mostrarDetalles(nne);
+    } else if (nroSerie) {
+      await window.mostrarDetalles(null, nroSerie);
+    }
+    resetearModalDetalles(); // Vuelve a modo solo lectura antes de cerrar
+    setTimeout(() => {
+      modalDetalles.hide();
+    }, 1200);
+    cargarEquipos();
+  } else {
+    mostrarAlerta("No se pudieron guardar los cambios.", "error");
+  }
+}
+
+// Nueva función para actualizar por nroSerie
+async function actualizarEquipoPorNroSerie(nroSerie, equipoData) {
+  try {
+    console.log("[actualizarEquipoPorNroSerie] nroSerie:", nroSerie);
+    console.log("[actualizarEquipoPorNroSerie] equipoData:", equipoData);
+    const response = await fetch(
+      `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+        nroSerie
+      )}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(equipoData),
+      }
+    );
+    console.log(
+      "[actualizarEquipoPorNroSerie] response.status:",
+      response.status
+    );
+    console.log("[actualizarEquipoPorNroSerie] response.ok:", response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[actualizarEquipoPorNroSerie] Error response:", errorText);
+    }
+    return response.ok;
+  } catch (e) {
+    console.error("[actualizarEquipoPorNroSerie] Exception:", e);
+    return false;
+  }
+}
+
+// Función para actualizar por NNE
+async function actualizarEquipo(nne, equipoData) {
+  try {
+    console.log("[actualizarEquipo] nne:", nne);
+    console.log("[actualizarEquipo] equipoData:", equipoData);
+    const response = await fetch(
+      `http://localhost:5069/api/equipos/nne/${encodeURIComponent(nne)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(equipoData),
+      }
+    );
+    console.log("[actualizarEquipo] response.status:", response.status);
+    console.log("[actualizarEquipo] response.ok:", response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[actualizarEquipo] Error response:", errorText);
+    }
+    return response.ok;
+  } catch (e) {
+    console.error("[actualizarEquipo] Exception:", e);
+    return false;
+  }
+}
+
+// Extrae especificaciones del <ul> tanto si hay inputs como si hay solo texto
+function obtenerEspecificacionesOriginales() {
+  const ul = document.getElementById("detalle-especificaciones");
+  if (!ul) {
+    console.log(
+      "[obtenerEspecificacionesOriginales] No se encontró el elemento detalle-especificaciones"
+    );
+    return [];
+  }
+
+  const liElements = ul.querySelectorAll("li");
+  console.log(
+    "[obtenerEspecificacionesOriginales] Elementos li encontrados:",
+    liElements.length
+  );
+
+  const specs = [];
+
+  liElements.forEach((li, index) => {
+    console.log(
+      `[obtenerEspecificacionesOriginales] Procesando li ${index}:`,
+      li.innerHTML
+    );
+
+    // Buscar inputs (modo edición)
+    const claveInput = li.querySelector(".especificacion-clave");
+    const valorInput = li.querySelector(".especificacion-valor");
+
+    console.log(
+      `[obtenerEspecificacionesOriginales] li ${index} - claveInput:`,
+      claveInput
+    );
+    console.log(
+      `[obtenerEspecificacionesOriginales] li ${index} - valorInput:`,
+      valorInput
+    );
+
+    if (claveInput && valorInput) {
+      // Modo edición - obtener valores de inputs
+      const clave = claveInput.value.trim();
+      const valor = valorInput.value.trim();
+      console.log(
+        `[obtenerEspecificacionesOriginales] li ${index} - clave: '${clave}', valor: '${valor}'`
+      );
+      if (clave && valor) {
+        specs.push({ clave, valor });
+        console.log(
+          `[obtenerEspecificacionesOriginales] li ${index} - AGREGADO: {clave: '${clave}', valor: '${valor}'}`
+        );
+      } else {
+        console.log(
+          `[obtenerEspecificacionesOriginales] li ${index} - RECHAZADO: valores vacíos`
+        );
+      }
+    } else {
+      // Si solo hay texto (modo solo lectura)
+      const strong = li.querySelector("strong");
+      console.log(
+        `[obtenerEspecificacionesOriginales] li ${index} - strong encontrado:`,
+        strong
+      );
+      if (strong) {
+        const claveCompleta = strong.textContent || "";
+        const clave = claveCompleta.replace(":", "").trim();
+        let valor = "";
+        if (strong.nextSibling) {
+          valor = strong.nextSibling.textContent
+            ? strong.nextSibling.textContent.trim()
+            : "";
+        }
+        console.log(
+          `[obtenerEspecificacionesOriginales] li ${index} - clave: '${clave}', valor: '${valor}'`
+        );
+        if (clave && valor) {
+          specs.push({ clave, valor });
+          console.log(
+            `[obtenerEspecificacionesOriginales] li ${index} - AGREGADO: {clave: '${clave}', valor: '${valor}'}`
+          );
+        } else {
+          console.log(
+            `[obtenerEspecificacionesOriginales] li ${index} - RECHAZADO: valores vacíos`
+          );
+        }
+      } else {
+        console.log(
+          `[obtenerEspecificacionesOriginales] li ${index} - no se encontró elemento strong`
+        );
+      }
+    }
+  });
+
+  console.log(
+    "[obtenerEspecificacionesOriginales] Especificaciones finales:",
+    specs
+  );
+  return specs;
+}
+
+function resetearModalDetalles() {
+  const modalBody = document.querySelector("#modalDetallesEquipo .modal-body");
+  if (!modalBody) return;
+  modalBody
+    .querySelectorAll(".campo-display")
+    .forEach((el) => el.classList.remove("d-none"));
+  modalBody
+    .querySelectorAll(".campo-edit")
+    .forEach((el) => el.classList.add("d-none"));
+  const btnEditar = document.getElementById("btn-editar");
+  const btnGuardar = document.getElementById("btn-guardar-cambios");
+  const btnCancelarEdicion = document.getElementById("btn-cancelar-edicion");
+  if (btnEditar) btnEditar.classList.remove("d-none");
+  if (btnGuardar) btnGuardar.classList.add("d-none");
+  if (btnCancelarEdicion) btnCancelarEdicion.classList.add("d-none");
+}
+
+function cancelarEdicionDetalles() {
+  if (!datosOriginalesEdicion) return;
+  // Restaurar los valores originales en los inputs
+  document.getElementById("input-ine").value = datosOriginalesEdicion.ine || "";
+  document.getElementById("input-nne").value = datosOriginalesEdicion.nne || "";
+  document.getElementById("input-nro-serie").value =
+    datosOriginalesEdicion.nroSerie || "";
+  document.getElementById("input-estado").value =
+    datosOriginalesEdicion.estadoId || "";
+  document.getElementById("input-tipo").value =
+    datosOriginalesEdicion.tipoEquipoId || "";
+  document.getElementById("input-ubicacion").value =
+    datosOriginalesEdicion.ubicacion || "";
+  document.getElementById("input-observaciones").value =
+    datosOriginalesEdicion.observaciones || "";
+  // Restaurar especificaciones en modo solo lectura (igual que mostrarDetalles)
+  const ul = document.getElementById("detalle-especificaciones");
+  if (ul) {
+    ul.innerHTML = "";
+    if (
+      datosOriginalesEdicion.especificaciones &&
+      datosOriginalesEdicion.especificaciones.length > 0
+    ) {
+      datosOriginalesEdicion.especificaciones.forEach((spec) => {
+        const li = document.createElement("li");
+        li.className = "list-group-item ps-0";
+        li.innerHTML = `<i class='bi bi-dot text-primary'></i> <strong>${spec.clave}:</strong> ${spec.valor}`;
+        ul.appendChild(li);
+      });
+    } else {
+      const li = document.createElement("li");
+      li.className = "list-group-item ps-0";
+      li.textContent = "No hay especificaciones técnicas para este modelo.";
+      ul.appendChild(li);
+    }
+  }
+  resetearModalDetalles();
+}
+
+//-----------------------------------------------------------------------------------------------------
+// MANEJO DE ACCIONES DE LA TABLA (CARGA INICIAL, ELIMINACIÓN)
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Carga los equipos desde la API, los agrupa por NNE y los muestra en la tabla principal.
+ */
+async function cargarEquipos() {
+  try {
+    // 1. Obtener todos los datos necesarios de la API
+    const [equipos, unidades, estados] = await Promise.all([
+      fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
+      fetch("http://localhost:5069/api/unidadesequipo").then((res) =>
+        res.ok ? res.json() : Promise.reject(res)
+      ),
+      fetch(API_URL_ESTADOS).then((res) =>
+        res.ok ? res.json() : Promise.reject(res)
+      ),
+    ]);
+    const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
+    const noEquipos = document.getElementById("no-equipos");
+    cuerpoTabla.innerHTML = "";
+
+    if (!unidades.length) {
+      noEquipos.style.display = "block";
+      return;
+    } else {
+      noEquipos.style.display = "none";
+    }
+
+    // Crear mapas para acceso rápido
+    const equiposMap = new Map(equipos.map((e) => [e.id, e]));
+    const estadosMap = new Map(estados.map((e) => [e.id, e.nombre]));
+
+    // Logs de depuración
+    console.log("equipos:", equipos);
+    console.log("equiposMap:", Array.from(equiposMap.entries()));
+    console.log("unidades:", unidades);
+    console.log("estados:", estados);
+
+    // Renderizar una fila por unidad física
+    unidades.forEach((unidad, idx) => {
+      const equipo = equiposMap.get(unidad.equipoId) || {};
+      console.log(`unidad[${idx}]:`, unidad, "-> equipo encontrado:", equipo);
+      const estadoNombre = estadosMap.get(unidad.estadoId) || "";
+      const fila = `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${equipo.ine || ""}</td>
+                    <td>${equipo.nne || ""}</td>
+                    <td>${unidad.nroSerie || ""}</td>
+                    <td class="fw-bold ${
+                      estadoNombre.startsWith("E/S")
+                        ? "text-success"
+                        : estadoNombre.startsWith("F/S") ||
+                          estadoNombre.startsWith("BAJA")
+                        ? "text-danger"
+                        : "text-warning"
+                    }">${estadoNombre}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${
+                          equipo.nne || ""
+                        }', '${unidad.nroSerie || ""}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        ${
+                          equipo.nne
+                            ? `
+                        <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
+                            <i class="bi bi-box-seam"></i>
+                        </button>
+                        <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
+                            <i class="bi bi-trash"></i>
+                        </button>`
+                            : `
+                        <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
+                            <i class="bi bi-box-seam"></i>
+                        </button>
+                        <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacion('', '${
+                          unidad.nroSerie || ""
+                        }')">
+                            <i class="bi bi-trash"></i>
+                        </button>`
+                        }
+                    </td>
+                </tr>`;
+      cuerpoTabla.innerHTML += fila;
+    });
+  } catch (error) {
+    console.error("Error al cargar los equipos:", error);
+    mostrarAlerta("No se pudo cargar la lista de equipos.", "error");
+  }
+}
+
+// Función para mostrar el modal de detalles del equipo (nuevo diseño, robusta y solo con los IDs existentes)
+window.mostrarDetalles = async function (nne, nroSerie) {
+  resetearModalDetalles();
+  try {
+    let response, equipo;
+    if (nne && nne !== "-") {
+      // 1. Obtener datos del equipo por NNE
+      response = await fetch(`http://localhost:5069/api/equipos/nne/${nne}`);
+    } else if (nroSerie) {
+      // 1b. Obtener datos del equipo por nroSerie
+      response = await fetch(
+        `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+          nroSerie
+        )}`
+      );
+    } else {
+      throw new Error(
+        "No se proporcionó NNE ni nroSerie para buscar el equipo"
+      );
+    }
+    if (!response.ok)
+      throw new Error("No se pudo obtener el detalle del equipo");
+    equipo = await response.json();
+
+    // Agregar número de serie al objeto para uso posterior
+    const nroSerieOriginal =
+      (equipo.unidades &&
+        equipo.unidades[0] &&
+        (equipo.unidades[0].nroSerie || equipo.unidades[0].nro_serie)) ||
+      "";
+    equipo.nroSerie = nroSerieOriginal;
+
+    window.__equipoDetallesActual = equipo;
+    console.log(
+      "[window.mostrarDetalles] ===== DATOS COMPLETOS DEL EQUIPO ====="
+    );
+    console.log("[window.mostrarDetalles] Equipo completo:", equipo);
+    console.log("[window.mostrarDetalles] equipo.unidades:", equipo.unidades);
+    if (equipo.unidades && equipo.unidades[0]) {
+      console.log(
+        "[window.mostrarDetalles] Primera unidad:",
+        equipo.unidades[0]
+      );
+      console.log(
+        "[window.mostrarDetalles] Persona en unidad:",
+        equipo.unidades[0].persona
+      );
+    }
+    console.log(
+      "[window.mostrarDetalles] equipo.especificaciones:",
+      equipo.especificaciones
+    );
+    console.log(
+      "[window.mostrarDetalles] ======================================="
+    );
+
+    // 2. Poblar campos de la columna Datos Generales
+    const elIne = document.getElementById("detalle-ine");
+    const inputIne = document.getElementById("input-ine");
+    if (elIne) elIne.textContent = equipo.ine || "-";
+    if (inputIne) inputIne.value = equipo.ine || "";
+
+    const elNne = document.getElementById("detalle-nne");
+    const inputNne = document.getElementById("input-nne");
+    if (elNne) elNne.textContent = equipo.nne || "-";
+    if (inputNne) inputNne.value = equipo.nne || "";
+
+    const elNroSerie = document.getElementById("detalle-nro-serie");
+    const inputNroSerie = document.getElementById("input-nro-serie");
+    const nroSerieValue =
+      (equipo.unidades &&
+        equipo.unidades[0] &&
+        (equipo.unidades[0].nroSerie || equipo.unidades[0].nro_serie)) ||
+      "";
+    if (elNroSerie) elNroSerie.textContent = nroSerieValue || "-";
+    if (inputNroSerie) inputNroSerie.value = nroSerieValue;
+
+    const elEstado = document.getElementById("detalle-estado");
+    if (elEstado) {
+      // Limpia clases previas
+      elEstado.className = "";
+      const estadoNombre =
+        (equipo.unidades &&
+          equipo.unidades[0] &&
+          equipo.unidades[0].estado &&
+          (equipo.unidades[0].estado.nombre ||
+            equipo.unidades[0].estado_nombre)) ||
+        "-";
+      elEstado.textContent = estadoNombre;
+      if (estadoNombre.startsWith("E/S")) {
+        elEstado.classList.add("text-success", "fw-bold"); // Verde
+      } else if (
+        estadoNombre.startsWith("F/S") ||
+        estadoNombre.startsWith("BAJA")
+      ) {
+        elEstado.classList.add("text-danger", "fw-bold"); // Rojo
+      } else {
+        elEstado.classList.add("text-warning", "fw-bold"); // Amarillo
+      }
+    }
+    const elTipo = document.getElementById("detalle-tipo");
+    if (elTipo) elTipo.textContent = equipo.tipoNombre || equipo.tipo || "-";
+
+    // 3. Poblar campos de la columna Responsable, Ubicación y Observaciones
+    const personaId =
+      equipo.unidades && equipo.unidades[0] && equipo.unidades[0].personaId;
+    const persona =
+      equipo.unidades && equipo.unidades[0] && equipo.unidades[0].persona;
+    console.log("[window.mostrarDetalles] ===== ANÁLISIS RESPONSABLE =====");
+    console.log("[window.mostrarDetalles] PersonaId:", personaId);
+    console.log("[window.mostrarDetalles] Objeto persona encontrado:", persona);
+    let responsable = "Sin asignar";
+
+    // Solo procesar si hay personaId y persona con datos válidos
+    if (personaId && persona && (persona.nombre || persona.apellido)) {
+      const grado = persona.nombreGrado || "";
+      const arma = persona.nombreArmEsp || "";
+      const nombre = persona.nombre || "";
+      const apellido = persona.apellido || "";
+      console.log("[window.mostrarDetalles] Componentes del responsable:");
+      console.log("  - grado:", grado);
+      console.log("  - arma:", arma);
+      console.log("  - nombre:", nombre);
+      console.log("  - apellido:", apellido);
+      const nombreCompleto = `${grado} ${arma} ${nombre} ${apellido}`
+        .replace(/\s+/g, " ")
+        .trim();
+      if (nombreCompleto) {
+        responsable = nombreCompleto;
+      }
+    } else {
+      console.log(
+        "[window.mostrarDetalles] No hay responsable asignado (personaId es null o persona sin datos)"
+      );
+    }
+    const elResponsable = document.getElementById("detalle-responsable");
+    if (elResponsable) elResponsable.textContent = responsable;
+    console.log(
+      "[window.mostrarDetalles] Responsable final asignado:",
+      responsable
+    );
+    console.log("[window.mostrarDetalles] ================================");
+
+    const elUbicacion = document.getElementById("detalle-ubicacion");
+    if (elUbicacion) elUbicacion.textContent = equipo.ubicacion || "-";
+    const elObservaciones = document.getElementById("detalle-observaciones");
+    if (elObservaciones)
+      elObservaciones.textContent = equipo.observaciones || "-";
+
+    // 4. Poblar Especificaciones Técnicas
+    const elMarca = document.getElementById("detalle-marca");
+    if (elMarca) elMarca.textContent = equipo.marca || "-";
+    const elModelo = document.getElementById("detalle-modelo");
+    if (elModelo) elModelo.textContent = equipo.modelo || "-";
+
+    const ulEspecificaciones = document.getElementById(
+      "detalle-especificaciones"
+    );
+    if (ulEspecificaciones) {
+      ulEspecificaciones.innerHTML = "";
+      console.log(
+        "[window.mostrarDetalles] ===== ANÁLISIS ESPECIFICACIONES ====="
+      );
+      console.log(
+        "[window.mostrarDetalles] equipo.especificaciones:",
+        equipo.especificaciones
+      );
+      console.log(
+        "[window.mostrarDetalles] Tipo de especificaciones:",
+        typeof equipo.especificaciones
+      );
+      console.log(
+        "[window.mostrarDetalles] Es array:",
+        Array.isArray(equipo.especificaciones)
+      );
+      if (equipo.especificaciones) {
+        console.log(
+          "[window.mostrarDetalles] Longitud del array:",
+          equipo.especificaciones.length
+        );
+      }
+      if (equipo.especificaciones && equipo.especificaciones.length > 0) {
+        console.log(
+          "[window.mostrarDetalles] Procesando",
+          equipo.especificaciones.length,
+          "especificaciones:"
+        );
+        equipo.especificaciones.forEach((spec, index) => {
+          console.log(`[window.mostrarDetalles] Spec ${index}:`, spec);
+          const li = document.createElement("li");
+          li.className = "list-group-item ps-0";
+          li.innerHTML = `<i class='bi bi-dot text-primary'></i> <strong>${spec.clave}:</strong> ${spec.valor}`;
+          console.log(
+            `[window.mostrarDetalles] Elemento creado para spec ${index}:`,
+            li
+          );
+          ulEspecificaciones.appendChild(li);
+          console.log(
+            `[window.mostrarDetalles] Elemento agregado al DOM. Total hijos ahora:`,
+            ulEspecificaciones.children.length
+          );
+        });
+        console.log(
+          "[window.mostrarDetalles] Contenido final del contenedor de especificaciones:",
+          ulEspecificaciones.innerHTML
+        );
+      } else {
+        console.log(
+          "[window.mostrarDetalles] No hay especificaciones o array vacío"
+        );
+        const li = document.createElement("li");
+        li.className = "list-group-item ps-0";
+        li.textContent = "No hay especificaciones técnicas para este modelo.";
+        ulEspecificaciones.appendChild(li);
+      }
+      console.log(
+        "[window.mostrarDetalles] ====================================="
+      );
+    } else {
+      console.error(
+        "[window.mostrarDetalles] No se encontró el elemento detalle-especificaciones"
+      );
+    }
+
+    // 5. Mostrar el modal
+    if (window.modalDetalles) {
+      window.modalDetalles.show();
+    } else {
+      console.error("[window.mostrarDetalles] Modal no encontrado");
+    }
+  } catch (error) {
+    Swal.fire("Error", "No se pudo cargar el detalle del equipo.", "error");
+  }
+};
+
+// Función duplicada eliminada - solo usar window.mostrarDetalles
+
+/**
+ * Muestra una alerta de confirmación antes de eliminar un equipo.
+ * @param {string} nne - El NNE del equipo a eliminar (opcional).
+ * @param {string} nroSerie - El número de serie del equipo a eliminar (opcional).
+ */
+function confirmarEliminacion(nne, nroSerie) {
+  const tipoEliminacion = nne ? "modelo de equipo" : "equipo";
+  const identificador = nne || nroSerie;
+
+  Swal.fire({
+    title: `¿Estás seguro que deseas eliminar este ${tipoEliminacion}?`,
+    text: `Se eliminarán todos los datos asociados al ${tipoEliminacion} ${identificador}.`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, ¡eliminar!",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const exito = await eliminarEquipo(nne, nroSerie);
+      if (exito) {
+        mostrarAlerta(
+          `${
+            tipoEliminacion.charAt(0).toUpperCase() + tipoEliminacion.slice(1)
+          } eliminado con éxito.`,
+          "success"
+        );
+        cargarEquipos();
+      } else {
+        mostrarAlerta(`No se pudo eliminar el ${tipoEliminacion}.`, "error");
+      }
+    }
+  });
+}
+
+/**
+ * Elimina un equipo por NNE o número de serie.
+ * @param {string} nne - El NNE del equipo a eliminar (opcional).
+ * @param {string} nroSerie - El número de serie del equipo a eliminar (opcional).
+ * @returns {Promise<boolean>} - True si se eliminó correctamente, false en caso contrario.
+ */
+async function eliminarEquipo(nne, nroSerie) {
+  try {
+    let url;
+    if (nne && nne.trim() !== "" && nne !== "-") {
+      // Eliminar por NNE
+      url = `${API_URL}/nne/${encodeURIComponent(nne)}`;
+      console.log("[eliminarEquipo] Eliminando por NNE:", nne);
+    } else if (nroSerie && nroSerie.trim() !== "") {
+      // Eliminar por número de serie
+      url = `${API_URL}/nroSerie/${encodeURIComponent(nroSerie)}`;
+      console.log("[eliminarEquipo] Eliminando por número de serie:", nroSerie);
+    } else {
+      console.error(
+        "[eliminarEquipo] No se proporcionó NNE ni número de serie válido"
+      );
+      return false;
+    }
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      console.log("[eliminarEquipo] Equipo eliminado exitosamente");
+      return true;
+    } else {
+      console.error(
+        "[eliminarEquipo] Error al eliminar equipo:",
+        response.status,
+        response.statusText
+      );
+      return false;
+    }
+  } catch (error) {
+    console.error("[eliminarEquipo] Error en la petición:", error);
+    return false;
+  }
+}
+
+/**
+ * Muestra una alerta simple utilizando SweetAlert2.
+ * @param {string} mensaje - El mensaje a mostrar.
+ * @param {string} tipo - El tipo de alerta (e.g., 'success', 'error', 'warning').
+ */
+function mostrarAlerta(mensaje, tipo) {
+  Swal.fire({
+    title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+    text: mensaje,
+    icon: tipo,
+    confirmButtonText: "Aceptar",
+  });
+}
+
+/**
+ * Activa el modo de edición en el modal de detalles
+ */
+function activarModoEdicion() {
+  console.log("[activarModoEdicion] Activando modo edición");
+
+  // Ocultar elementos de solo lectura y mostrar campos de edición
+  const camposLectura = document.querySelectorAll(".campo-display");
+  const camposEdicion = document.querySelectorAll(".campo-edit");
+
+  camposLectura.forEach((campo) => campo.classList.add("d-none"));
+  camposEdicion.forEach((campo) => campo.classList.remove("d-none"));
+
+  // Poblar los campos de edición con los valores actuales
+  poblarCamposEdicion();
+}
+
+/**
+ * Cancela el modo de edición y vuelve al modo de solo lectura
+ */
+function cancelarEdicion() {
+  console.log("[cancelarEdicion] Cancelando edición");
+
+  // Mostrar elementos de solo lectura y ocultar campos de edición
+  const camposLectura = document.querySelectorAll(".campo-display");
+  const camposEdicion = document.querySelectorAll(".campo-edit");
+
+  camposLectura.forEach((campo) => campo.classList.remove("d-none"));
+  camposEdicion.forEach((campo) => campo.classList.add("d-none"));
+
+  // Restaurar especificaciones a solo lectura
+  restaurarEspecificacionesSoloLectura();
+}
+
+/**
+ * Pobla los campos de edición con los valores actuales del equipo
+ */
+function poblarCamposEdicion() {
+  console.log("[poblarCamposEdicion] Poblando campos de edición");
+
+  // Obtener valores actuales de los elementos de solo lectura
+  const ine = document.getElementById("detalle-ine")?.textContent || "";
+  const nne = document.getElementById("detalle-nne")?.textContent || "";
+  const nroSerie =
+    document.getElementById("detalle-nro-serie")?.textContent || "";
+  const marca = document.getElementById("detalle-marca")?.textContent || "";
+  const modelo = document.getElementById("detalle-modelo")?.textContent || "";
+  const ubicacion =
+    document.getElementById("detalle-ubicacion")?.textContent || "";
+  const observaciones =
+    document.getElementById("detalle-observaciones")?.textContent || "";
+
+  // Poblar campos de edición
+  const inputIne = document.getElementById("input-ine");
+  if (inputIne) inputIne.value = ine === "-" ? "" : ine;
+
+  const inputNne = document.getElementById("input-nne");
+  if (inputNne) inputNne.value = nne === "-" ? "" : nne;
+
+  const inputNroSerie = document.getElementById("input-nro-serie");
+  if (inputNroSerie) inputNroSerie.value = nroSerie === "-" ? "" : nroSerie;
+
+  const inputMarca = document.getElementById("input-marca");
+  if (inputMarca) inputMarca.value = marca === "-" ? "" : marca;
+
+  const inputModelo = document.getElementById("input-modelo");
+  if (inputModelo) inputModelo.value = modelo === "-" ? "" : modelo;
+
+  const inputUbicacion = document.getElementById("input-ubicacion");
+  if (inputUbicacion) inputUbicacion.value = ubicacion === "-" ? "" : ubicacion;
+
+  const inputObservaciones = document.getElementById("input-observaciones");
+  if (inputObservaciones)
+    inputObservaciones.value = observaciones === "-" ? "" : observaciones;
+
+  // Cargar estados, tipos y responsables en los selects
+  cargarSelectEstadoTipoResponsable();
+
+  // CONVERTIR ESPECIFICACIONES A MODO EDITABLE
+  convertirEspecificacionesAEditables();
+
+  console.log("[poblarCamposEdicion] Campos de edición poblados correctamente");
+  console.log(
+    "[poblarCamposEdicion] Ubicación input:",
+    inputUbicacion ? inputUbicacion.value : "(no input)"
+  );
+  console.log(
+    "[poblarCamposEdicion] Observaciones input:",
+    inputObservaciones ? inputObservaciones.value : "(no input)"
+  );
+}
+
+/**
+ * Convierte las especificaciones de solo lectura a inputs editables
+ */
+function convertirEspecificacionesAEditables() {
+  console.log(
+    "[convertirEspecificacionesAEditables] Iniciando conversión de especificaciones"
+  );
+  const ul = document.getElementById("detalle-especificaciones");
+  if (!ul) {
+    console.error(
+      "[convertirEspecificacionesAEditables] No se encontró el elemento detalle-especificaciones"
+    );
+    return;
+  }
+
+  const liElements = ul.querySelectorAll("li");
+  console.log(
+    `[convertirEspecificacionesAEditables] Especificaciones encontradas: ${liElements.length}`
+  );
+
+  liElements.forEach((li, index) => {
+    // Buscar si ya tiene inputs (para evitar conversión duplicada)
+    const yaEsEditable = li.querySelector(".especificacion-clave");
+    if (yaEsEditable) {
+      console.log(
+        `[convertirEspecificacionesAEditables] Li ${index} ya es editable, saltando...`
+      );
+      return;
+    }
+
+    // Extraer clave y valor del formato de solo lectura
+    const strong = li.querySelector("strong");
+    if (strong) {
+      const claveCompleta = strong.textContent || "";
+      const clave = claveCompleta.replace(":", "").trim();
+
+      let valor = "";
+      if (strong.nextSibling) {
+        valor = strong.nextSibling.textContent
+          ? strong.nextSibling.textContent.trim()
+          : "";
+      }
+
+      console.log(
+        `[convertirEspecificacionesAEditables] Li ${index} - Convirtiendo: clave='${clave}', valor='${valor}'`
+      );
+
+      // Reemplazar el contenido del li con inputs editables
+      li.innerHTML = `
+        <div class="especificacion-editable">
+          <input class="especificacion-clave" placeholder="Clave" value="${clave}">
+          <span class="especificacion-separador">:</span>
+          <input class="especificacion-valor" placeholder="Valor" value="${valor}">
+          <button class="btn btn-danger btn-sm btn-eliminar-especificacion">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      `;
+
+      // Agregar evento para eliminar
+      const btnEliminar = li.querySelector(".btn-eliminar-especificacion");
+      if (btnEliminar) {
+        btnEliminar.addEventListener("click", () => {
+          console.log(
+            "[convertirEspecificacionesAEditables] Eliminando especificación"
+          );
+          li.remove();
+        });
+      }
+    }
+  });
+
+  console.log("[convertirEspecificacionesAEditables] Conversión completada");
+}
+
+/**
+ * Restaura las especificaciones editables al modo de solo lectura
+ */
+function restaurarEspecificacionesSoloLectura() {
+  console.log(
+    "[restaurarEspecificacionesSoloLectura] Iniciando restauración de especificaciones"
+  );
+  const ul = document.getElementById("detalle-especificaciones");
+  if (!ul) {
+    console.error(
+      "[restaurarEspecificacionesSoloLectura] No se encontró el elemento detalle-especificaciones"
+    );
+    return;
+  }
+
+  const liElements = ul.querySelectorAll("li");
+  console.log(
+    `[restaurarEspecificacionesSoloLectura] Especificaciones encontradas: ${liElements.length}`
+  );
+
+  liElements.forEach((li, index) => {
+    // Buscar si tiene inputs (para restaurar a solo lectura)
+    const claveInput = li.querySelector(".especificacion-clave");
+    const valorInput = li.querySelector(".especificacion-valor");
+
+    if (claveInput && valorInput) {
+      const clave = claveInput.value.trim();
+      const valor = valorInput.value.trim();
+
+      console.log(
+        `[restaurarEspecificacionesSoloLectura] Li ${index} - Restaurando: clave='${clave}', valor='${valor}'`
+      );
+
+      // Solo restaurar a solo lectura las especificaciones originales (que tienen clave y valor)
+      if (clave && valor) {
+        // Reemplazar el contenido del li con formato de solo lectura
+        li.innerHTML = `<i class="bi bi-info-circle text-info"></i> <strong>${clave}:</strong> ${valor}`;
+      } else {
+        // Si no tiene clave y valor, eliminar el li (especificaciones vacías agregadas)
+        console.log(
+          `[restaurarEspecificacionesSoloLectura] Li ${index} - Eliminando especificación vacía`
+        );
+        li.remove();
+      }
+    }
+  });
+
+  console.log("[restaurarEspecificacionesSoloLectura] Restauración completada");
+}
+
+/**
+ * Carga los tipos de equipo disponibles en el select de edición
+ */
+async function cargarTiposParaEdicion() {
+  try {
+    console.log("[cargarTiposParaEdicion] Cargando tipos de equipo...");
+    const response = await fetch("http://localhost:5069/api/tipoequipo");
+    if (response.ok) {
+      const data = await response.json();
+      const tipos = data.value || data; // Manejar tanto formato con 'value' como array directo
+      console.log("[cargarTiposParaEdicion] Tipos obtenidos:", tipos);
+      const selectTipo = document.getElementById("input-tipo");
+      if (selectTipo) {
+        selectTipo.innerHTML = '<option value="">Seleccionar tipo...</option>';
+        tipos.forEach((tipo) => {
+          const option = document.createElement("option");
+          option.value = tipo.id;
+          option.textContent = tipo.nombre;
+          selectTipo.appendChild(option);
+        });
+
+        // Seleccionar el tipo actual usando el ID del equipo
+        const equipoActual = window.__equipoDetallesActual;
+        if (equipoActual && equipoActual.tipoId) {
+          const tipoId = equipoActual.tipoId;
+          console.log("[cargarTiposParaEdicion] Tipo ID actual:", tipoId);
+          selectTipo.value = tipoId;
+        }
+      }
+    } else {
+      console.error(
+        "[cargarTiposParaEdicion] Error en respuesta:",
+        response.status
+      );
+    }
+  } catch (error) {
+    console.error("[cargarTiposParaEdicion] Error:", error);
+  }
+}
+
+/**
+ * Guarda los cambios realizados en el modal de edición
+ */
+async function guardarCambiosDetalles() {
+  console.log(
+    "[guardarCambiosDetalles] Iniciando guardado de cambios - VERSIÓN NUEVA " +
+      Date.now()
+  );
+
+  try {
+    // Obtener valores de los campos de edición
+    const ine = document.getElementById("input-ine")?.value || "";
+    const nne = document.getElementById("input-nne")?.value || "";
+    const nroSerie = document.getElementById("input-nro-serie")?.value || "";
+    const marca = document.getElementById("input-marca")?.value || "";
+    const modelo = document.getElementById("input-modelo")?.value || "";
+    const tipoId = document.getElementById("input-tipo")?.value || "";
+    // FORZAR LECTURA DIRECTA DE LOS SELECTS JUSTO ANTES DE ARMAR EL PAYLOAD
+    const estadoId = document.getElementById("input-estado")?.value || "";
+    const responsableId =
+      document.getElementById("input-responsable")?.value || "";
+    // Logs para depuración
+    console.log("[guardarCambiosDetalles] Estado seleccionado:", estadoId);
+    console.log(
+      "[guardarCambiosDetalles] Responsable seleccionado:",
+      responsableId
+    );
+    const ubicacion = document.getElementById("input-ubicacion")?.value || "";
+    const observaciones =
+      document.getElementById("input-observaciones")?.value || "";
+
+    // Logs de depuración
+    console.log("[guardarCambiosDetalles] Elementos encontrados:");
+    console.log("- input-ine:", document.getElementById("input-ine"));
+    console.log("- input-nne:", document.getElementById("input-nne"));
+    console.log(
+      "- input-nro-serie:",
+      document.getElementById("input-nro-serie")
+    );
+    console.log("- input-marca:", document.getElementById("input-marca"));
+    console.log("- input-modelo:", document.getElementById("input-modelo"));
+    console.log("- input-tipo:", document.getElementById("input-tipo"));
+    console.log("- input-estado:", document.getElementById("input-estado"));
+    console.log(
+      "- input-responsable:",
+      document.getElementById("input-responsable")
+    );
+    console.log(
+      "- input-ubicacion:",
+      document.getElementById("input-ubicacion")
+    );
+    console.log(
+      "- input-observaciones:",
+      document.getElementById("input-observaciones")
+    );
+
+    // Logs específicos para responsable y estado
+    const responsableElement = document.getElementById("input-responsable");
+    const estadoElement = document.getElementById("input-estado");
+    console.log("[guardarCambiosDetalles] Valores de selects:");
+    console.log("- responsableElement.value:", responsableElement?.value);
+    console.log(
+      "- responsableElement.selectedIndex:",
+      responsableElement?.selectedIndex
+    );
+    console.log(
+      "- responsableElement.options.length:",
+      responsableElement?.options?.length
+    );
+    console.log("- estadoElement.value:", estadoElement?.value);
+    console.log("- estadoElement.selectedIndex:", estadoElement?.selectedIndex);
+    console.log(
+      "- estadoElement.options.length:",
+      estadoElement?.options?.length
+    );
+
+    console.log("[guardarCambiosDetalles] Datos a enviar:", {
+      ine,
+      nne,
+      nroSerie,
+      marca,
+      modelo,
+      tipoId,
+      estadoId,
+      responsableId,
+      ubicacion,
+      observaciones,
+    });
+
+    // Obtener valores originales del equipo actual para determinar endpoint
+    const nneOriginal = window.__equipoDetallesActual?.nne; // NNE original del equipo
+    const nroSerieOriginal = window.__equipoDetallesActual?.nroSerie; // Número de serie original
+
+    console.log("[guardarCambiosDetalles] Valores originales del equipo:");
+    console.log(
+      "- nneOriginal:",
+      nneOriginal,
+      "(tipo:",
+      typeof nneOriginal,
+      ")"
+    );
+    console.log(
+      "- nroSerieOriginal:",
+      nroSerieOriginal,
+      "(tipo:",
+      typeof nroSerieOriginal,
+      ")"
+    );
+    console.log(
+      "- window.__equipoDetallesActual:",
+      window.__equipoDetallesActual
+    );
+
+    let url, identificador;
+    // Priorizar NNE original si existe y no es null/undefined/empty
+    if (nneOriginal != null && nneOriginal !== "" && nneOriginal !== "-") {
+      url = `${API_URL}/nne/${encodeURIComponent(nneOriginal)}`;
+      identificador = nneOriginal;
+      console.log(
+        "[guardarCambiosDetalles] Actualizando por NNE original:",
+        nneOriginal
+      );
+    } else if (
+      nroSerieOriginal &&
+      nroSerieOriginal.trim() !== "" &&
+      nroSerieOriginal !== "-"
+    ) {
+      url = `${API_URL}/nroSerie/${encodeURIComponent(nroSerieOriginal)}`;
+      identificador = nroSerieOriginal;
+      console.log(
+        "[guardarCambiosDetalles] Actualizando por número de serie original:",
+        nroSerieOriginal
+      );
+    } else {
+      console.error(
+        "[guardarCambiosDetalles] No se puede determinar endpoint:"
+      );
+      console.error("- nneOriginal:", nneOriginal);
+      console.error("- nroSerieOriginal:", nroSerieOriginal);
+      throw new Error(
+        "No se puede determinar cómo actualizar el equipo (sin NNE ni número de serie válido)"
+      );
+    }
+
+    // Construir el payload
+    const equipoActual = window.__equipoDetallesActual;
+
+    // Usar el tipo seleccionado o el actual como fallback
+    const idTipoEquipo = tipoId || equipoActual?.tipoEquipoId || "E"; // Default a 'E'
+    console.log(
+      "[guardarCambiosDetalles] Tipo equipo (tipoEquipoId):",
+      idTipoEquipo,
+      "(seleccionado:",
+      tipoId,
+      ", original:",
+      equipoActual?.tipoEquipoId,
+      ")"
+    );
+
+    // Obtener valores por defecto del equipo actual
+    let estadoIdFinal;
+    if (estadoId !== "") {
+      estadoIdFinal = parseInt(estadoId);
+    } else if (equipoActual?.unidades?.[0]?.estadoId) {
+      estadoIdFinal = equipoActual.unidades[0].estadoId;
+    } else {
+      estadoIdFinal = 5; // Solo si no hay ningún dato
+    }
+    const responsableIdFinal =
+      responsableId !== ""
+        ? parseInt(responsableId)
+        : equipoActual?.unidades?.[0]?.personaId ?? null;
+
+    console.log("[guardarCambiosDetalles] Estados finales:", {
+      estadoIdOriginal: estadoId,
+      estadoIdFinal: estadoIdFinal,
+      responsableIdOriginal: responsableId,
+      responsableIdFinal: responsableIdFinal,
+    });
+
+    // Obtener las especificaciones del DOM
+    let especificacionesProcesadas = [];
+    try {
+      const contenedorEspecificaciones = document.getElementById(
+        "detalle-especificaciones"
+      );
+      if (contenedorEspecificaciones) {
+        const especificacionesInputs =
+          contenedorEspecificaciones.querySelectorAll("li");
+        console.log(
+          `[guardarCambiosDetalles] Elementos encontrados en especificaciones: ${especificacionesInputs.length}`
+        );
+
+        especificacionesInputs.forEach((li, index) => {
+          const claveInput = li.querySelector(".especificacion-clave");
+          const valorInput = li.querySelector(".especificacion-valor");
+
+          if (claveInput && valorInput) {
+            const clave = claveInput.value.trim();
+            const valor = valorInput.value.trim();
+
+            if (clave && valor) {
+              especificacionesProcesadas.push({ clave, valor });
+              console.log(
+                `[guardarCambiosDetalles] Especificación ${index}: '${clave}' = '${valor}'`
+              );
+            }
+          }
+        });
+      }
+      console.log(
+        `[guardarCambiosDetalles] Total especificaciones procesadas: ${especificacionesProcesadas.length}`
+      );
+    } catch (error) {
+      console.error(
+        "[guardarCambiosDetalles] Error procesando especificaciones:",
+        error
+      );
+      especificacionesProcesadas = [];
+    }
+
+    const payload = {
+      ine: ine,
+      nne: nne === "" || nne === "-" ? null : nne,
+      tipoEquipoId: idTipoEquipo, // Usar campo correcto sin prefijo id_
+      marca: marca,
+      modelo: modelo,
+      ubicacion: ubicacion,
+      observaciones: observaciones,
+      especificaciones: especificacionesProcesadas, // Usar las especificaciones procesadas del DOM
+      primeraUnidad: {
+        numeroSerie: nroSerie,
+        estadoId: estadoIdFinal,
+        idPersona: responsableIdFinal,
+      },
+    };
+
+    console.log(
+      "[guardarCambiosDetalles] Payload completo:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    // Enviar la actualización
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      console.log("[guardarCambiosDetalles] Actualización exitosa");
+      // Mostrar alerta de éxito
+      await Swal.fire({
+        title: "Éxito",
+        text: "Los cambios se guardaron correctamente.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // Recargar equipo actualizado desde la API
+      const nneActual = payload.nne || equipoActual.nne;
+      const nroSerieActual =
+        payload.primeraUnidad.numeroSerie || equipoActual.nroSerie;
+      await recargarEquipoActual(nneActual, nroSerieActual);
+      // Refrescar la tabla principal
+      await cargarEquipos();
+      // Cerrar el modal de edición si es necesario
+      if (window.modalDetalles) window.modalDetalles.hide();
+      setTimeout(async () => {
+        await cargarEquipos();
+        console.log("[guardarCambiosDetalles] Lista de equipos recargada");
+      }, 500);
+    } else {
+      const errorText = await response.text();
+      console.error(
+        "[guardarCambiosDetalles] Error en la respuesta:",
+        response.status,
+        errorText
+      );
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+  } catch (error) {
+    console.error("[guardarCambiosDetalles] Error:", error);
+    Swal.fire({
+      title: "Error",
+      text: `No se pudieron guardar los cambios: ${error.message}`,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+}
+
+// Event listener para cargar datos al cargar la página
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("[DOMContentLoaded] Iniciando carga de equipos...");
+  cargarEquipos();
+
+  // Inicializar modales
+  window.bootstrap = window.bootstrap || {};
+  window.bootstrap.Modal = bootstrap.Modal;
+
+  // Inicializar modal de detalles
+  const modalDetallesElement = document.getElementById("modalDetallesEquipo");
+  if (modalDetallesElement) {
+    window.modalDetalles = new bootstrap.Modal(modalDetallesElement);
+  }
+
+  // Event listeners para los botones del modal de detalles
+  const btnEditar = document.getElementById("btn-editar");
+  if (btnEditar) {
+    btnEditar.addEventListener("click", activarModoEdicion);
+  }
+
+  const btnGuardarCambios = document.getElementById("btn-guardar-cambios");
+  if (btnGuardarCambios) {
+    btnGuardarCambios.addEventListener("click", guardarCambiosDetalles);
+  }
+
+  const btnCancelarEdicion = document.getElementById("btn-cancelar-edicion");
+  if (btnCancelarEdicion) {
+    btnCancelarEdicion.addEventListener("click", cancelarEdicion);
+  }
+
+  // Event listener para agregar especificaciones
+  const btnAgregarEspecificacion = document.getElementById(
+    "btn-agregar-especificacion-detalle"
+  );
+  if (btnAgregarEspecificacion) {
+    btnAgregarEspecificacion.addEventListener(
+      "click",
+      agregarCampoEspecificacionDetalle
+    );
+    console.log(
+      "[DOMContentLoaded] Event listener agregado para btn-agregar-especificacion-detalle"
+    );
+  } else {
+    console.error(
+      "[DOMContentLoaded] No se encontró el botón btn-agregar-especificacion-detalle"
+    );
+  }
+
+  console.log("[DOMContentLoaded] Inicialización completada");
+});

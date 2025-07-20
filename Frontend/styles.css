@@ -1,0 +1,199 @@
+.titulo{
+ font-size: 84;
+ background-color: black;
+ color: aqua;
+}
+
+.miTabla thead + tbody {
+  border-top: none;
+}
+
+/* Estilos generales del body */
+html, body {
+  height: 100vh; /* Fijar altura para controlar el scroll */
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f1f4f9;
+  overflow: hidden; /* Evitar scroll en el body */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenedor principal */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1 1 auto; /* Permitir que el contenido se ajuste y ocupe el espacio disponible */
+  padding: 1rem 0 0.5rem 0;
+  width: 100%;
+  overflow-y: auto; /* Añadir scroll solo a esta área para confinar el desbordamiento */
+}
+
+/* Estilos para botones de acción en tablas */
+.btn-action {
+  background-color: transparent;
+  border: none;
+  color: #6c757d; /* Un color gris neutro */
+  padding: 0.25rem 0.5rem;
+  margin: 0 0.125rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-action:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #212529;
+  transform: translateY(-1px);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+/* Estilos para el footer */
+.footer {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem 0 0.5rem 0;
+  margin-top: auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.footer p, .footer span {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Estilos para la página de inicio */
+.hero-section {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 2.5rem 0 1.5rem 0; /* Menos padding superior e inferior */
+    margin-bottom: 1rem;
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.feature-card {
+    border: none;
+    border-radius: 0.75rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #2a5298;
+}
+
+/* Ajustes para la barra de navegación */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes para el contenido dentro del contenedor */
+.container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Ajustes para el contenido principal */
+.main-content .container {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+.card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.table thead {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.table th i {
+  margin-right: 0.5rem;
+}
+
+.table tbody tr:hover {
+  background-color: #eef3fb;
+}
+
+/* Agrega esto en tu archivo styles.css o en un bloque <style> en el head */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+/* Mejora la apariencia de los botones */
+.btn-group .btn {
+  margin: 0 2px;
+}
+
+/* Asegura que la tabla tenga un ancho completo */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+/* Mejora la apariencia de las celdas */
+.table td {
+  vertical-align: middle;
+}
+
+/* Estilo para los botones de acción */
+.cambio-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.cambio-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilos para las secciones de contenido (contenedor blanco) */
+.seccion-tabla {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
