@@ -111,9 +111,8 @@ async function guardarGrado(abreviatura, descripcion) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                descripcion: abreviatura,
-                gradoCompleto: descripcion,
-                activo: true
+                Descripcion: abreviatura,  // Mapea a la columna 'abreviatura'
+                GradoCompleto: descripcion // Mapea a la columna 'gradocompleto'
             })
         });
 

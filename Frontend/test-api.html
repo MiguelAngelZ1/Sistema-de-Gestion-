@@ -47,7 +47,7 @@
         <div id="equiposResult"></div>
     </div>
 
-    <script src="../js/config.js"></script>
+    <script src="./js/config.js"></script>
     <script>
         // Mostrar configuración actual
         document.getElementById('backendUrl').textContent = CONFIG.API_BASE_URL;
@@ -103,8 +103,8 @@
             showResult('gradoResult', 'loading');
             
             const testGrado = {
-                abreviatura: "TEST",
-                gradoCompleto: "Grado de Test"
+                Descripcion: "TEST",      // Abreviatura (confuso pero es así en el modelo)
+                GradoCompleto: "Grado de Test"  // Descripción completa
             };
             
             try {
