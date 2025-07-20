@@ -48,108 +48,114 @@ namespace Backend.Data
         private static void CreateTables(NpgsqlConnection connection)
         {
             var createTablesScript = @"
-                -- Crear tabla grado si no existe
+                -- Crear tabla grado
                 CREATE TABLE IF NOT EXISTS grado (
                     id_grado SERIAL PRIMARY KEY,
-                    abreviatura VARCHAR(50) NOT NULL,
-                    gradocompleto VARCHAR(100) NOT NULL
+                    abreviatura VARCHAR(50),
+                    gradocompleto VARCHAR(100)
                 );
 
-                -- Crear tabla armesp si no existe
+                -- Crear tabla armesp (con enum convertido a CHECK constraint)
                 CREATE TABLE IF NOT EXISTS armesp (
                     id_armesp SERIAL PRIMARY KEY,
                     abreviatura VARCHAR(50) NOT NULL,
                     armesp_completo VARCHAR(100) NOT NULL,
-                    tipo VARCHAR(50) NOT NULL
+                    tipo VARCHAR(20) NOT NULL DEFAULT 'Arma' CHECK (tipo IN ('Arma', 'Especialidad'))
                 );
 
-                -- Crear tabla persona si no existe
+                -- Crear tabla persona (con nro_dni en lugar de dni)
                 CREATE TABLE IF NOT EXISTS persona (
                     id_persona SERIAL PRIMARY KEY,
-                    nombre VARCHAR(100) NOT NULL,
-                    apellido VARCHAR(100) NOT NULL,
-                    dni VARCHAR(20) NOT NULL UNIQUE,
                     id_grado INTEGER REFERENCES grado(id_grado),
-                    id_armesp INTEGER REFERENCES armesp(id_armesp)
+                    id_armesp INTEGER REFERENCES armesp(id_armesp),
+                    nombre VARCHAR(100),
+                    apellido VARCHAR(100),
+                    nro_dni VARCHAR(20) UNIQUE
                 );
 
-                -- Crear tabla tipos_equipo si no existe
+                -- Crear tabla tipos_equipo (CHAR(1) como VARCHAR(1))
                 CREATE TABLE IF NOT EXISTS tipos_equipo (
-                    id_tipo SERIAL PRIMARY KEY,
-                    nombre VARCHAR(100) NOT NULL,
-                    descripcion TEXT
+                    id VARCHAR(1) PRIMARY KEY,
+                    nombre VARCHAR(100) NOT NULL UNIQUE
                 );
 
-                -- Crear tabla estado_equipo si no existe
+                -- Crear tabla estado_equipo
                 CREATE TABLE IF NOT EXISTS estado_equipo (
-                    id_estado SERIAL PRIMARY KEY,
-                    nombre VARCHAR(50) NOT NULL,
-                    descripcion TEXT
-                );
-
-                -- Crear tabla unidades_equipo si no existe
-                CREATE TABLE IF NOT EXISTS unidades_equipo (
-                    id_unidad SERIAL PRIMARY KEY,
-                    nombre VARCHAR(100) NOT NULL,
-                    descripcion TEXT
-                );
-
-                -- Crear tabla equipos si no existe
-                CREATE TABLE IF NOT EXISTS equipos (
-                    id_equipo SERIAL PRIMARY KEY,
-                    nombre VARCHAR(100) NOT NULL,
-                    modelo VARCHAR(100),
-                    numero_serie VARCHAR(100) UNIQUE,
-                    fecha_adquisicion DATE,
-                    id_tipo INTEGER REFERENCES tipos_equipo(id_tipo),
-                    id_estado INTEGER REFERENCES estado_equipo(id_estado),
-                    id_unidad INTEGER REFERENCES unidades_equipo(id_unidad),
-                    observaciones TEXT
-                );
-
-                -- Crear tabla inventario si no existe
-                CREATE TABLE IF NOT EXISTS inventario (
                     id SERIAL PRIMARY KEY,
-                    ine VARCHAR(100) NOT NULL,
-                    nne VARCHAR(100) NOT NULL,
-                    cantidad INTEGER NOT NULL DEFAULT 0
+                    nombre VARCHAR(100) NOT NULL UNIQUE
                 );
 
-                -- Insertar datos básicos si las tablas están vacías
-                INSERT INTO grado (abreviatura, gradocompleto) 
-                SELECT 'GRL', 'General' 
-                WHERE NOT EXISTS (SELECT 1 FROM grado WHERE abreviatura = 'GRL');
+                -- Crear tabla equipos (estructura original)
+                CREATE TABLE IF NOT EXISTS equipos (
+                    id SERIAL PRIMARY KEY,
+                    nne VARCHAR(50) NOT NULL,
+                    id_tipo_equipo VARCHAR(1) NOT NULL REFERENCES tipos_equipo(id),
+                    marca VARCHAR(100),
+                    modelo VARCHAR(100),
+                    ubicacion VARCHAR(255),
+                    observaciones TEXT,
+                    ine VARCHAR(100),
+                    en_servicio BOOLEAN NOT NULL DEFAULT true
+                );
 
-                INSERT INTO grado (abreviatura, gradocompleto) 
-                SELECT 'COL', 'Coronel' 
-                WHERE NOT EXISTS (SELECT 1 FROM grado WHERE abreviatura = 'COL');
+                -- Crear tabla especificaciones_equipo
+                CREATE TABLE IF NOT EXISTS especificaciones_equipo (
+                    id SERIAL PRIMARY KEY,
+                    id_equipo INTEGER NOT NULL REFERENCES equipos(id) ON DELETE CASCADE,
+                    clave VARCHAR(100) NOT NULL,
+                    valor VARCHAR(255) NOT NULL
+                );
 
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) 
-                SELECT 'INF', 'Infantería', 'Combate' 
-                WHERE NOT EXISTS (SELECT 1 FROM armesp WHERE abreviatura = 'INF');
+                -- Crear tabla unidades_equipo
+                CREATE TABLE IF NOT EXISTS unidades_equipo (
+                    id SERIAL PRIMARY KEY,
+                    id_equipo INTEGER NOT NULL REFERENCES equipos(id) ON DELETE CASCADE,
+                    nro_serie VARCHAR(100) NOT NULL UNIQUE,
+                    id_estado INTEGER NOT NULL REFERENCES estado_equipo(id),
+                    id_persona INTEGER REFERENCES persona(id_persona) ON DELETE SET NULL,
+                    fecha_asignacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
 
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) 
-                SELECT 'ART', 'Artillería', 'Combate' 
-                WHERE NOT EXISTS (SELECT 1 FROM armesp WHERE abreviatura = 'ART');
+                -- Insertar tipos de equipo
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('A', 'ARMAMENTO') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('V', 'AUTOMOTORES') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('P', 'AVIACIÓN') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('E', 'ELECTRÓNICA Y ELECTRICIDAD') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('H', 'EQUIPOS DE TALLER, MÁQUINAS Y HERRAMIENTAS') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('I', 'INGENIEROS') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('G', 'MAT GENERALES') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('M', 'MUNICIÓN') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('O', 'OP, INSTRUMENTAL Y EQU DE LABORATORIO') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO tipos_equipo (id, nombre) VALUES ('Z', 'REP. DE ARS') ON CONFLICT (id) DO NOTHING;
 
-                INSERT INTO tipos_equipo (nombre, descripcion) 
-                SELECT 'Armamento', 'Equipos de armamento y defensa' 
-                WHERE NOT EXISTS (SELECT 1 FROM tipos_equipo WHERE nombre = 'Armamento');
+                -- Insertar estados de equipo
+                INSERT INTO estado_equipo (id, nombre) VALUES (1, 'E/S En Servicio') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO estado_equipo (id, nombre) VALUES (2, 'F/S Fuera de Servicio') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO estado_equipo (id, nombre) VALUES (3, 'MANT Mantenimiento') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO estado_equipo (id, nombre) VALUES (4, 'REPAR Reparación') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO estado_equipo (id, nombre) VALUES (5, 'BAJA') ON CONFLICT (id) DO NOTHING;
+                INSERT INTO estado_equipo (id, nombre) VALUES (6, 'EXT Extraviado') ON CONFLICT (id) DO NOTHING;
 
-                INSERT INTO estado_equipo (nombre, descripcion) 
-                SELECT 'Operativo', 'En condiciones de funcionamiento' 
-                WHERE NOT EXISTS (SELECT 1 FROM estado_equipo WHERE nombre = 'Operativo');
+                -- Insertar datos básicos de grados y armesp
+                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('GRL', 'General') ON CONFLICT DO NOTHING;
+                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('COL', 'Coronel') ON CONFLICT DO NOTHING;
+                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('TCL', 'Teniente Coronel') ON CONFLICT DO NOTHING;
+                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('MAY', 'Mayor') ON CONFLICT DO NOTHING;
 
-                INSERT INTO unidades_equipo (nombre, descripcion) 
-                SELECT 'Base Principal', 'Unidad base principal' 
-                WHERE NOT EXISTS (SELECT 1 FROM unidades_equipo WHERE nombre = 'Base Principal');
+                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('INF', 'Infantería', 'Arma') ON CONFLICT DO NOTHING;
+                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('ART', 'Artillería', 'Arma') ON CONFLICT DO NOTHING;
+                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('CAB', 'Caballería', 'Arma') ON CONFLICT DO NOTHING;
+                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('ING', 'Ingenieros', 'Arma') ON CONFLICT DO NOTHING;
+
+                -- Resetear secuencias de SERIAL para IDs específicos
+                SELECT setval('estado_equipo_id_seq', (SELECT MAX(id) FROM estado_equipo));
             ";
 
             using (var cmd = new NpgsqlCommand(createTablesScript, connection))
             {
-                Console.WriteLine("Creando tablas y datos básicos...");
+                Console.WriteLine("Creando esquema completo de base de datos...");
                 cmd.ExecuteNonQuery();
-                Console.WriteLine("Tablas y datos básicos creados exitosamente.");
+                Console.WriteLine("Esquema de base de datos creado exitosamente.");
             }
         }
     }

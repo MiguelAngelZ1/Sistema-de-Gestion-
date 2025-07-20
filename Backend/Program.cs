@@ -34,11 +34,28 @@ var app = builder.Build();
 // 3. Aplicar migraciones usando la clase MigrationHelper.
 try
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // Usar la misma lógica que DB_Conexion para obtener la cadena de conexión
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    string connectionString;
+    
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        Console.WriteLine("Usando DATABASE_URL para migraciones...");
+        connectionString = ConvertPostgreSQLUrlForMigrations(databaseUrl);
+    }
+    else
+    {
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+    }
+    
     if (!string.IsNullOrEmpty(connectionString))
     {
         MigrationHelper.ApplyMigrations(connectionString);
         Console.WriteLine("Migraciones de base de datos aplicadas con éxito.");
+    }
+    else
+    {
+        Console.WriteLine("No se pudo obtener la cadena de conexión para migraciones.");
     }
 }
 catch (Exception ex)
@@ -58,3 +75,25 @@ app.MapControllers();
 // Configurar puerto para producción (Render usa la variable PORT)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
+
+// Helper function para convertir URL PostgreSQL
+static string ConvertPostgreSQLUrlForMigrations(string databaseUrl)
+{
+    try
+    {
+        var uri = new Uri(databaseUrl);
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.LocalPath.TrimStart('/');
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo[0];
+        var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+        return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error convirtiendo URL PostgreSQL en migraciones: {ex.Message}");
+        throw;
+    }
+}
