@@ -136,17 +136,6 @@ namespace Backend.Data
                 INSERT INTO estado_equipo (id, nombre) VALUES (5, 'BAJA') ON CONFLICT (id) DO NOTHING;
                 INSERT INTO estado_equipo (id, nombre) VALUES (6, 'EXT Extraviado') ON CONFLICT (id) DO NOTHING;
 
-                -- Insertar datos básicos de grados y armesp
-                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('GRL', 'General') ON CONFLICT DO NOTHING;
-                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('COL', 'Coronel') ON CONFLICT DO NOTHING;
-                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('TCL', 'Teniente Coronel') ON CONFLICT DO NOTHING;
-                INSERT INTO grado (abreviatura, gradocompleto) VALUES ('MAY', 'Mayor') ON CONFLICT DO NOTHING;
-
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('INF', 'Infantería', 'Arma') ON CONFLICT DO NOTHING;
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('ART', 'Artillería', 'Arma') ON CONFLICT DO NOTHING;
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('CAB', 'Caballería', 'Arma') ON CONFLICT DO NOTHING;
-                INSERT INTO armesp (abreviatura, armesp_completo, tipo) VALUES ('ING', 'Ingenieros', 'Arma') ON CONFLICT DO NOTHING;
-
                 -- Resetear secuencias de SERIAL para IDs específicos
                 SELECT setval('estado_equipo_id_seq', (SELECT MAX(id) FROM estado_equipo));
             ";
