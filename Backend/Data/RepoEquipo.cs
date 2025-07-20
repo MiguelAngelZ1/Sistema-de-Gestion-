@@ -705,13 +705,20 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
             {
                 try
                 {
+                    Console.WriteLine($"[DEBUG-Inventario] Iniciando consulta para NNE: {nne}");
+                    
                     // Verificar que el NNE existe
                     var equipoExiste = await connection.ExecuteScalarAsync<int>(
                         "SELECT COUNT(*) FROM equipos WHERE nne = @Nne",
                         new { Nne = nne });
                     
+                    Console.WriteLine($"[DEBUG-Inventario] Equipos encontrados con NNE {nne}: {equipoExiste}");
+                    
                     if (equipoExiste == 0)
+                    {
+                        Console.WriteLine($"[DEBUG-Inventario] No se encontró equipo con NNE: {nne}");
                         return null;
+                    }
 
                     // Obtener todas las unidades con sus estados para este NNE
                     var query = @"
@@ -724,50 +731,81 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                         WHERE eq.nne = @Nne
                         GROUP BY u.id_estado, e.nombre";
 
+                    Console.WriteLine($"[DEBUG-Inventario] Ejecutando query de estadísticas");
                     var estadisticas = await connection.QueryAsync<dynamic>(query, new { Nne = nne });
+                    Console.WriteLine($"[DEBUG-Inventario] Estadísticas obtenidas: {estadisticas?.Count() ?? 0} registros");
                     
                     var resumen = new ResumenInventarioDto();
                     var detalleFueraServicio = new List<DetalleFueraDeServicioDto>();
 
+                    if (estadisticas == null)
+                    {
+                        Console.WriteLine($"[ERROR-Inventario] estadisticas es null");
+                        return resumen; // Devolver resumen vacío pero válido
+                    }
+
                     foreach (var stat in estadisticas)
                     {
-                        var estadoNombre = (string)stat.EstadoNombre;
-                        
-                        // Con CAST(COUNT(*) AS INTEGER) deberíamos recibir siempre un int
-                        var cantidad = Convert.ToInt32(stat.Total);
-                        
-                        Console.WriteLine($"[DEBUG-Inventario] Estado: {estadoNombre}, Cantidad: {cantidad}");
-                        
-                        // Aplicar la lógica de clasificación según el requerimiento
-                        // Estados reales: E/S, F/S, BAJA, MANT, CAMBIO ELON, EXT
-                        if (estadoNombre.StartsWith("E/S"))
+                        try
                         {
-                            // Solo "E/S (En Servicio)" se considera "En Servicio"
-                            resumen.EnServicio += cantidad;
-                        }
-                        else if (estadoNombre.StartsWith("F/S"))
-                        {
-                            // "F/S (Fuera de Servicio)" se muestra como "Fuera de Servicio" sin motivo específico
-                            resumen.FueraDeServicio += cantidad;
-                            detalleFueraServicio.Add(new DetalleFueraDeServicioDto
+                            Console.WriteLine($"[DEBUG-Inventario] Procesando stat: {stat}");
+                            
+                            if (stat == null)
                             {
-                                Estado = "F/S (Fuera de Servicio)",
-                                Cantidad = cantidad
-                            });
-                        }
-                        else
-                        {
-                            // Cualquier otro estado (BAJA, MANT, CAMBIO ELON, EXT, etc.) 
-                            // se considera "Fuera de Servicio" pero se muestra el motivo real
-                            resumen.FueraDeServicio += cantidad;
-                            detalleFueraServicio.Add(new DetalleFueraDeServicioDto
+                                Console.WriteLine($"[WARNING-Inventario] stat es null, saltando");
+                                continue;
+                            }
+                            
+                            // Verificar que EstadoNombre no sea null
+                            if (stat.EstadoNombre == null)
                             {
-                                Estado = estadoNombre,
-                                Cantidad = cantidad
-                            });
+                                Console.WriteLine($"[WARNING-Inventario] EstadoNombre es null, saltando");
+                                continue;
+                            }
+                            
+                            var estadoNombre = (string)stat.EstadoNombre;
+                            
+                            // Con CAST(COUNT(*) AS INTEGER) deberíamos recibir siempre un int
+                            var cantidad = Convert.ToInt32(stat.Total);
+                            
+                            Console.WriteLine($"[DEBUG-Inventario] Estado: '{estadoNombre}', Cantidad: {cantidad}");
+                            
+                            // Aplicar la lógica de clasificación según el requerimiento
+                            // Estados reales: E/S, F/S, BAJA, MANT, CAMBIO ELON, EXT
+                            if (estadoNombre.StartsWith("E/S"))
+                            {
+                                // Solo "E/S (En Servicio)" se considera "En Servicio"
+                                resumen.EnServicio += cantidad;
+                            }
+                            else if (estadoNombre.StartsWith("F/S"))
+                            {
+                                // "F/S (Fuera de Servicio)" se muestra como "Fuera de Servicio" sin motivo específico
+                                resumen.FueraDeServicio += cantidad;
+                                detalleFueraServicio.Add(new DetalleFueraDeServicioDto
+                                {
+                                    Estado = "F/S (Fuera de Servicio)",
+                                    Cantidad = cantidad
+                                });
+                            }
+                            else
+                            {
+                                // Cualquier otro estado (BAJA, MANT, CAMBIO ELON, EXT, etc.) 
+                                // se considera "Fuera de Servicio" pero se muestra el motivo real
+                                resumen.FueraDeServicio += cantidad;
+                                detalleFueraServicio.Add(new DetalleFueraDeServicioDto
+                                {
+                                    Estado = estadoNombre,
+                                    Cantidad = cantidad
+                                });
+                            }
+                            
+                            resumen.Total += cantidad;
                         }
-                        
-                        resumen.Total += cantidad;
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[ERROR-Inventario] Error procesando estadística: {ex.Message}");
+                            // Continuar con la siguiente estadística
+                        }
                     }
 
                     resumen.DetalleFueraDeServicio = detalleFueraServicio;
