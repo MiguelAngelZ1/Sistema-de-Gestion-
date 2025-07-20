@@ -6,13 +6,13 @@ EXPOSE 8080
 # Usa la imagen SDK para compilar
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["*.csproj", "./"]
-RUN dotnet restore
+COPY Backend.csproj ./
+RUN dotnet restore Backend.csproj
 COPY . .
-RUN dotnet build -c Release -o /app/build
+RUN dotnet build Backend.csproj -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish Backend.csproj -c Release -o /app/publish
 
 # Etapa final
 FROM base AS final
