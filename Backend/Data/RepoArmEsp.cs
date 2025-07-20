@@ -32,10 +32,10 @@ namespace Backend.Data
                             // Creamos un nuevo objeto de tipo ArmEsp con los datos obtenidos
                             ArmEsp.Add(new ArmEsp
                             {
-                                Id = reader.GetInt32("id_armesp"),
-                                Abreviatura = reader.GetString("abreviatura"),
-                                ArmEspCompleto = reader.GetString("armesp_completo"),
-                                Tipo = reader.GetString("tipo")
+                                Id = reader.GetInt32(reader.GetOrdinal("id_armesp")),
+                                Abreviatura = reader.GetString(reader.GetOrdinal("abreviatura")),
+                                ArmEspCompleto = reader.GetString(reader.GetOrdinal("armesp_completo")),
+                                Tipo = reader.GetString(reader.GetOrdinal("tipo"))
                             });
                         }
                     }
@@ -220,10 +220,10 @@ namespace Backend.Data
                         {
                             return new ArmEsp
                             {
-                                Id = reader.GetInt32("id_armesp"),
-                                Abreviatura = reader.GetString("abreviatura"),
-                                ArmEspCompleto = reader.GetString("armesp_completo"),
-                                Tipo = reader.GetString("tipo")
+                                Id = reader.GetInt32(reader.GetOrdinal("id_armesp")),
+                                Abreviatura = reader.GetString(reader.GetOrdinal("abreviatura")),
+                                ArmEspCompleto = reader.GetString(reader.GetOrdinal("armesp_completo")),
+                                Tipo = reader.GetString(reader.GetOrdinal("tipo"))
                             };
                         }
                     }
