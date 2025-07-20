@@ -27,14 +27,22 @@ namespace Backend.Data
                 else
                 {
                     Console.WriteLine("DATABASE_URL no encontrada, usando DefaultConnection");
-                    _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "server=localhost;database=db_app_cps;user=root;password=;";
+                    _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Port=5432;Database=db_app_cps;Username=postgres;Password=;";
                 }
             }
             else
             {
                 // Cadena de conexión por defecto si no se proporciona configuración
-                Console.WriteLine("Configuración nula, usando cadena por defecto");
-                _connectionString = "server=localhost;database=db_app_cps;user=root;password=;";
+                Console.WriteLine("Configuración nula, intentando usar DATABASE_URL directamente");
+                var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+                if (!string.IsNullOrEmpty(databaseUrl))
+                {
+                    _connectionString = ConvertPostgreSQLUrl(databaseUrl);
+                }
+                else
+                {
+                    _connectionString = "Host=localhost;Port=5432;Database=db_app_cps;Username=postgres;Password=;";
+                }
             }
         }
 
