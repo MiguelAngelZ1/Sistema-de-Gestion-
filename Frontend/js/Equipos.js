@@ -1374,14 +1374,28 @@ async function cargarEquipos() {
     ]);
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
     const noEquipos = document.getElementById("no-equipos");
+    const tablaEquipos = document.getElementById("tablaEquipos");
+    
+    // Limpiar la tabla
     cuerpoTabla.innerHTML = "";
 
     // Si no hay unidades, mostrar mensaje de tabla vacía
     if (!unidades || unidades.length === 0) {
-      if (noEquipos) {
+      if (noEquipos && tablaEquipos) {
+        // Ocultar la tabla y mostrar el mensaje
+        tablaEquipos.style.display = "none";
         noEquipos.style.display = "block";
-      } else {
+        // Restaurar el mensaje original de no equipos
+        noEquipos.innerHTML = `
+          <i class="bi bi-box-seam display-4 text-muted"></i>
+          <h5 class="mt-3">No hay equipos registrados</h5>
+          <p class="text-muted mb-0">Comienza agregando un nuevo registro</p>
+        `;
+      } else if (cuerpoTabla) {
         // Si no existe el elemento no-equipos, crear mensaje en la tabla
+        if (tablaEquipos) {
+          tablaEquipos.style.display = "table";
+        }
         cuerpoTabla.innerHTML = `
           <tr>
             <td colspan="6" class="text-center py-4 text-muted">
@@ -1392,8 +1406,10 @@ async function cargarEquipos() {
       }
       return;
     } else {
-      if (noEquipos) {
+      // Si hay datos, mostrar la tabla y ocultar el mensaje
+      if (noEquipos && tablaEquipos) {
         noEquipos.style.display = "none";
+        tablaEquipos.style.display = "table";
       }
     }
 
@@ -1461,21 +1477,36 @@ async function cargarEquipos() {
     // Mostrar estado vacío en caso de error
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
     const noEquipos = document.getElementById("no-equipos");
+    const tablaEquipos = document.getElementById("tablaEquipos");
     
+    // Limpiar la tabla
     if (cuerpoTabla) {
-      if (noEquipos) {
-        noEquipos.style.display = "block";
-      } else {
-        // Mostrar mensaje de error en la tabla
-        cuerpoTabla.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center py-4 text-muted">
-              <i class="bi bi-exclamation-triangle fs-1 d-block mb-2 text-warning"></i>
-              <p>Error al cargar los equipos</p>
-              <p class="small">Verifique la conexión al servidor</p>
-            </td>
-          </tr>`;
+      cuerpoTabla.innerHTML = "";
+    }
+    
+    // Ocultar la tabla y mostrar el mensaje de no equipos
+    if (tablaEquipos && noEquipos) {
+      tablaEquipos.style.display = "none";
+      noEquipos.style.display = "block";
+      // Cambiar el mensaje para indicar que hay un error
+      noEquipos.innerHTML = `
+        <i class="bi bi-exclamation-triangle display-4 text-warning"></i>
+        <h5 class="mt-3">Error al cargar los equipos</h5>
+        <p class="text-muted mb-0">Verifique la conexión al servidor</p>
+      `;
+    } else if (cuerpoTabla && !noEquipos) {
+      // Si no existe el elemento no-equipos, crear mensaje en la tabla
+      if (tablaEquipos) {
+        tablaEquipos.style.display = "table";
       }
+      cuerpoTabla.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">
+            <i class="bi bi-exclamation-triangle fs-1 d-block mb-2 text-warning"></i>
+            <p>Error al cargar los equipos</p>
+            <p class="small">Verifique la conexión al servidor</p>
+          </td>
+        </tr>`;
     }
     
     mostrarAlerta("No se pudo cargar la lista de equipos. Verifique la conexión al servidor.", "error");
