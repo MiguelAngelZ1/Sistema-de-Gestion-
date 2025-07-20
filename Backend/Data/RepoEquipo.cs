@@ -723,8 +723,8 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                     // Obtener todas las unidades con sus estados para este NNE
                     var query = @"
                         SELECT 
-                            CAST(COUNT(*) AS INTEGER) as Total,
-                            e.nombre as EstadoNombre
+                            CAST(COUNT(*) AS INTEGER) as total,
+                            e.nombre as estadonombre
                         FROM unidades_equipo u
                         INNER JOIN equipos eq ON u.id_equipo = eq.id
                         INNER JOIN estado_equipo e ON u.id_estado = e.id
@@ -756,17 +756,17 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                                 continue;
                             }
                             
-                            // Verificar que EstadoNombre no sea null
-                            if (stat.EstadoNombre == null)
+                            // Verificar que estadonombre no sea null
+                            if (stat.estadonombre == null)
                             {
-                                Console.WriteLine($"[WARNING-Inventario] EstadoNombre es null, saltando");
+                                Console.WriteLine($"[WARNING-Inventario] estadonombre es null, saltando");
                                 continue;
                             }
                             
-                            var estadoNombre = (string)stat.EstadoNombre;
+                            var estadoNombre = (string)stat.estadonombre;
                             
                             // Con CAST(COUNT(*) AS INTEGER) deberíamos recibir siempre un int
-                            var cantidad = Convert.ToInt32(stat.Total);
+                            var cantidad = Convert.ToInt32(stat.total);
                             
                             Console.WriteLine($"[DEBUG-Inventario] Estado: '{estadoNombre}', Cantidad: {cantidad}");
                             
