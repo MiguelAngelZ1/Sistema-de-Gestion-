@@ -52,14 +52,14 @@ function validarFormulario(persona) {
   }
 
   // Validar DNI
-  if (!persona.Dni || persona.Dni.trim() === "") {
+  if (!persona.dni || persona.dni.trim() === "") {
     errores.push("El DNI es obligatorio");
-  } else if (!/^\d{7,8}$/.test(persona.Dni)) {
+  } else if (!/^\d{7,8}$/.test(persona.dni)) {
     errores.push("El DNI debe tener 7 u 8 dígitos");
   } else {
     // Validar DNI duplicado
     const dniExiste = validarDniDuplicado(
-      persona.Dni,
+      persona.dni,
       persona.id || persona.id_persona
     );
     if (dniExiste) {
