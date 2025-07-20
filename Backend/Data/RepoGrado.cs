@@ -32,9 +32,9 @@ namespace Backend.Data
                             // Creamos un nuevo objeto de tipo Grado con los datos obtenidos
                             grados.Add(new Grado
                             {
-                                Id = reader.GetInt32("id_grado"),
-                                Descripcion = reader.GetString("abreviatura"),
-                                GradoCompleto = reader.GetString("gradocompleto")
+                                Id = reader.GetInt32(reader.GetOrdinal("id_grado")),
+                                Descripcion = reader.GetString(reader.GetOrdinal("abreviatura")),
+                                GradoCompleto = reader.GetString(reader.GetOrdinal("gradocompleto"))
                             });
                         }
                     }

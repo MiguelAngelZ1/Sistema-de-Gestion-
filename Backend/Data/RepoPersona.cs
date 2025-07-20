@@ -45,14 +45,14 @@ namespace Backend.Data
                         {
                             personas.Add(new Persona
                             {
-                                Id = reader.GetInt32("id_persona"),
-                                Nombre = reader.IsDBNull(reader.GetOrdinal("nombre")) ? string.Empty : reader.GetString("nombre"),
-                                Apellido = reader.IsDBNull(reader.GetOrdinal("apellido")) ? string.Empty : reader.GetString("apellido"),
-                                dni = reader.IsDBNull(reader.GetOrdinal("dni")) ? string.Empty : reader.GetString("dni"),
-                                GradoId = reader.IsDBNull(reader.GetOrdinal("id_grado")) ? 0 : reader.GetInt32("id_grado"),
-                                ArmEspId = reader.IsDBNull(reader.GetOrdinal("id_armesp")) ? 0 : reader.GetInt32("id_armesp"),
-                                NombreGrado = reader.IsDBNull(reader.GetOrdinal("nombre_grado")) ? "-" : reader.GetString("nombre_grado"),
-                                NombreArmEsp = reader.IsDBNull(reader.GetOrdinal("nombre_armesp")) ? "-" : reader.GetString("nombre_armesp")
+                                Id = reader.GetInt32(reader.GetOrdinal("id_persona")),
+                                Nombre = reader.IsDBNull(reader.GetOrdinal("nombre")) ? string.Empty : reader.GetString(reader.GetOrdinal("nombre")),
+                                Apellido = reader.IsDBNull(reader.GetOrdinal("apellido")) ? string.Empty : reader.GetString(reader.GetOrdinal("apellido")),
+                                dni = reader.IsDBNull(reader.GetOrdinal("dni")) ? string.Empty : reader.GetString(reader.GetOrdinal("dni")),
+                                GradoId = reader.IsDBNull(reader.GetOrdinal("id_grado")) ? 0 : reader.GetInt32(reader.GetOrdinal("id_grado")),
+                                ArmEspId = reader.IsDBNull(reader.GetOrdinal("id_armesp")) ? 0 : reader.GetInt32(reader.GetOrdinal("id_armesp")),
+                                NombreGrado = reader.IsDBNull(reader.GetOrdinal("nombre_grado")) ? "-" : reader.GetString(reader.GetOrdinal("nombre_grado")),
+                                NombreArmEsp = reader.IsDBNull(reader.GetOrdinal("nombre_armesp")) ? "-" : reader.GetString(reader.GetOrdinal("nombre_armesp"))
                             });
                         }
                     }
@@ -147,11 +147,11 @@ namespace Backend.Data
                         // Si hay error, lo mostramos y devolvemos falso
                         Console.WriteLine($"=== Error de PostgreSQL al modificar persona ===");
                         Console.WriteLine($"Mensaje: {ex.Message}");
-                        Console.WriteLine($"Código de error: {ex.Number}");
+                        Console.WriteLine($"Código de error: {ex.SqlState}");
                         Console.WriteLine($"Origen: {ex.Source}");
                         Console.WriteLine($"Consulta SQL: {command.CommandText}");
                         Console.WriteLine("Parámetros:");
-                        foreach (PostgreSQLParameter p in command.Parameters)
+                        foreach (NpgsqlParameter p in command.Parameters)
                         {
                             Console.WriteLine($"  {p.ParameterName} = {p.Value} (Tipo: {p.DbType}, Tamaño: {p.Size})");
                         }
@@ -191,7 +191,7 @@ namespace Backend.Data
         }
         
         // Método para obtener la conexión a la base de datos
-        public PostgreSQLConnection ObtenerConexion()
+        public NpgsqlConnection ObtenerConexion()
         {
             var connection = AbrirConexion();
             // Aseguramos que la conexión esté abierta

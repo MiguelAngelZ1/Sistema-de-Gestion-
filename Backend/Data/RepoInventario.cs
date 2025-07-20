@@ -32,10 +32,10 @@ namespace Backend.Data
                             // Creamos un nuevo objeto de tipo Inventario con los datos obtenidos
                             inventarios.Add(new Inventario
                             {
-                                id = reader.GetInt32("id"),
-                                ine = reader.GetString("ine"),
-                                nne = reader.GetString("nne"),
-                                cantidad = reader.GetInt32("cantidad")
+                                id = reader.GetInt32(reader.GetOrdinal("id")),
+                                ine = reader.GetString(reader.GetOrdinal("ine")),
+                                nne = reader.GetString(reader.GetOrdinal("nne")),
+                                cantidad = reader.GetInt32(reader.GetOrdinal("cantidad"))
                             });
                         }
                     }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Data;
-using MySql.Data.MySqlClient;
+using Npgsql;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
@@ -298,15 +298,15 @@ namespace Backend.Controllers
                     details = jsonEx.Message 
                 });
             }
-            catch (MySqlException mySqlEx)
+            catch (PostgresException pgEx)
             {
-                Console.WriteLine($"Error de base de datos al modificar personal: {mySqlEx.Message}");
-                Console.WriteLine(mySqlEx.StackTrace);
+                Console.WriteLine($"Error de base de datos al modificar personal: {pgEx.Message}");
+                Console.WriteLine(pgEx.StackTrace);
                 return StatusCode(500, new { 
                     success = false, 
                     message = "Error de base de datos al modificar el personal",
-                    errorCode = mySqlEx.Number,
-                    details = mySqlEx.Message 
+                    errorCode = pgEx.SqlState,
+                    details = pgEx.Message 
                 });
             }
             catch (Exception ex)

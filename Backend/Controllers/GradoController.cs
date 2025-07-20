@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Data;
 using Backend.Models;
 // Agrega estos using al inicio del archivo
-using MySql.Data.MySqlClient;
+using Npgsql;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
@@ -31,10 +31,10 @@ namespace Backend.Controllers
             try
             {
                 // Primero eliminamos las referencias en persona
-                using (var connection = new MySqlConnection("server=localhost;database=db_app_cps;user=root;password=;"))
+                using (var connection = new NpgsqlConnection("server=localhost;database=db_app_cps;user=root;password=;"))
                 {
                     connection.Open();
-                    using (var cmd = new MySqlCommand("DELETE FROM persona WHERE id_grado = @id", connection))
+                    using (var cmd = new NpgsqlCommand("DELETE FROM persona WHERE id_grado = @id", connection))
                     {
                         cmd.Parameters.AddWithValue("@id", id);
                         cmd.ExecuteNonQuery();
