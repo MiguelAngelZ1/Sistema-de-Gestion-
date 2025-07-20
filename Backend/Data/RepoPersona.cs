@@ -72,7 +72,8 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para insertar los datos sin especificar el id_persona
-                using (var command = new NpgsqlCommand("INSERT INTO persona (id_grado, id_armesp, nombre, apellido, nro_dni) VALUES (@idGrado, @idArmesp, @nombre, @apellido, @nroDni); SELECT LAST_INSERT_ID();", connection))
+                // Usamos RETURNING para obtener el ID generado (PostgreSQL)
+                using (var command = new NpgsqlCommand("INSERT INTO persona (id_grado, id_armesp, nombre, apellido, nro_dni) VALUES (@idGrado, @idArmesp, @nombre, @apellido, @nroDni) RETURNING id_persona;", connection))
                 {
                     // Asociamos los valores a los parámetros definidos en el comando SQL
                     command.Parameters.AddWithValue("@idGrado", id_grado);

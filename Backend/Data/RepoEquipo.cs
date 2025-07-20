@@ -189,8 +189,8 @@ namespace Backend.Data
                     // 1. Insertar el equipo (modelo) y obtener su ID
                     var equipoQuery = @"
                         INSERT INTO equipos (INE, NNE, id_tipo_equipo, marca, modelo, ubicacion, observaciones) 
-                        VALUES (@Ine, @Nne, @TipoEquipoId, @Marca, @Modelo, @Ubicacion, @Observaciones); 
-                        SELECT LAST_INSERT_ID();";
+                        VALUES (@Ine, @Nne, @TipoEquipoId, @Marca, @Modelo, @Ubicacion, @Observaciones) 
+                        RETURNING id_equipo;";
                         
                     Console.WriteLine($"[LOG] Insertando equipo con datos: INE={data.Ine}, NNE={data.Nne}, TipoEquipo={data.TipoEquipoId}");
                     var equipoId = await connection.ExecuteScalarAsync<int>(equipoQuery, data, transaction);
@@ -362,8 +362,8 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                     // 1. Insertar el equipo (modelo) y obtener su ID
                     var equipoQuery = @"
                         INSERT INTO equipos (ine, nne, id_tipo_equipo, marca, modelo, ubicacion, observaciones) 
-                        VALUES (@Ine, @Nne, @TipoEquipoId, @Marca, @Modelo, @Ubicacion, @Observaciones); 
-                        SELECT LAST_INSERT_ID();";
+                        VALUES (@Ine, @Nne, @TipoEquipoId, @Marca, @Modelo, @Ubicacion, @Observaciones) 
+                        RETURNING id_equipo;";
                     var equipoId = await connection.ExecuteScalarAsync<int>(equipoQuery, data, transaction);
 
                     // 2. Insertar especificaciones

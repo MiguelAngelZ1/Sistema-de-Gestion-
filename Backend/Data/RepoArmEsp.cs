@@ -86,11 +86,11 @@ namespace Backend.Data
                         int nuevoId = 0;
                         
                         // Creamos el comando SQL para insertar los datos
-                        // Incluimos SELECT LAST_INSERT_ID() para obtener el ID generado
+                        // Usamos RETURNING para obtener el ID generado (PostgreSQL)
                         string sql = @"
                             INSERT INTO armesp (abreviatura, armesp_completo, tipo) 
-                            VALUES (@abreviatura, @armesp_completo, @tipo);
-                            SELECT LAST_INSERT_ID();";
+                            VALUES (@abreviatura, @armesp_completo, @tipo)
+                            RETURNING id_armesp;";
 
                         using (var command = new NpgsqlCommand(sql, connection, transaction))
                         {
@@ -193,7 +193,8 @@ namespace Backend.Data
         {
             using (var connection = AbrirConexion())
             {
-                using (var command = new NpgsqlCommand("SELECT LAST_INSERT_ID()", connection))
+                // En PostgreSQL usamos currval() con el nombre de la secuencia
+                using (var command = new NpgsqlCommand("SELECT currval('armesp_id_armesp_seq')", connection))
                 {
                     var result = command.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
