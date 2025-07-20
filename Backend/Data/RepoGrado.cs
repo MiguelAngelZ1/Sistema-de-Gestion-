@@ -1,8 +1,8 @@
 // Importamos una parte del proyecto que contiene los modelos de datos, como la clase "Grado"
 using Backend.Models;
 
-// Importamos una herramienta que permite trabajar con bases de datos MySQL en C#
-using MySql.Data.MySqlClient;
+// Importamos una herramienta que permite trabajar con bases de datos PostgreSQL en C#
+using Npgsql;
 
 // Definimos un espacio donde se agrupa este código (una forma de organizar todo lo relacionado al "Backend")
 namespace Backend.Data
@@ -21,7 +21,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos un comando SQL para seleccionar los datos de la tabla "grado"
-                using (var command = new MySqlCommand("SELECT id_grado, abreviatura, gradocompleto FROM grado", connection))
+                using (var command = new NpgsqlCommand("SELECT id_grado, abreviatura, gradocompleto FROM grado", connection))
                 {
                     // Ejecutamos el comando y leemos los resultados
                     using (var reader = command.ExecuteReader())
@@ -50,7 +50,7 @@ namespace Backend.Data
         {
             using (var connection = AbrirConexion())
             {
-                using (var command = new MySqlCommand(
+                using (var command = new NpgsqlCommand(
                     "INSERT INTO grado (abreviatura, gradocompleto) VALUES (@abreviatura, @gradoCompleto)", 
                     connection))
                 {
@@ -62,7 +62,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         Console.WriteLine($"Error al insertar grado: {ex.Message}");
                         throw;
@@ -78,7 +78,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para actualizar el registro que tenga el id indicado
-                using (var command = new MySqlCommand("UPDATE grado SET abreviatura = @abreviatura, grado_completo = @grado_completo WHERE id_grado = @idGrado", connection))
+                using (var command = new NpgsqlCommand("UPDATE grado SET abreviatura = @abreviatura, grado_completo = @grado_completo WHERE id_grado = @idGrado", connection))
                 {
                     // Asociamos los valores a los parámetros
                     command.Parameters.AddWithValue("@idGrado", idGrado);
@@ -91,7 +91,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hay error, lo mostramos y devolvemos falso
                         Console.WriteLine($"Error al modificar grado: {ex.Message}");
@@ -108,7 +108,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para eliminar un grado según su id
-                using (var command = new MySqlCommand("DELETE FROM grado WHERE id_grado = @idGrado", connection))
+                using (var command = new NpgsqlCommand("DELETE FROM grado WHERE id_grado = @idGrado", connection))
                 {
                     // Asociamos el parámetro con el valor recibido
                     command.Parameters.AddWithValue("@idGrado", idGrado);
@@ -118,7 +118,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hay error, lo mostramos y devolvemos falso
                         Console.WriteLine($"Error al eliminar grado: {ex.Message}");

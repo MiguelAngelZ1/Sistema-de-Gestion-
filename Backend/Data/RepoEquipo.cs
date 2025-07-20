@@ -1,5 +1,5 @@
 using Backend.Models;
-using MySql.Data.MySqlClient;
+using Npgsql;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;

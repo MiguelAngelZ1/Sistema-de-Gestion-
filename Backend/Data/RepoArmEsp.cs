@@ -1,8 +1,8 @@
 // Importamos una parte del proyecto que contiene los modelos de datos, como la clase "ArmEsp"
 using Backend.Models;
 
-// Importamos una herramienta que permite trabajar con bases de datos MySQL en C#
-using MySql.Data.MySqlClient;
+// Importamos una herramienta que permite trabajar con bases de datos PostgreSQL en C#
+using Npgsql;
 
 // Definimos un espacio donde se agrupa este código (una forma de organizar todo lo relacionado al "Backend")
 namespace Backend.Data
@@ -21,7 +21,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos un comando SQL para seleccionar los datos de la tabla "armesp"
-                using (var command = new MySqlCommand("SELECT id_armesp, abreviatura, armesp_completo, tipo FROM armesp", connection))
+                using (var command = new NpgsqlCommand("SELECT id_armesp, abreviatura, armesp_completo, tipo FROM armesp", connection))
                 {
                     // Ejecutamos el comando y leemos los resultados
                     using (var reader = command.ExecuteReader())
@@ -92,7 +92,7 @@ namespace Backend.Data
                             VALUES (@abreviatura, @armesp_completo, @tipo);
                             SELECT LAST_INSERT_ID();";
 
-                        using (var command = new MySqlCommand(sql, connection, transaction))
+                        using (var command = new NpgsqlCommand(sql, connection, transaction))
                         {
                             // Asociamos los valores a los parámetros
                             command.Parameters.AddWithValue("@abreviatura", abreviatura.Trim());
@@ -118,7 +118,7 @@ namespace Backend.Data
                         transaction.Rollback();
                         return 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hubo un error, hacemos rollback y relanzamos la excepción
                         transaction.Rollback();
@@ -137,7 +137,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para actualizar el registro que tenga el id indicado
-                using (var command = new MySqlCommand("UPDATE armesp SET abreviatura = @abreviatura, armesp_completo = @armesp_completo, tipo = @tipo WHERE id_armesp = @idarmesp", connection))
+                using (var command = new NpgsqlCommand("UPDATE armesp SET abreviatura = @abreviatura, armesp_completo = @armesp_completo, tipo = @tipo WHERE id_armesp = @idarmesp", connection))
                 {
                     // Asociamos los valores a los parámetros
                     command.Parameters.AddWithValue("@idarmesp", id_armesp);
@@ -150,7 +150,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hay error, lo mostramos y devolvemos falso
                         Console.WriteLine($"Error al modificar armesp: {ex.Message}");
@@ -167,7 +167,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para eliminar el registro con el id indicado
-                using (var command = new MySqlCommand("DELETE FROM armesp WHERE id_armesp = @idarmesp", connection))
+                using (var command = new NpgsqlCommand("DELETE FROM armesp WHERE id_armesp = @idarmesp", connection))
                 {
                     // Asociamos el valor del id al parámetro
                     command.Parameters.AddWithValue("@idarmesp", id_armesp);
@@ -178,7 +178,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hubo un error, lo mostramos en consola y devolvemos falso
                         Console.WriteLine($"Error al eliminar armesp: {ex.Message}");
@@ -193,7 +193,7 @@ namespace Backend.Data
         {
             using (var connection = AbrirConexion())
             {
-                using (var command = new MySqlCommand("SELECT LAST_INSERT_ID()", connection))
+                using (var command = new NpgsqlCommand("SELECT LAST_INSERT_ID()", connection))
                 {
                     var result = command.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
@@ -210,7 +210,7 @@ namespace Backend.Data
         {
             using (var connection = AbrirConexion())
             {
-                using (var command = new MySqlCommand("SELECT id_armesp, abreviatura, armesp_completo, tipo FROM armesp WHERE id_armesp = @id", connection))
+                using (var command = new NpgsqlCommand("SELECT id_armesp, abreviatura, armesp_completo, tipo FROM armesp WHERE id_armesp = @id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
                     

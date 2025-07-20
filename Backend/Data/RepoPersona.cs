@@ -1,8 +1,8 @@
 // Importamos una parte del proyecto que contiene los modelos de datos, como la clase "Persona"
 using Backend.Models;
 
-// Importamos una herramienta que permite trabajar con bases de datos MySQL en C#
-using MySql.Data.MySqlClient;
+// Importamos una herramienta que permite trabajar con bases de datos PostgreSQL en C#
+using Npgsql;
 
 // Definimos un espacio donde se agrupa este código (una forma de organizar todo lo relacionado al "Backend")
 namespace Backend.Data
@@ -35,7 +35,7 @@ namespace Backend.Data
                     LEFT JOIN grado g ON p.id_grado = g.id_grado
                     LEFT JOIN armesp a ON p.id_armesp = a.id_armesp";
 
-                using (var command = new MySqlCommand(query, connection))
+                using (var command = new NpgsqlCommand(query, connection))
                 {
                     // Ejecutamos el comando y leemos los resultados
                     using (var reader = command.ExecuteReader())
@@ -72,7 +72,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para insertar los datos sin especificar el id_persona
-                using (var command = new MySqlCommand("INSERT INTO persona (id_grado, id_armesp, nombre, apellido, nro_dni) VALUES (@idGrado, @idArmesp, @nombre, @apellido, @nroDni); SELECT LAST_INSERT_ID();", connection))
+                using (var command = new NpgsqlCommand("INSERT INTO persona (id_grado, id_armesp, nombre, apellido, nro_dni) VALUES (@idGrado, @idArmesp, @nombre, @apellido, @nroDni); SELECT LAST_INSERT_ID();", connection))
                 {
                     // Asociamos los valores a los parámetros definidos en el comando SQL
                     command.Parameters.AddWithValue("@idGrado", id_grado);
@@ -89,7 +89,7 @@ namespace Backend.Data
                         // Si se modificó al menos una fila, devolvemos verdadero (éxito)
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hubo un error, lo mostramos en consola y devolvemos falso
                         Console.WriteLine($"Error al modificar grado: {ex.Message}");
@@ -116,7 +116,7 @@ namespace Backend.Data
                         id_armesp = @armEspId
                     WHERE id_persona = @idPersona";
 
-                using (var command = new MySqlCommand(query, connection))
+                using (var command = new NpgsqlCommand(query, connection))
                 {
                     // Asociamos los valores a los parámetros
                     command.Parameters.AddWithValue("@idPersona", idPersona);
@@ -142,16 +142,16 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hay error, lo mostramos y devolvemos falso
-                        Console.WriteLine($"=== Error de MySQL al modificar persona ===");
+                        Console.WriteLine($"=== Error de PostgreSQL al modificar persona ===");
                         Console.WriteLine($"Mensaje: {ex.Message}");
                         Console.WriteLine($"Código de error: {ex.Number}");
                         Console.WriteLine($"Origen: {ex.Source}");
                         Console.WriteLine($"Consulta SQL: {command.CommandText}");
                         Console.WriteLine("Parámetros:");
-                        foreach (MySqlParameter p in command.Parameters)
+                        foreach (PostgreSQLParameter p in command.Parameters)
                         {
                             Console.WriteLine($"  {p.ParameterName} = {p.Value} (Tipo: {p.DbType}, Tamaño: {p.Size})");
                         }
@@ -169,7 +169,7 @@ namespace Backend.Data
             using (var connection = AbrirConexion())
             {
                 // Creamos el comando SQL para eliminar un grado según su id
-                using (var command = new MySqlCommand("DELETE FROM persona WHERE id_persona = @idPersona", connection))
+                using (var command = new NpgsqlCommand("DELETE FROM persona WHERE id_persona = @idPersona", connection))
                 {
                     // Asociamos el parámetro con el valor recibido
                     command.Parameters.AddWithValue("@idPersona", idPersona);
@@ -180,7 +180,7 @@ namespace Backend.Data
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                    catch (MySqlException ex)
+                    catch (PostgresException ex)
                     {
                         // Si hay error, lo mostramos y devolvemos falso
                         Console.WriteLine($"Error al eliminar grado: {ex.Message}");
@@ -191,7 +191,7 @@ namespace Backend.Data
         }
         
         // Método para obtener la conexión a la base de datos
-        public MySqlConnection ObtenerConexion()
+        public PostgreSQLConnection ObtenerConexion()
         {
             var connection = AbrirConexion();
             // Aseguramos que la conexión esté abierta
@@ -209,7 +209,7 @@ namespace Backend.Data
             {
                 string query = "SELECT COUNT(*) FROM grado WHERE id_grado = @idGrado";
                 
-                using (var command = new MySqlCommand(query, connection))
+                using (var command = new NpgsqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@idGrado", idGrado);
                     int count = Convert.ToInt32(command.ExecuteScalar());
@@ -225,7 +225,7 @@ namespace Backend.Data
             {
                 string query = "SELECT COUNT(*) FROM armesp WHERE id_armesp = @idArmEsp";
                 
-                using (var command = new MySqlCommand(query, connection))
+                using (var command = new NpgsqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@idArmEsp", idArmEsp);
                     int count = Convert.ToInt32(command.ExecuteScalar());

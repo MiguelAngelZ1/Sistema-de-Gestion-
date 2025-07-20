@@ -1,5 +1,5 @@
-// Usamos una librería (conjunto de herramientas) que nos permite trabajar con bases de datos MySQL en C#
-using MySql.Data.MySqlClient;
+// Usamos una librería (conjunto de herramientas) que nos permite trabajar con bases de datos PostgreSQL en C#
+using Npgsql;
 using Microsoft.Extensions.Configuration;
 using System;
 
@@ -38,7 +38,7 @@ namespace Backend.Data
             }
         }
 
-        public MySqlConnection AbrirConexion()
+        public NpgsqlConnection AbrirConexion()
         {
             if (string.IsNullOrEmpty(_connectionString))
             {
@@ -47,10 +47,10 @@ namespace Backend.Data
 
             try
             {
-                Console.WriteLine("Intentando conectar a la base de datos...");
-                var connection = new MySqlConnection(_connectionString);
+                Console.WriteLine("Intentando conectar a la base de datos PostgreSQL...");
+                var connection = new NpgsqlConnection(_connectionString);
                 connection.Open();
-                Console.WriteLine("Conexión exitosa a la base de datos");
+                Console.WriteLine("Conexión exitosa a la base de datos PostgreSQL");
                 return connection;
             }
             catch (Exception ex)
