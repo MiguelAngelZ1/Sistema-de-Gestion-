@@ -52,9 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
 async function recargarEquipoActual(nne, nroSerie) {
   let url = "";
   if (nne) {
-    url = `http://localhost:5069/api/equipos/nne/${nne}`;
+    url = `${CONFIG.API_BASE_URL}/equipos/nne/${nne}`;
   } else if (nroSerie) {
-    url = `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+    url = `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
       nroSerie
     )}`;
   }
@@ -625,7 +625,7 @@ async function mostrarInventario(nne) {
 
   try {
     const resp = await fetch(
-      `http://localhost:5069/api/equipos/nne/${encodeURIComponent(
+      `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(
         nne
       )}/inventarioresumen`
     );
@@ -1148,7 +1148,7 @@ async function actualizarEquipoPorNroSerie(nroSerie, equipoData) {
     console.log("[actualizarEquipoPorNroSerie] nroSerie:", nroSerie);
     console.log("[actualizarEquipoPorNroSerie] equipoData:", equipoData);
     const response = await fetch(
-      `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+      `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
         nroSerie
       )}`,
       {
@@ -1179,7 +1179,7 @@ async function actualizarEquipo(nne, equipoData) {
     console.log("[actualizarEquipo] nne:", nne);
     console.log("[actualizarEquipo] equipoData:", equipoData);
     const response = await fetch(
-      `http://localhost:5069/api/equipos/nne/${encodeURIComponent(nne)}`,
+      `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(nne)}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -1365,7 +1365,7 @@ async function cargarEquipos() {
     // 1. Obtener todos los datos necesarios de la API
     const [equipos, unidades, estados] = await Promise.all([
       fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
-      fetch("http://localhost:5069/api/unidadesequipo").then((res) =>
+      fetch(CONFIG.API_BASE_URL + "/unidadesequipo").then((res) =>
         res.ok ? res.json() : Promise.reject(res)
       ),
       fetch(API_URL_ESTADOS).then((res) =>
@@ -1376,11 +1376,25 @@ async function cargarEquipos() {
     const noEquipos = document.getElementById("no-equipos");
     cuerpoTabla.innerHTML = "";
 
-    if (!unidades.length) {
-      noEquipos.style.display = "block";
+    // Si no hay unidades, mostrar mensaje de tabla vacía
+    if (!unidades || unidades.length === 0) {
+      if (noEquipos) {
+        noEquipos.style.display = "block";
+      } else {
+        // Si no existe el elemento no-equipos, crear mensaje en la tabla
+        cuerpoTabla.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              No hay equipos registrados
+            </td>
+          </tr>`;
+      }
       return;
     } else {
-      noEquipos.style.display = "none";
+      if (noEquipos) {
+        noEquipos.style.display = "none";
+      }
     }
 
     // Crear mapas para acceso rápido
@@ -1443,7 +1457,28 @@ async function cargarEquipos() {
     });
   } catch (error) {
     console.error("Error al cargar los equipos:", error);
-    mostrarAlerta("No se pudo cargar la lista de equipos.", "error");
+    
+    // Mostrar estado vacío en caso de error
+    const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
+    const noEquipos = document.getElementById("no-equipos");
+    
+    if (cuerpoTabla) {
+      if (noEquipos) {
+        noEquipos.style.display = "block";
+      } else {
+        // Mostrar mensaje de error en la tabla
+        cuerpoTabla.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">
+              <i class="bi bi-exclamation-triangle fs-1 d-block mb-2 text-warning"></i>
+              <p>Error al cargar los equipos</p>
+              <p class="small">Verifique la conexión al servidor</p>
+            </td>
+          </tr>`;
+      }
+    }
+    
+    mostrarAlerta("No se pudo cargar la lista de equipos. Verifique la conexión al servidor.", "error");
   }
 }
 
@@ -1454,11 +1489,11 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     let response, equipo;
     if (nne && nne !== "-") {
       // 1. Obtener datos del equipo por NNE
-      response = await fetch(`http://localhost:5069/api/equipos/nne/${nne}`);
+      response = await fetch(`${CONFIG.API_BASE_URL}/equipos/nne/${nne}`);
     } else if (nroSerie) {
       // 1b. Obtener datos del equipo por nroSerie
       response = await fetch(
-        `http://localhost:5069/api/equipos/nroSerie/${encodeURIComponent(
+        `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
           nroSerie
         )}`
       );
@@ -2005,7 +2040,7 @@ function restaurarEspecificacionesSoloLectura() {
 async function cargarTiposParaEdicion() {
   try {
     console.log("[cargarTiposParaEdicion] Cargando tipos de equipo...");
-    const response = await fetch("http://localhost:5069/api/tipoequipo");
+    const response = await fetch(`${CONFIG.API_BASE_URL}/tipoequipo`);
     if (response.ok) {
       const data = await response.json();
       const tipos = data.value || data; // Manejar tanto formato con 'value' como array directo
