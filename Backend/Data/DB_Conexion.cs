@@ -17,7 +17,16 @@ namespace Backend.Data
         {
             if (configuration != null)
             {
-                _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "server=localhost;database=db_app_cps;user=root;password=;";
+                // Priorizar variable de entorno DATABASE_URL (común en servicios de hosting)
+                var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+                if (!string.IsNullOrEmpty(databaseUrl))
+                {
+                    _connectionString = databaseUrl;
+                }
+                else
+                {
+                    _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "server=localhost;database=db_app_cps;user=root;password=;";
+                }
             }
             else
             {

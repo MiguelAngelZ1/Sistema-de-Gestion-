@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sistema-control-gestion-backend
+    env: docker
+    dockerfilePath: ./Backend/Dockerfile
+    dockerContext: ./Backend
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sistema-control-gestion-db
+          property: connectionString
+    healthCheckPath: /
+    
+databases:
+  - name: sistema-control-gestion-db
+    databaseName: db_app_cps
+    user: admin
+    ipAllowList: []
