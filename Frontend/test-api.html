@@ -1,203 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test de API</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        .success { background-color: #d4edda; border-color: #c3e6cb; }
-        .error { background-color: #f8d7da; border-color: #f5c6cb; }
-        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
-        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
-        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      .loading {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+      }
+      button {
+        margin: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+      }
+      pre {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🧪 Test de API - Sistema de Control</h1>
-    
+
     <div class="test-section">
-        <h2>Configuración Actual:</h2>
-        <p><strong>Backend URL:</strong> <span id="backendUrl"></span></p>
+      <h2>Configuración Actual:</h2>
+      <p><strong>Backend URL:</strong> <span id="backendUrl"></span></p>
     </div>
 
     <div class="test-section">
-        <h2>1. Test de Grado</h2>
-        <button onclick="testGrado()">🧪 Probar GET /api/Grado</button>
-        <button onclick="testGradoPost()">📝 Probar POST /api/Grado</button>
-        <div id="gradoResult"></div>
+      <h2>1. Test de Grado</h2>
+      <button onclick="testGrado()">🧪 Probar GET /api/Grado</button>
+      <button onclick="testGradoPost()">📝 Probar POST /api/Grado</button>
+      <div id="gradoResult"></div>
     </div>
 
     <div class="test-section">
-        <h2>2. Test de Personal</h2>
-        <button onclick="testPersonal()">🧪 Probar GET /api/Personal</button>
-        <div id="personalResult"></div>
+      <h2>2. Test de Personal</h2>
+      <button onclick="testPersonal()">🧪 Probar GET /api/Personal</button>
+      <div id="personalResult"></div>
     </div>
 
     <div class="test-section">
-        <h2>3. Test de ArmEsp</h2>
-        <button onclick="testArmEsp()">🧪 Probar GET /api/ArmEsp</button>
-        <div id="armEspResult"></div>
+      <h2>3. Test de ArmEsp</h2>
+      <button onclick="testArmEsp()">🧪 Probar GET /api/ArmEsp</button>
+      <div id="armEspResult"></div>
     </div>
 
     <div class="test-section">
-        <h2>4. Test de Equipos</h2>
-        <button onclick="testEquipos()">🧪 Probar GET /api/equipos</button>
-        <div id="equiposResult"></div>
+      <h2>4. Test de Equipos</h2>
+      <button onclick="testEquipos()">🧪 Probar GET /api/equipos</button>
+      <div id="equiposResult"></div>
     </div>
 
     <script src="./js/config.js"></script>
     <script>
-        // Mostrar configuración actual
-        document.getElementById('backendUrl').textContent = CONFIG.API_BASE_URL;
+      // Mostrar configuración actual
+      document.getElementById("backendUrl").textContent = CONFIG.API_BASE_URL;
 
-        async function showResult(elementId, status, data, error = null) {
-            const element = document.getElementById(elementId);
-            element.className = 'test-section ' + (status === 'success' ? 'success' : status === 'error' ? 'error' : 'loading');
-            
-            if (status === 'loading') {
-                element.innerHTML = '<p>⏳ Cargando...</p>';
-            } else if (status === 'success') {
-                element.innerHTML = `
+      async function showResult(elementId, status, data, error = null) {
+        const element = document.getElementById(elementId);
+        element.className =
+          "test-section " +
+          (status === "success"
+            ? "success"
+            : status === "error"
+            ? "error"
+            : "loading");
+
+        if (status === "loading") {
+          element.innerHTML = "<p>⏳ Cargando...</p>";
+        } else if (status === "success") {
+          element.innerHTML = `
                     <p>✅ <strong>Éxito!</strong></p>
                     <p>Status: 200 OK</p>
-                    <p>Registros encontrados: ${Array.isArray(data) ? data.length : (data ? 1 : 0)}</p>
+                    <p>Registros encontrados: ${
+                      Array.isArray(data) ? data.length : data ? 1 : 0
+                    }</p>
                     <details>
                         <summary>Ver datos</summary>
                         <pre>${JSON.stringify(data, null, 2)}</pre>
                     </details>
                 `;
-            } else {
-                element.innerHTML = `
+        } else {
+          element.innerHTML = `
                     <p>❌ <strong>Error!</strong></p>
-                    <p>${error || 'Error desconocido'}</p>
+                    <p>${error || "Error desconocido"}</p>
                     <details>
                         <summary>Ver detalles</summary>
                         <pre>${JSON.stringify(data, null, 2)}</pre>
                     </details>
                 `;
-            }
         }
+      }
 
-        async function testGrado() {
-            const url = CONFIG.API_BASE_URL + '/Grado';
-            console.log('Testing Grado endpoint:', url);
-            showResult('gradoResult', 'loading');
-            
-            try {
-                const response = await fetch(url);
-                console.log('Grado response status:', response.status);
-                console.log('Grado response headers:', [...response.headers.entries()]);
-                
-                const data = await response.json();
-                console.log('Grado response data:', data);
-                
-                if (response.ok) {
-                    showResult('gradoResult', 'success', data);
-                } else {
-                    showResult('gradoResult', 'error', data, `HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error('Grado fetch error:', error);
-                showResult('gradoResult', 'error', null, error.message);
-            }
+      async function testGrado() {
+        const url = CONFIG.API_BASE_URL + "/Grado";
+        console.log("Testing Grado endpoint:", url);
+        showResult("gradoResult", "loading");
+
+        try {
+          const response = await fetch(url);
+          console.log("Grado response status:", response.status);
+          console.log("Grado response headers:", [
+            ...response.headers.entries(),
+          ]);
+
+          const data = await response.json();
+          console.log("Grado response data:", data);
+
+          if (response.ok) {
+            showResult("gradoResult", "success", data);
+          } else {
+            showResult(
+              "gradoResult",
+              "error",
+              data,
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+        } catch (error) {
+          console.error("Grado fetch error:", error);
+          showResult("gradoResult", "error", null, error.message);
         }
+      }
 
-        async function testGradoPost() {
-            const url = CONFIG.API_BASE_URL + '/Grado';
-            showResult('gradoResult', 'loading');
-            
-            const testGrado = {
-                Descripcion: "TEST",      // Abreviatura (confuso pero es así en el modelo)
-                GradoCompleto: "Grado de Test"  // Descripción completa
-            };
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(testGrado)
-                });
-                
-                const data = await response.text();
-                
-                if (response.ok) {
-                    showResult('gradoResult', 'success', {message: data});
-                } else {
-                    showResult('gradoResult', 'error', {message: data}, `HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (error) {
-                showResult('gradoResult', 'error', null, error.message);
-            }
+      async function testGradoPost() {
+        const url = CONFIG.API_BASE_URL + "/Grado";
+        showResult("gradoResult", "loading");
+
+        const testGrado = {
+          Descripcion: "TEST", // Abreviatura (confuso pero es así en el modelo)
+          GradoCompleto: "Grado de Test", // Descripción completa
+        };
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(testGrado),
+          });
+
+          const data = await response.text();
+
+          if (response.ok) {
+            showResult("gradoResult", "success", { message: data });
+          } else {
+            showResult(
+              "gradoResult",
+              "error",
+              { message: data },
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+        } catch (error) {
+          showResult("gradoResult", "error", null, error.message);
         }
+      }
 
-        async function testPersonal() {
-            const url = CONFIG.API_BASE_URL + '/Personal';
-            showResult('personalResult', 'loading');
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult('personalResult', 'success', data);
-                } else {
-                    showResult('personalResult', 'error', data, `HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (error) {
-                showResult('personalResult', 'error', null, error.message);
-            }
+      async function testPersonal() {
+        const url = CONFIG.API_BASE_URL + "/Personal";
+        showResult("personalResult", "loading");
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult("personalResult", "success", data);
+          } else {
+            showResult(
+              "personalResult",
+              "error",
+              data,
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+        } catch (error) {
+          showResult("personalResult", "error", null, error.message);
         }
+      }
 
-        async function testArmEsp() {
-            const url = CONFIG.API_BASE_URL + '/ArmEsp';
-            showResult('armEspResult', 'loading');
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult('armEspResult', 'success', data);
-                } else {
-                    showResult('armEspResult', 'error', data, `HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (error) {
-                showResult('armEspResult', 'error', null, error.message);
-            }
+      async function testArmEsp() {
+        const url = CONFIG.API_BASE_URL + "/ArmEsp";
+        showResult("armEspResult", "loading");
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult("armEspResult", "success", data);
+          } else {
+            showResult(
+              "armEspResult",
+              "error",
+              data,
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+        } catch (error) {
+          showResult("armEspResult", "error", null, error.message);
         }
+      }
 
-        async function testEquipos() {
-            const url = CONFIG.API_BASE_URL + '/equipos';
-            showResult('equiposResult', 'loading');
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult('equiposResult', 'success', data);
-                } else {
-                    showResult('equiposResult', 'error', data, `HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (error) {
-                showResult('equiposResult', 'error', null, error.message);
-            }
+      async function testEquipos() {
+        const url = CONFIG.API_BASE_URL + "/equipos";
+        showResult("equiposResult", "loading");
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult("equiposResult", "success", data);
+          } else {
+            showResult(
+              "equiposResult",
+              "error",
+              data,
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+        } catch (error) {
+          showResult("equiposResult", "error", null, error.message);
         }
+      }
 
-        // Ejecutar tests automáticamente al cargar la página
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                console.log('Backend URL:', CONFIG.API_BASE_URL);
-                testGrado();
-            }, 500);
-            setTimeout(testArmEsp, 1000);
-            setTimeout(testPersonal, 1500);  
-            setTimeout(testEquipos, 2000);
-        });
+      // Ejecutar tests automáticamente al cargar la página
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          console.log("Backend URL:", CONFIG.API_BASE_URL);
+          testGrado();
+        }, 500);
+        setTimeout(testArmEsp, 1000);
+        setTimeout(testPersonal, 1500);
+        setTimeout(testEquipos, 2000);
+      });
     </script>
-</body>
+  </body>
 </html>

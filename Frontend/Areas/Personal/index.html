@@ -1,335 +1,481 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Personal - Sistema de Control</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../styles.css" />
     <!-- Estilos personalizados para el módulo de Personal -->
-    <link rel="stylesheet" href="../../css/Personal.css">
-</head>
-<body class="d-flex flex-column min-vh-100">
+    <link rel="stylesheet" href="../../css/Personal.css" />
+  </head>
+  <body class="d-flex flex-column min-vh-100">
     <!-- Contenedor principal -->
     <div id="app" class="d-flex flex-column flex-grow-1">
-    <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <!-- Barra de navegación -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../Home/index.html">
-                            <i class="bi bi-house-door me-1"></i>Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../Grado/index.html">
-                            <i class="bi bi-people me-1"></i>Grados
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="../Personal/index.html">
-                            <i class="bi bi-person-lines-fill me-1"></i>Personal
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../ArmEsp/index.html">
-                            <i class="bi bi-shield-check me-1"></i>Armas y Especialidades
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../Equipos/index.html">
-                            <i class="bi bi-laptop me-1"></i>Equipos
-                        </a>
-                    </li>
-                </ul>
-            </div>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="../Home/index.html">
+                  <i class="bi bi-house-door me-1"></i>Inicio
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../Grado/index.html">
+                  <i class="bi bi-people me-1"></i>Grados
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="../Personal/index.html">
+                  <i class="bi bi-person-lines-fill me-1"></i>Personal
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../ArmEsp/index.html">
+                  <i class="bi bi-shield-check me-1"></i>Armas y Especialidades
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../Equipos/index.html">
+                  <i class="bi bi-laptop me-1"></i>Equipos
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-    </nav>
+      </nav>
 
-    <!-- Contenido principal -->
-    <main class="main-content">
+      <!-- Contenido principal -->
+      <main class="main-content">
         <div class="container py-4">
-            <div class="row">
-                <div class="col-12">
-                    <!-- Header de la sección -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h1 class="h4 fw-semibold mb-0">
-                                <i class="bi bi-chevron-double-right text-primary me-2"></i>Personal
-                            </h1>
-                        </div>
-                        <button type="button" class="btn-agregar" data-bs-toggle="modal" data-bs-target="#agregarPersonaModal">
-                            <i class="bi bi-plus-lg me-2"></i>
-                            <span>Agregar Personal</span>
-                        </button>
-                    </div>
-
-                    <!-- Tabla de personal -->
-                    <div class="table-responsive">
-                        <table class="table" id="tablaPersonal">
-                            <thead>
-                                <tr>
-                                    <th>Grado</th>
-                                    <th>Apellido</th>
-                                    <th>Nombre</th>
-                                    <th>Arma/Especialidad</th>
-                                    <th class="text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="personal-table">
-                                <!-- Se cargan los datos de forma dinámica -->
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="mt-2 mb-0 text-muted">Cargando personal...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Estado vacío (oculto por defecto) -->
-                    <div id="empty-state" class="d-none">
-                        <div class="text-center py-5">
-                            <i class="bi bi-people display-4 text-muted mb-3"></i>
-                            <h5 class="text-muted">No hay personal registrado</h5>
-                            <p class="text-muted mb-0">Comienza agregando un nuevo miembro del personal</p>
-                        </div>
-                    </div>
+          <div class="row">
+            <div class="col-12">
+              <!-- Header de la sección -->
+              <div class="mb-4">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h1 class="h4 fw-semibold mb-0">
+                    <i class="bi bi-chevron-double-right text-primary me-2"></i
+                    >Personal
+                  </h1>
                 </div>
-            </div>
-        </div>
-    </main>
+                <button
+                  type="button"
+                  class="btn-agregar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#agregarPersonaModal"
+                >
+                  <i class="bi bi-plus-lg me-2"></i>
+                  <span>Agregar Personal</span>
+                </button>
+              </div>
 
-    <!-- Pie de página -->
-    <footer class="footer">
+              <!-- Tabla de personal -->
+              <div class="table-responsive">
+                <table class="table" id="tablaPersonal">
+                  <thead>
+                    <tr>
+                      <th>Grado</th>
+                      <th>Apellido</th>
+                      <th>Nombre</th>
+                      <th>Arma/Especialidad</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="personal-table">
+                    <!-- Se cargan los datos de forma dinámica -->
+                    <tr>
+                      <td colspan="5" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2 mb-0 text-muted">Cargando personal...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Estado vacío (oculto por defecto) -->
+              <div id="empty-state" class="d-none">
+                <div class="text-center py-5">
+                  <i class="bi bi-people display-4 text-muted mb-3"></i>
+                  <h5 class="text-muted">No hay personal registrado</h5>
+                  <p class="text-muted mb-0">
+                    Comienza agregando un nuevo miembro del personal
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Pie de página -->
+      <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p class="mb-0">&copy; 2025 Sistema de Control. Todos los derechos reservados.</p>
-                </div>
+          <div class="row">
+            <div class="col-12 text-center">
+              <p class="mb-0">
+                &copy; 2025 Sistema de Control. Todos los derechos reservados.
+              </p>
             </div>
+          </div>
         </div>
-    </footer>
-
-    </div> <!-- Cierre del div#app -->
+      </footer>
+    </div>
+    <!-- Cierre del div#app -->
 
     <!-- Modal para agregar nueva persona -->
-    <div class="modal fade" id="agregarPersonaModal" tabindex="-1" aria-labelledby="agregarPersonaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="agregarPersonaModalLabel">
-                        <i class="bi bi-person-plus me-2"></i>Agregar Nueva Persona
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <div
+      class="modal fade"
+      id="agregarPersonaModal"
+      tabindex="-1"
+      aria-labelledby="agregarPersonaModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="agregarPersonaModalLabel">
+              <i class="bi bi-person-plus me-2"></i>Agregar Nueva Persona
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <form id="formNuevaPersona">
+            <div class="modal-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="nuevoGrado" class="form-label">Grado</label>
+                  <select
+                    class="form-select"
+                    id="nuevoGrado"
+                    name="gradoId"
+                    required
+                  >
+                    <option value="">Seleccione un grado</option>
+                  </select>
                 </div>
-                <form id="formNuevaPersona">
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="nuevoGrado" class="form-label">Grado</label>
-                                <select class="form-select" id="nuevoGrado" name="gradoId" required>
-                                    <option value="">Seleccione un grado</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="nuevoArmEsp" class="form-label">Arma/Especialidad</label>
-                                <select class="form-select" id="nuevoArmEsp" name="armEspId" required>
-                                    <option value="">Seleccione un arma/especialidad</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="nuevoNombre" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="nuevoNombre" name="nombre" required 
-                                       pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+" 
-                                       oninput="this.value = this.value.toLowerCase().replace(/^\w|\s\w/g, c => c.toUpperCase())" 
-                                       title="Solo se permiten letras y espacios">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="nuevoApellido" class="form-label">Apellido</label>
-                                <input type="text" class="form-control" id="nuevoApellido" name="apellido" required 
-                                       pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+" 
-                                       oninput="this.value = this.value.toUpperCase()" 
-                                       title="Solo se permiten letras y espacios">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="nuevoDni" class="form-label">DNI</label>
-                                <input type="text" class="form-control" id="nuevoDni" name="dni" 
-                                       pattern="\d{7,8}" title="Ingrese un DNI válido (7 u 8 dígitos)" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle me-1"></i> Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i> Guardar
-                        </button>
-                    </div>
-                </form>
+                <div class="col-md-6">
+                  <label for="nuevoArmEsp" class="form-label"
+                    >Arma/Especialidad</label
+                  >
+                  <select
+                    class="form-select"
+                    id="nuevoArmEsp"
+                    name="armEspId"
+                    required
+                  >
+                    <option value="">Seleccione un arma/especialidad</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="nuevoNombre" class="form-label">Nombre</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nuevoNombre"
+                    name="nombre"
+                    required
+                    pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
+                    oninput="this.value = this.value.toLowerCase().replace(/^\w|\s\w/g, c => c.toUpperCase())"
+                    title="Solo se permiten letras y espacios"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="nuevoApellido" class="form-label">Apellido</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nuevoApellido"
+                    name="apellido"
+                    required
+                    pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
+                    oninput="this.value = this.value.toUpperCase()"
+                    title="Solo se permiten letras y espacios"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="nuevoDni" class="form-label">DNI</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nuevoDni"
+                    name="dni"
+                    pattern="\d{7,8}"
+                    title="Ingrese un DNI válido (7 u 8 dígitos)"
+                    required
+                  />
+                </div>
+              </div>
             </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i> Guardar
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 
     <!-- Modal Detalles/Edición del Personal -->
-    <div class="modal fade" id="personalModal" data-bs-backdrop="true" data-bs-keyboard="true" tabindex="-1" aria-labelledby="personalModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="personalModalLabel">
-                        <i class="bi bi-person-badge me-2"></i>
-                        <span id="modalTitulo">Detalles del Personal</span>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <div
+      class="modal fade"
+      id="personalModal"
+      data-bs-backdrop="true"
+      data-bs-keyboard="true"
+      tabindex="-1"
+      aria-labelledby="personalModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="personalModalLabel">
+              <i class="bi bi-person-badge me-2"></i>
+              <span id="modalTitulo">Detalles del Personal</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <form id="formPersonal" class="needs-validation" novalidate>
+            <input type="hidden" id="personaId" name="id" />
+            <div class="modal-body">
+              <!-- Sección de Detalles (solo lectura) -->
+              <div id="seccionDetalles">
+                <div class="row g-4">
+                  <!-- Información Personal -->
+                  <div class="col-md-12">
+                    <div class="card mb-3">
+                      <div class="card-header bg-light">
+                        <h6 class="mb-0">Información Personal</h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre</label>
+                            <p
+                              id="detalleNombre"
+                              class="form-control-plaintext"
+                            >
+                              -
+                            </p>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-bold">Apellido</label>
+                            <p
+                              id="detalleApellido"
+                              class="form-control-plaintext"
+                            >
+                              -
+                            </p>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-bold">DNI</label>
+                            <p id="detalleDni" class="form-control-plaintext">
+                              -
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Datos Militares -->
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header bg-light">
+                        <h6 class="mb-0">Datos Militares</h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="form-label fw-bold">Grado</label>
+                            <p id="detalleGrado" class="form-control-plaintext">
+                              -
+                            </p>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-bold"
+                              >Arma/Especialidad</label
+                            >
+                            <p
+                              id="detalleArmEsp"
+                              class="form-control-plaintext"
+                            >
+                              -
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <form id="formPersonal" class="needs-validation" novalidate>
-                    <input type="hidden" id="personaId" name="id">
-                    <div class="modal-body">
-                        <!-- Sección de Detalles (solo lectura) -->
-                        <div id="seccionDetalles">
-                            <div class="row g-4">
-                                <!-- Información Personal -->
-                                <div class="col-md-12">
-                                    <div class="card mb-3">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0">Información Personal</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-bold">Nombre</label>
-                                                    <p id="detalleNombre" class="form-control-plaintext">-</p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-bold">Apellido</label>
-                                                    <p id="detalleApellido" class="form-control-plaintext">-</p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-bold">DNI</label>
-                                                    <p id="detalleDni" class="form-control-plaintext">-</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+              </div>
 
-                                <!-- Datos Militares -->
-                                <div class="col-md-12">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0">Datos Militares</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-bold">Grado</label>
-                                                    <p id="detalleGrado" class="form-control-plaintext">-</p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-bold">Arma/Especialidad</label>
-                                                    <p id="detalleArmEsp" class="form-control-plaintext">-</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+              <!-- Sección de Formulario (para edición) -->
+              <div id="seccionFormulario" style="display: none">
+                <div class="row g-4">
+                  <!-- Sección de Identificación -->
+                  <div class="col-md-12">
+                    <div class="card mb-3">
+                      <div class="card-header bg-light">
+                        <h6 class="mb-0">Información Personal</h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label for="nombre" class="form-label"
+                              >Nombre</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="nombre"
+                              name="nombre"
+                              required
+                              pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
+                              oninput="this.value = this.value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())"
+                              title="Solo se permiten letras y espacios"
+                            />
+                            <div class="invalid-feedback">
+                              Por favor ingrese el nombre.
                             </div>
-                        </div>
-
-                        <!-- Sección de Formulario (para edición) -->
-                        <div id="seccionFormulario" style="display: none;">
-                            <div class="row g-4">
-                                <!-- Sección de Identificación -->
-                                <div class="col-md-12">
-                                    <div class="card mb-3">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0">Información Personal</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label for="nombre" class="form-label">Nombre</label>
-                                                    <input type="text" class="form-control" id="nombre" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+" oninput="this.value = this.value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())" title="Solo se permiten letras y espacios">
-                                                    <div class="invalid-feedback">
-                                                        Por favor ingrese el nombre.
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="apellido" class="form-label">Apellido</label>
-                                                    <input type="text" class="form-control" id="apellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+" oninput="this.value = this.value.toUpperCase()" title="Solo se permiten letras y espacios">
-                                                    <div class="invalid-feedback">
-                                                        Por favor ingrese el apellido.
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="dni" class="form-label">DNI</label>
-                                                    <input type="text" class="form-control" id="dni" name="dni" required>
-                                                    <div class="invalid-feedback">
-                                                        Por favor ingrese el DNI.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Sección de Datos Militares -->
-                                <div class="col-md-12">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0">Datos Militares</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label for="grado" class="form-label">Grado</label>
-                                                    <select class="form-select" id="grado" name="gradoId" required>
-                                                        <option value="">Seleccionar Grado</option>
-                                                        <!-- Se cargarán dinámicamente -->
-                                                    </select>
-                                                    <div class="invalid-feedback">
-                                                        Por favor seleccione un grado.
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="armesp" class="form-label">Arma/Especialidad</label>
-                                                    <select class="form-select" id="armesp" name="armEspId" required>
-                                                        <option value="">Seleccionar Arma/Especialidad</option>
-                                                        <!-- Se cargarán dinámicamente -->
-                                                    </select>
-                                                    <div class="invalid-feedback">
-                                                        Por favor seleccione un arma/especialidad.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="apellido" class="form-label"
+                              >Apellido</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="apellido"
+                              name="apellido"
+                              required
+                              pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
+                              oninput="this.value = this.value.toUpperCase()"
+                              title="Solo se permiten letras y espacios"
+                            />
+                            <div class="invalid-feedback">
+                              Por favor ingrese el apellido.
                             </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="dni" class="form-label">DNI</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="dni"
+                              name="dni"
+                              required
+                            />
+                            <div class="invalid-feedback">
+                              Por favor ingrese el DNI.
+                            </div>
+                          </div>
                         </div>
+                      </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary me-2" id="btnCancelarEdicion">
-                            <i class="bi bi-x-circle me-1"></i> Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btnGuardar">
-                            <i class="bi bi-save me-1"></i> Guardar Cambios
-                        </button>
+                  </div>
+
+                  <!-- Sección de Datos Militares -->
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header bg-light">
+                        <h6 class="mb-0">Datos Militares</h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label for="grado" class="form-label">Grado</label>
+                            <select
+                              class="form-select"
+                              id="grado"
+                              name="gradoId"
+                              required
+                            >
+                              <option value="">Seleccionar Grado</option>
+                              <!-- Se cargarán dinámicamente -->
+                            </select>
+                            <div class="invalid-feedback">
+                              Por favor seleccione un grado.
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="armesp" class="form-label"
+                              >Arma/Especialidad</label
+                            >
+                            <select
+                              class="form-select"
+                              id="armesp"
+                              name="armEspId"
+                              required
+                            >
+                              <option value="">
+                                Seleccionar Arma/Especialidad
+                              </option>
+                              <!-- Se cargarán dinámicamente -->
+                            </select>
+                            <div class="invalid-feedback">
+                              Por favor seleccione un arma/especialidad.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                </form>
+                  </div>
+                </div>
+              </div>
             </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary me-2"
+                id="btnCancelarEdicion"
+              >
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" id="btnGuardar">
+                <i class="bi bi-save me-1"></i> Guardar Cambios
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 
     <!-- Scripts de Bootstrap y personalizados -->
@@ -338,5 +484,5 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../../js/Personal.js"></script>
-</body>
+  </body>
 </html>

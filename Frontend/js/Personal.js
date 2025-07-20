@@ -300,7 +300,8 @@ function configurarModalAgregarPersona() {
         const btnGuardar = form.querySelector('button[type="submit"]');
         const textoOriginal = btnGuardar.innerHTML;
         btnGuardar.disabled = true;
-        btnGuardar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
+        btnGuardar.innerHTML =
+          '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
 
         // Llamar a la API para guardar
         const response = await fetch(apiUrl, {
@@ -319,7 +320,8 @@ function configurarModalAgregarPersona() {
           } catch (parseError) {
             // Si no se puede parsear la respuesta JSON, usar el texto de respuesta
             const errorText = await response.text();
-            errorMessage = errorText || `Error ${response.status}: ${response.statusText}`;
+            errorMessage =
+              errorText || `Error ${response.status}: ${response.statusText}`;
           }
           throw new Error(errorMessage);
         }
@@ -347,7 +349,7 @@ function configurarModalAgregarPersona() {
           "Error",
           error.message || "No se pudo guardar el personal"
         );
-        
+
         // Restaurar el botón en caso de error
         const btnGuardar = form.querySelector('button[type="submit"]');
         if (btnGuardar) {
