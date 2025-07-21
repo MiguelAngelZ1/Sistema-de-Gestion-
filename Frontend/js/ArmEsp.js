@@ -202,6 +202,11 @@ class ArmEspUI {
         document.getElementById("agregarArmEspModal")
       );
 
+      // Agregar event listener para limpiar backdrop cuando el modal se cierre
+      document.getElementById("agregarArmEspModal").addEventListener('hidden.bs.modal', function () {
+        ArmEspUI.limpiarFondoModal();
+      });
+
       // Configurar eventos
       this.configurarEventos();
 
@@ -676,18 +681,10 @@ class ArmEspUI {
             newModal.hide();
           }
 
-          // Eliminar manualmente el backdrop (fondo oscuro)
-          const backdrops = document.getElementsByClassName("modal-backdrop");
-          for (let backdrop of backdrops) {
-            backdrop.remove();
-          }
-
-          // Restaurar el scroll del body
-          document.body.style.overflow = "auto";
-          document.body.style.paddingRight = "0";
-
-          // Eliminar la clase 'modal-open' del body
-          document.body.classList.remove("modal-open");
+          // Esperar un poco antes de limpiar el backdrop para asegurar la transición
+          setTimeout(() => {
+            this.limpiarFondoModal();
+          }, 300);
         }
 
         // Resetear el formulario
@@ -806,18 +803,21 @@ class ArmEspUI {
 
   // Función para limpiar el fondo oscuro del modal
   static limpiarFondoModal() {
-    // Eliminar manualmente el backdrop (fondo oscuro)
-    const backdrops = document.getElementsByClassName("modal-backdrop");
-    while (backdrops.length > 0) {
-      backdrops[0].parentNode.removeChild(backdrops[0]);
-    }
+    setTimeout(() => {
+      // Eliminar manualmente el backdrop (fondo oscuro)
+      const backdrops = document.querySelectorAll(".modal-backdrop");
+      backdrops.forEach(backdrop => backdrop.remove());
 
-    // Restaurar el scroll del body
-    document.body.style.overflow = "auto";
-    document.body.style.paddingRight = "0";
+      // Restaurar el scroll del body
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
 
-    // Eliminar la clase 'modal-open' del body
-    document.body.classList.remove("modal-open");
+      // Eliminar la clase 'modal-open' del body
+      document.body.classList.remove("modal-open");
+      
+      // Limpiar cualquier estilo inline que pueda quedar
+      document.body.removeAttribute('style');
+    }, 100);
   }
 }
 
