@@ -3136,7 +3136,7 @@ function exportarDetalleCSV() {
  */
 function imprimirTablaEquipos() {
   try {
-    if (!globalEquipos || globalEquipos.length === 0) {
+    if (!window.equipos || window.equipos.length === 0) {
       Swal.fire({
         title: "No hay datos",
         text: "No hay equipos para imprimir. Cargue los datos primero.",
@@ -3145,11 +3145,16 @@ function imprimirTablaEquipos() {
       return;
     }
 
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open('', '_blank', 'width=1200,height=800');
+    // Crear ventana de impresión con parámetros más específicos
+    const ventanaImpresion = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
     
     if (!ventanaImpresion) {
-      throw new Error('No se pudo abrir la ventana de impresión');
+      Swal.fire({
+        title: "Error de Impresión",
+        text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
+        icon: "error"
+      });
+      return;
     }
 
     const fechaActual = new Date().toLocaleDateString('es-ES');
@@ -3383,7 +3388,7 @@ function imprimirTablaEquipos() {
             <div class="info">
               <span>📅 Fecha: ${fechaActual}</span>
               <span>🕐 Hora: ${horaActual}</span>
-              <span>📊 Total: ${globalEquipos.length} equipos</span>
+              <span>📊 Total: ${window.equipos.length} equipos</span>
             </div>
           </div>
           
@@ -3403,7 +3408,7 @@ function imprimirTablaEquipos() {
                 </tr>
               </thead>
               <tbody>
-                ${globalEquipos.map((equipo, index) => {
+                ${window.equipos.map((equipo, index) => {
                   const claseEstado = equipo.estadoEquipo ? 
                     `estado-${equipo.estadoEquipo.toLowerCase().replace(/\s+/g, '-')}` : '';
                   
@@ -3431,31 +3436,31 @@ function imprimirTablaEquipos() {
         </div>
         
         <script>
-          // Auto-imprimir cuando la página esté lista
+          // Configurar impresión automática más suave
           window.onload = function() {
-            // Pequeña pausa para asegurar que todo se haya renderizado
-            setTimeout(() => {
-              window.print();
-              
-              // Cerrar ventana después de imprimir (opcional)
+            // Mostrar alerta antes de imprimir
+            const userWantsToPrint = confirm("¿Está listo para imprimir? El documento se adaptará automáticamente al tamaño de papel de su impresora.");
+            
+            if (userWantsToPrint) {
+              // Pequeña pausa para asegurar que todo se haya renderizado
               setTimeout(() => {
-                window.close();
-              }, 1000);
-            }, 500);
+                window.print();
+              }, 500);
+            }
           }
           
           // Manejar el evento de después de imprimir
           window.onafterprint = function() {
-            window.close();
+            const shouldClose = confirm("Impresión completada. ¿Desea cerrar esta ventana?");
+            if (shouldClose) {
+              window.close();
+            }
           }
           
-          // Detectar el tamaño del papel y ajustar dinámicamente
-          window.addEventListener('beforeprint', function() {
-            const mediaQuery = window.matchMedia('print');
-            if (mediaQuery.matches) {
-              console.log('Preparando para imprimir...');
-            }
-          });
+          // Detectar cancelación de impresión
+          window.onbeforeunload = function() {
+            return "¿Está seguro que desea salir sin imprimir?";
+          }
         </script>
       </body>
       </html>
@@ -3463,12 +3468,13 @@ function imprimirTablaEquipos() {
 
     ventanaImpresion.document.close();
 
-    // Mostrar confirmación
+    // Mostrar confirmación de éxito
     Swal.fire({
-      title: "🖨️ Preparando impresión",
-      text: "Se ha abierto la ventana de impresión. El diseño se adaptará automáticamente a su tamaño de papel.",
-      icon: "info",
-      timer: 3000,
+      title: "✅ Ventana de impresión abierta",
+      text: "La ventana de impresión se ha abierto correctamente. El documento se adaptará automáticamente a su papel.",
+      icon: "success",
+      timer: 2500,
+      showConfirmButton: false
     });
 
   } catch (error) {
@@ -3486,32 +3492,61 @@ function imprimirTablaEquipos() {
  */
 function imprimirDetalleEquipo() {
   try {
+    // Función auxiliar para obtener texto de elementos, considerando modo edición
+    function obtenerTextoElemento(id, fallback = "N/A") {
+      const elemento = document.getElementById(id);
+      if (!elemento) return fallback;
+      
+      // Si el elemento tiene textContent visible, usar eso
+      if (elemento.textContent && elemento.textContent.trim()) {
+        const texto = elemento.textContent.trim();
+        return texto === "---" || texto === "-" ? fallback : texto;
+      }
+      
+      return fallback;
+    }
+
     // Obtener los datos actuales mostrados en el modal
     const detalle = {
-      ine: document.getElementById('detalle-ine').textContent || "N/A",
-      nne: document.getElementById('detalle-nne').textContent || "N/A",
-      numeroSerie: document.getElementById('detalle-nro-serie').textContent || "N/A",
-      marca: document.getElementById('detalle-marca').textContent || "N/A",
-      modelo: document.getElementById('detalle-modelo').textContent || "N/A",
-      tipoEquipo: document.getElementById('detalle-tipo').textContent || "N/A",
-      estadoEquipo: document.getElementById('detalle-estado').textContent || "N/A",
-      responsable: document.getElementById('detalle-responsable').textContent || "Sin asignar",
-      ubicacion: document.getElementById('detalle-ubicacion').textContent || "N/A",
-      observaciones: document.getElementById('detalle-observaciones').textContent || "Sin observaciones"
+      ine: obtenerTextoElemento('detalle-ine'),
+      nne: obtenerTextoElemento('detalle-nne'),
+      numeroSerie: obtenerTextoElemento('detalle-nro-serie'),
+      marca: obtenerTextoElemento('detalle-marca'),
+      modelo: obtenerTextoElemento('detalle-modelo'),
+      tipoEquipo: obtenerTextoElemento('detalle-tipo'),
+      estadoEquipo: obtenerTextoElemento('detalle-estado'),
+      responsable: obtenerTextoElemento('detalle-responsable', 'Sin asignar'),
+      ubicacion: obtenerTextoElemento('detalle-ubicacion'),
+      observaciones: obtenerTextoElemento('detalle-observaciones', 'Sin observaciones')
     };
 
     // Obtener especificaciones técnicas si existen
     let especificaciones = [];
     const especificacionesContainer = document.getElementById('detalle-especificaciones');
     if (especificacionesContainer) {
-      const badges = especificacionesContainer.querySelectorAll('.badge');
-      badges.forEach(badge => {
-        especificaciones.push(badge.textContent.trim());
+      // Buscar elementos li dentro del contenedor
+      const liElements = especificacionesContainer.querySelectorAll('li');
+      liElements.forEach(li => {
+        const text = li.textContent.trim();
+        // Extraer texto omitiendo el punto inicial si existe
+        const cleanText = text.replace(/^•\s*/, '').trim();
+        if (cleanText && cleanText !== "No hay especificaciones técnicas para este modelo.") {
+          especificaciones.push(cleanText);
+        }
       });
     }
 
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open('', '_blank', 'width=800,height=1000');
+    // Crear ventana de impresión con parámetros optimizados
+    const ventanaImpresion = window.open('', '_blank', 'width=800,height=1000,scrollbars=yes,resizable=yes');
+    
+    if (!ventanaImpresion) {
+      Swal.fire({
+        title: "Error de Impresión",
+        text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
+        icon: "error"
+      });
+      return;
+    }
     const fechaActual = new Date().toLocaleDateString('es-ES');
     const horaActual = new Date().toLocaleTimeString('es-ES');
     
@@ -3879,23 +3914,30 @@ function imprimirDetalleEquipo() {
           </div>
           
           <script>
-              // Auto-imprimir cuando la página esté lista
+              // Configurar impresión automática más amigable
               window.onload = function() {
-                  setTimeout(() => {
-                      window.print();
-                      setTimeout(() => window.close(), 1000);
-                  }, 500);
+                  // Confirmar antes de imprimir
+                  const userWantsToPrint = confirm("¿Desea imprimir el detalle de este equipo? El documento se adaptará automáticamente al tamaño de papel.");
+                  
+                  if (userWantsToPrint) {
+                      setTimeout(() => {
+                          window.print();
+                      }, 500);
+                  }
               }
               
               // Manejar el evento de después de imprimir
               window.onafterprint = function() {
-                  window.close();
+                  const shouldClose = confirm("Impresión completada. ¿Desea cerrar esta ventana?");
+                  if (shouldClose) {
+                      window.close();
+                  }
               }
               
-              // Detectar configuración de papel
-              window.addEventListener('beforeprint', function() {
-                  console.log('Adaptando layout para impresión...');
-              });
+              // Detectar cancelación
+              window.onbeforeunload = function() {
+                  return "¿Está seguro que desea salir sin imprimir?";
+              }
           </script>
       </body>
       </html>
@@ -3903,12 +3945,13 @@ function imprimirDetalleEquipo() {
     
     ventanaImpresion.document.close();
 
-    // Mostrar confirmación
+    // Mostrar confirmación de éxito
     Swal.fire({
-      title: "🖨️ Preparando impresión del detalle",
-      text: "Se ha abierto la ventana de impresión con el detalle completo del equipo.",
-      icon: "info",
-      timer: 3000,
+      title: "✅ Detalle listo para imprimir",
+      text: "La ventana con el detalle completo del equipo se ha abierto correctamente.",
+      icon: "success",
+      timer: 2500,
+      showConfirmButton: false
     });
 
   } catch (error) {
