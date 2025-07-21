@@ -107,6 +107,11 @@ const btnAbrirModalCrearModelo = document.getElementById(
 if (btnAbrirModalCrearModelo)
   btnAbrirModalCrearModelo.addEventListener("click", abrirModalCrearModelo);
 
+// Botón de exportar equipos
+const btnExportarEquipos = document.getElementById("btnExportarEquipos");
+if (btnExportarEquipos)
+  btnExportarEquipos.addEventListener("click", exportarEquipos);
+
 const formCrearModelo = document.getElementById("formCrearModelo");
 if (formCrearModelo) formCrearModelo.addEventListener("submit", guardarModelo);
 
@@ -2519,6 +2524,154 @@ document.addEventListener("DOMContentLoaded", function () {
       "[DOMContentLoaded] No se encontró el botón btn-agregar-especificacion-detalle"
     );
   }
-
-  console.log("[DOMContentLoaded] Inicialización completada");
 });
+
+//-----------------------------------------------------------------------------------------------------
+// FUNCIONALIDAD DE EXPORTACIÓN
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Exporta los equipos a un archivo Excel
+ */
+async function exportarEquipos() {
+  try {
+    // Mostrar indicador de carga
+    Swal.fire({
+      title: 'Exportando equipos...',
+      text: 'Por favor espere mientras se genera el archivo',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Obtener todos los equipos
+    const response = await fetch(`${API_URL}/agrupadosConDetalles`);
+    if (!response.ok) {
+      throw new Error('Error al obtener los equipos');
+    }
+    
+    const equipos = await response.json();
+    
+    if (!equipos || equipos.length === 0) {
+      Swal.fire({
+        title: 'Sin datos',
+        text: 'No hay equipos para exportar',
+        icon: 'warning'
+      });
+      return;
+    }
+
+    // Preparar datos para exportar
+    const datosParaExportar = [];
+    
+    equipos.forEach(equipo => {
+      if (equipo.unidades && equipo.unidades.length > 0) {
+        equipo.unidades.forEach(unidad => {
+          datosParaExportar.push({
+            'Tipo de Equipo': equipo.tipoEquipo || 'N/A',
+            'Modelo': equipo.modelo || 'N/A',
+            'Marca': equipo.marca || 'N/A',
+            'NNE': unidad.nne || 'N/A',
+            'Número de Serie': unidad.numeroSerie || 'N/A',
+            'Estado': unidad.nombreEstado || 'N/A',
+            'Ubicación': unidad.ubicacion || 'N/A',
+            'Personal Asignado': unidad.personalAsignado || 'Sin asignar',
+            'Especificaciones': equipo.especificaciones ? 
+              equipo.especificaciones.map(esp => `${esp.clave}: ${esp.valor}`).join('; ') : 
+              'Sin especificaciones'
+          });
+        });
+      } else {
+        // Equipos sin unidades
+        datosParaExportar.push({
+          'Tipo de Equipo': equipo.tipoEquipo || 'N/A',
+          'Modelo': equipo.modelo || 'N/A',
+          'Marca': equipo.marca || 'N/A',
+          'NNE': 'Sin unidades',
+          'Número de Serie': 'Sin unidades',
+          'Estado': 'Sin unidades',
+          'Ubicación': 'Sin unidades',
+          'Personal Asignado': 'Sin unidades',
+          'Especificaciones': equipo.especificaciones ? 
+            equipo.especificaciones.map(esp => `${esp.clave}: ${esp.valor}`).join('; ') : 
+            'Sin especificaciones'
+        });
+      }
+    });
+
+    // Crear archivo CSV
+    const csvContent = generarCSV(datosParaExportar);
+    
+    // Descargar archivo
+    const fecha = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `equipos_${fecha}.csv`;
+    descargarArchivo(csvContent, nombreArchivo, 'text/csv');
+    
+    Swal.fire({
+      title: '¡Exportación exitosa!',
+      text: `Se ha descargado el archivo: ${nombreArchivo}`,
+      icon: 'success',
+      timer: 3000
+    });
+    
+  } catch (error) {
+    console.error('Error al exportar equipos:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo exportar la información. Inténtelo nuevamente.',
+      icon: 'error'
+    });
+  }
+}
+
+/**
+ * Genera contenido CSV a partir de un array de objetos
+ */
+function generarCSV(datos) {
+  if (!datos || datos.length === 0) return '';
+  
+  // Obtener headers
+  const headers = Object.keys(datos[0]);
+  
+  // Función para escapar valores CSV
+  const escaparCSV = (valor) => {
+    if (valor === null || valor === undefined) return '';
+    const str = String(valor);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+  
+  // Generar contenido CSV
+  let csv = headers.map(escaparCSV).join(',') + '\n';
+  
+  datos.forEach(fila => {
+    const valores = headers.map(header => escaparCSV(fila[header]));
+    csv += valores.join(',') + '\n';
+  });
+  
+  return csv;
+}
+
+/**
+ * Descarga un archivo con el contenido especificado
+ */
+function descargarArchivo(contenido, nombreArchivo, tipoMime) {
+  const blob = new Blob([contenido], { type: tipoMime });
+  const url = window.URL.createObjectURL(blob);
+  
+  const enlaceDescarga = document.createElement('a');
+  enlaceDescarga.href = url;
+  enlaceDescarga.download = nombreArchivo;
+  enlaceDescarga.style.display = 'none';
+  
+  document.body.appendChild(enlaceDescarga);
+  enlaceDescarga.click();
+  document.body.removeChild(enlaceDescarga);
+  
+  window.URL.revokeObjectURL(url);
+}
+
+console.log("[DOMContentLoaded] Inicialización completada");
