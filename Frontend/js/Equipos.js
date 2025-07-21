@@ -107,11 +107,6 @@ const btnAbrirModalCrearModelo = document.getElementById(
 if (btnAbrirModalCrearModelo)
   btnAbrirModalCrearModelo.addEventListener("click", abrirModalCrearModelo);
 
-// Botón de exportar equipos
-const btnExportarEquipos = document.getElementById("btnExportarEquipos");
-if (btnExportarEquipos)
-  btnExportarEquipos.addEventListener("click", exportarEquipos);
-
 const formCrearModelo = document.getElementById("formCrearModelo");
 if (formCrearModelo) formCrearModelo.addEventListener("submit", guardarModelo);
 

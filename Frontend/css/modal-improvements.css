@@ -1,0 +1,73 @@
+/* Mejoras para el espaciado de modales */
+
+/* Reducir el espaciado en el header del modal */
+.modal-header {
+    padding: 0.75rem 1rem !important; /* Reducido de p-4 (1.5rem) */
+}
+
+/* Reducir el espaciado en el footer del modal */
+.modal-footer {
+    padding: 0.75rem 1rem !important; /* Reducido de p-4 (1.5rem) */
+}
+
+/* Ajustar el espaciado del body del modal */
+.modal-body {
+    padding: 1rem !important; /* Reducido de p-4 (1.5rem) */
+}
+
+/* Asegurar que los modales tengan un max-height apropiado */
+.modal-dialog {
+    max-height: calc(100vh - 2rem);
+}
+
+.modal-content {
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Mejorar el espaciado de las cards dentro del modal */
+.modal-body .card {
+    margin-bottom: 1rem !important; /* Reducido de mb-4 */
+}
+
+.modal-body .card-header {
+    padding: 0.5rem 0.75rem !important; /* Reducido */
+}
+
+.modal-body .card-body {
+    padding: 0.75rem !important; /* Reducido */
+}
+
+/* Ajustar los botones del footer */
+.modal-footer .btn {
+    padding: 0.5rem 1.5rem !important; /* Botones más compactos */
+}
+
+/* Responsive: En pantallas pequeñas, reducir aún más el espaciado */
+@media (max-width: 576px) {
+    .modal-header,
+    .modal-footer {
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .modal-body {
+        padding: 0.75rem !important;
+    }
+    
+    .modal-body .card-header,
+    .modal-body .card-body {
+        padding: 0.5rem !important;
+    }
+    
+    .modal-footer .btn {
+        padding: 0.375rem 1rem !important;
+        font-size: 0.875rem;
+    }
+}
