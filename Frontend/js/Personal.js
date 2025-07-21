@@ -145,7 +145,8 @@ function configurarModalAgregarPersona() {
 
       if (window.grados.length === 0) {
         // No hay grados disponibles - mostrar mensaje de advertencia
-        selectGrado.innerHTML = '<option value="" disabled>⚠️ No hay grados disponibles</option>';
+        selectGrado.innerHTML =
+          '<option value="" disabled>⚠️ No hay grados disponibles</option>';
         return false; // Indica que no hay datos
       }
 
@@ -172,11 +173,13 @@ function configurarModalAgregarPersona() {
     const selectArmEsp = modal.querySelector("#nuevoArmEsp");
     if (selectArmEsp && window.armEsp && Array.isArray(window.armEsp)) {
       // Limpiar opciones existentes
-      selectArmEsp.innerHTML = '<option value="">Seleccione un arma/especialidad</option>';
+      selectArmEsp.innerHTML =
+        '<option value="">Seleccione un arma/especialidad</option>';
 
       if (window.armEsp.length === 0) {
         // No hay armas/especialidades disponibles
-        selectArmEsp.innerHTML = '<option value="" disabled>⚠️ No hay armas/especialidades disponibles</option>';
+        selectArmEsp.innerHTML =
+          '<option value="" disabled>⚠️ No hay armas/especialidades disponibles</option>';
         return false; // Indica que no hay datos
       }
 
@@ -191,7 +194,8 @@ function configurarModalAgregarPersona() {
         option.value = arma.id_armesp; // Usar id_armesp en lugar de id
 
         // Usar los nombres de propiedades correctos
-        const textoMostrar = arma.arma_especialidad || arma.nombre || `Arma/Esp ${arma.id_armesp}`;
+        const textoMostrar =
+          arma.arma_especialidad || arma.nombre || `Arma/Esp ${arma.id_armesp}`;
         option.textContent = textoMostrar;
         selectArmEsp.appendChild(option);
       });
@@ -203,22 +207,26 @@ function configurarModalAgregarPersona() {
   // Función para mostrar alerta de dependencias faltantes
   const mostrarAlertaDependencias = (gradosDisponibles, armasDisponibles) => {
     const faltantes = [];
-    if (!gradosDisponibles) faltantes.push('Grados');
-    if (!armasDisponibles) faltantes.push('Armas/Especialidades');
+    if (!gradosDisponibles) faltantes.push("Grados");
+    if (!armasDisponibles) faltantes.push("Armas/Especialidades");
 
     if (faltantes.length > 0) {
       Swal.fire({
-        title: '⚠️ Datos Requeridos Faltantes',
+        title: "⚠️ Datos Requeridos Faltantes",
         html: `
           <div class="text-start">
             <p class="mb-3"><strong>Para agregar personal, primero debe registrar:</strong></p>
             <ul class="list-unstyled mb-4">
-              ${faltantes.map(item => `
+              ${faltantes
+                .map(
+                  (item) => `
                 <li class="mb-2">
                   <i class="bi bi-arrow-right-circle text-warning me-2"></i>
                   <strong>${item}</strong>
                 </li>
-              `).join('')}
+              `
+                )
+                .join("")}
             </ul>
             <div class="alert alert-info">
               <i class="bi bi-info-circle me-2"></i>
@@ -226,17 +234,17 @@ function configurarModalAgregarPersona() {
             </div>
           </div>
         `,
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'Ir a Grados',
-        cancelButtonText: 'Ir a Armas/Especialidades',
-        confirmButtonColor: '#007bff',
-        cancelButtonColor: '#6c757d',
+        confirmButtonText: "Ir a Grados",
+        cancelButtonText: "Ir a Armas/Especialidades",
+        confirmButtonColor: "#007bff",
+        cancelButtonColor: "#6c757d",
       }).then((result) => {
         if (result.isConfirmed && !gradosDisponibles) {
-          window.location.href = '../Grado/index.html';
+          window.location.href = "../Grado/index.html";
         } else if (result.isDismissed && !armasDisponibles) {
-          window.location.href = '../ArmEsp/index.html';
+          window.location.href = "../ArmEsp/index.html";
         }
       });
       return true; // Se mostró la alerta
@@ -247,11 +255,11 @@ function configurarModalAgregarPersona() {
   // Evento cuando se muestra el modal
   modal.addEventListener("shown.bs.modal", () => {
     console.log("Modal de agregar persona abierto, cargando datos...");
-    
+
     // Verificar y cargar datos
     const gradosDisponibles = cargarGradosEnSelect();
     const armasDisponibles = cargarArmasEnSelect();
-    
+
     // Si faltan dependencias, mostrar alerta y cerrar modal
     if (mostrarAlertaDependencias(gradosDisponibles, armasDisponibles)) {
       // Ocultar el modal después de un pequeño retraso

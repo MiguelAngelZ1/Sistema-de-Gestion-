@@ -203,9 +203,11 @@ class ArmEspUI {
       );
 
       // Agregar event listener para limpiar backdrop cuando el modal se cierre
-      document.getElementById("agregarArmEspModal").addEventListener('hidden.bs.modal', function () {
-        ArmEspUI.limpiarFondoModal();
-      });
+      document
+        .getElementById("agregarArmEspModal")
+        .addEventListener("hidden.bs.modal", function () {
+          ArmEspUI.limpiarFondoModal();
+        });
 
       // Configurar eventos
       this.configurarEventos();
@@ -806,7 +808,7 @@ class ArmEspUI {
     setTimeout(() => {
       // Eliminar manualmente el backdrop (fondo oscuro)
       const backdrops = document.querySelectorAll(".modal-backdrop");
-      backdrops.forEach(backdrop => backdrop.remove());
+      backdrops.forEach((backdrop) => backdrop.remove());
 
       // Restaurar el scroll del body
       document.body.style.overflow = "";
@@ -814,9 +816,9 @@ class ArmEspUI {
 
       // Eliminar la clase 'modal-open' del body
       document.body.classList.remove("modal-open");
-      
+
       // Limpiar cualquier estilo inline que pueda quedar
-      document.body.removeAttribute('style');
+      document.body.removeAttribute("style");
     }, 100);
   }
 }

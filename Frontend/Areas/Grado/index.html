@@ -5,59 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grados - Sistema de Gestión</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
+
     <!-- Estilos del sistema -->
-    <link rel="stylesheet" href="../../styles.css">
-    <link rel="stylesheet" href="../../css/Grado.css">
-    <link rel="stylesheet" href="../../css/modal-improvements.css">
-    
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="stylesheet" href="../../css/Grado.css" />
+    <link rel="stylesheet" href="../../css/modal-improvements.css" />
+
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico" />
   </head>
   <body class="d-flex flex-column min-vh-100">
     <!-- Contenedor principal -->
     <div id="app" class="d-flex flex-column flex-grow-1">
-    <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="#">SISTEMA DE GESTION</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="../Home/index.html">
-                <i class="bi bi-house-door me-1"></i>Inicio
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="../Grado/index.html">
-                <i class="bi bi-award me-1"></i>Grados
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="../Personal/index.html">
-                <i class="bi bi-person-lines-fill me-1"></i>Personal
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="../ArmEsp/index.html">
-                <i class="bi bi-shield-check me-1"></i>Armas y Especialidades
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="../Equipos/index.html">
-                <i class="bi bi-laptop me-1"></i>Equipos
-              </a>
-            </li>
-          </ul>
+      <!-- Barra de navegación -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+          <a class="navbar-brand" href="#">SISTEMA DE GESTION</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="../Home/index.html">
+                  <i class="bi bi-house-door me-1"></i>Inicio
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="../Grado/index.html">
+                  <i class="bi bi-award me-1"></i>Grados
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../Personal/index.html">
+                  <i class="bi bi-person-lines-fill me-1"></i>Personal
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../ArmEsp/index.html">
+                  <i class="bi bi-shield-check me-1"></i>Armas y Especialidades
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../Equipos/index.html">
+                  <i class="bi bi-laptop me-1"></i>Equipos
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
       <!-- Contenido principal -->
       <main class="main-content">
@@ -158,19 +172,36 @@
     >
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow-lg border-0">
-          <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+          <div
+            class="modal-header bg-gradient"
+            style="
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            "
+          >
             <div class="d-flex align-items-center w-100">
               <div class="bg-white rounded-circle p-2 me-3">
                 <i class="bi bi-plus-circle text-success fs-4"></i>
               </div>
               <div>
-                <h5 class="modal-title text-white mb-0 fw-bold" id="agregarGradoModalLabel">Agregar Nuevo Grado</h5>
-                <small class="text-white opacity-75">Complete todos los campos requeridos</small>
+                <h5
+                  class="modal-title text-white mb-0 fw-bold"
+                  id="agregarGradoModalLabel"
+                >
+                  Agregar Nuevo Grado
+                </h5>
+                <small class="text-white opacity-75"
+                  >Complete todos los campos requeridos</small
+                >
               </div>
             </div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
           </div>
-          <div class="modal-body p-4" style="background-color: #f8f9fa;">
+          <div class="modal-body p-4" style="background-color: #f8f9fa">
             <form id="formAgregarGrado" class="needs-validation" novalidate>
               <!-- === Sección: Información del Grado === -->
               <div class="card mb-4 border-0 shadow-sm">
@@ -182,8 +213,12 @@
                 </div>
                 <div class="card-body bg-white p-4">
                   <div class="mb-3">
-                    <label for="abreviatura" class="form-label fw-semibold text-dark mb-2">
-                      <i class="bi bi-card-heading text-muted me-2"></i>Abreviatura <span class="text-danger">*</span>
+                    <label
+                      for="abreviatura"
+                      class="form-label fw-semibold text-dark mb-2"
+                    >
+                      <i class="bi bi-card-heading text-muted me-2"></i
+                      >Abreviatura <span class="text-danger">*</span>
                     </label>
                     <input
                       type="text"
@@ -196,16 +231,22 @@
                       pattern="[A-Za-z]{2,}"
                       oninput="this.value = this.value.toUpperCase()"
                       title="La abreviatura debe tener al menos 2 letras"
-                      style="background-color: #fafafa; border-color: #e9ecef;"
+                      style="background-color: #fafafa; border-color: #e9ecef"
                     />
-                    <small class="text-muted">Mínimo 2 letras, solo caracteres alfabéticos</small>
+                    <small class="text-muted"
+                      >Mínimo 2 letras, solo caracteres alfabéticos</small
+                    >
                     <div class="invalid-feedback">
                       Por favor ingrese al menos 2 letras para la abreviatura.
                     </div>
                   </div>
                   <div class="mb-3">
-                    <label for="descripcion" class="form-label fw-semibold text-dark mb-2">
-                      <i class="bi bi-card-text text-muted me-2"></i>Descripción <span class="text-danger">*</span>
+                    <label
+                      for="descripcion"
+                      class="form-label fw-semibold text-dark mb-2"
+                    >
+                      <i class="bi bi-card-text text-muted me-2"></i>Descripción
+                      <span class="text-danger">*</span>
                     </label>
                     <input
                       type="text"
@@ -216,11 +257,12 @@
                       pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
                       oninput="this.value = this.value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())"
                       title="Solo se permiten letras y espacios"
-                      style="background-color: #fafafa; border-color: #e9ecef;"
+                      style="background-color: #fafafa; border-color: #e9ecef"
                     />
                     <small class="text-muted">Solo letras y espacios</small>
                     <div class="invalid-feedback">
-                      Por favor ingrese una descripción válida (solo letras y espacios).
+                      Por favor ingrese una descripción válida (solo letras y
+                      espacios).
                     </div>
                   </div>
                 </div>
@@ -235,7 +277,11 @@
             >
               <i class="bi bi-x-circle me-1"></i>Cancelar
             </button>
-            <button type="button" class="btn btn-success btn-lg px-4 shadow-sm" id="btnGuardarGrado">
+            <button
+              type="button"
+              class="btn btn-success btn-lg px-4 shadow-sm"
+              id="btnGuardarGrado"
+            >
               <i class="bi bi-save me-1"></i>Guardar Grado
             </button>
           </div>

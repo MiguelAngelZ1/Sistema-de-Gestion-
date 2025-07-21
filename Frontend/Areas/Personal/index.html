@@ -32,7 +32,15 @@
       <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
           <a class="navbar-brand" href="#">SISTEMA DE GESTION</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
@@ -157,23 +165,41 @@
       aria-labelledby="agregarPersonaModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
         <div class="modal-content shadow-lg border-0">
-          <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+          <div
+            class="modal-header bg-gradient"
+            style="
+              background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            "
+          >
             <div class="d-flex align-items-center w-100">
               <div class="bg-white rounded-circle p-2 me-3">
                 <i class="bi bi-person-plus text-primary fs-4"></i>
               </div>
               <div>
-                <h5 class="modal-title text-white mb-0 fw-bold" id="agregarPersonaModalLabel">Agregar Nueva Persona</h5>
-                <small class="text-white opacity-75">Complete todos los campos requeridos</small>
+                <h5
+                  class="modal-title text-white mb-0 fw-bold"
+                  id="agregarPersonaModalLabel"
+                >
+                  Agregar Nueva Persona
+                </h5>
+                <small class="text-white opacity-75"
+                  >Complete todos los campos requeridos</small
+                >
               </div>
             </div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
           </div>
           <form id="formNuevaPersona" class="needs-validation" novalidate>
-            <div class="modal-body p-4" style="background-color: #f8f9fa;">
-
+            <div class="modal-body p-4" style="background-color: #f8f9fa">
               <!-- === Sección: Información Personal === -->
               <div class="card mb-4 border-0 shadow-sm">
                 <div class="card-header bg-primary text-white py-3">
@@ -185,32 +211,42 @@
                 <div class="card-body bg-white p-4">
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label for="nuevoGrado" class="form-label fw-semibold text-dark mb-2">
-                        <i class="bi bi-award text-muted me-2"></i>Grado <span class="text-danger">*</span>
+                      <label
+                        for="nuevoGrado"
+                        class="form-label fw-semibold text-dark mb-2"
+                      >
+                        <i class="bi bi-award text-muted me-2"></i>Grado
+                        <span class="text-danger">*</span>
                       </label>
                       <select
                         class="form-select form-select-lg border-2"
                         id="nuevoGrado"
                         name="gradoId"
                         required
-                        style="background-color: #fafafa; border-color: #e9ecef;"
+                        style="background-color: #fafafa; border-color: #e9ecef"
                       >
                         <option value="">Seleccione un grado</option>
                       </select>
                       <small class="text-muted">Campo obligatorio</small>
                     </div>
                     <div class="col-md-6">
-                      <label for="nuevoArmEsp" class="form-label fw-semibold text-dark mb-2">
-                        <i class="bi bi-shield text-muted me-2"></i>Arma/Especialidad <span class="text-danger">*</span>
+                      <label
+                        for="nuevoArmEsp"
+                        class="form-label fw-semibold text-dark mb-2"
+                      >
+                        <i class="bi bi-shield text-muted me-2"></i
+                        >Arma/Especialidad <span class="text-danger">*</span>
                       </label>
                       <select
                         class="form-select form-select-lg border-2"
                         id="nuevoArmEsp"
                         name="armEspId"
                         required
-                        style="background-color: #fafafa; border-color: #e9ecef;"
+                        style="background-color: #fafafa; border-color: #e9ecef"
                       >
-                        <option value="">Seleccione un arma/especialidad</option>
+                        <option value="">
+                          Seleccione un arma/especialidad
+                        </option>
                       </select>
                       <small class="text-muted">Campo obligatorio</small>
                     </div>
@@ -229,8 +265,12 @@
                 <div class="card-body bg-white p-4">
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label for="nuevoNombre" class="form-label fw-semibold text-dark mb-2">
-                        <i class="bi bi-person-badge text-muted me-2"></i>Nombre <span class="text-danger">*</span>
+                      <label
+                        for="nuevoNombre"
+                        class="form-label fw-semibold text-dark mb-2"
+                      >
+                        <i class="bi bi-person-badge text-muted me-2"></i>Nombre
+                        <span class="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -242,13 +282,17 @@
                         pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
                         oninput="this.value = this.value.toLowerCase().replace(/^\w|\s\w/g, c => c.toUpperCase())"
                         title="Solo se permiten letras y espacios"
-                        style="background-color: #fafafa; border-color: #e9ecef;"
+                        style="background-color: #fafafa; border-color: #e9ecef"
                       />
                       <small class="text-muted">Solo letras y espacios</small>
                     </div>
                     <div class="col-md-6">
-                      <label for="nuevoApellido" class="form-label fw-semibold text-dark mb-2">
-                        <i class="bi bi-person-badge-fill text-muted me-2"></i>Apellido <span class="text-danger">*</span>
+                      <label
+                        for="nuevoApellido"
+                        class="form-label fw-semibold text-dark mb-2"
+                      >
+                        <i class="bi bi-person-badge-fill text-muted me-2"></i
+                        >Apellido <span class="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -260,15 +304,21 @@
                         pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+"
                         oninput="this.value = this.value.toUpperCase()"
                         title="Solo se permiten letras y espacios"
-                        style="background-color: #fafafa; border-color: #e9ecef;"
+                        style="background-color: #fafafa; border-color: #e9ecef"
                       />
-                      <small class="text-muted">Solo letras y espacios (en mayúsculas)</small>
+                      <small class="text-muted"
+                        >Solo letras y espacios (en mayúsculas)</small
+                      >
                     </div>
                   </div>
                   <div class="row g-3 mt-1">
                     <div class="col-md-6">
-                      <label for="nuevoDni" class="form-label fw-semibold text-dark mb-2">
-                        <i class="bi bi-card-heading text-muted me-2"></i>DNI <span class="text-danger">*</span>
+                      <label
+                        for="nuevoDni"
+                        class="form-label fw-semibold text-dark mb-2"
+                      >
+                        <i class="bi bi-card-heading text-muted me-2"></i>DNI
+                        <span class="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -279,7 +329,7 @@
                         pattern="\d{7,8}"
                         title="Ingrese un DNI válido (7 u 8 dígitos)"
                         required
-                        style="background-color: #fafafa; border-color: #e9ecef;"
+                        style="background-color: #fafafa; border-color: #e9ecef"
                       />
                       <small class="text-muted">7 u 8 dígitos numéricos</small>
                     </div>
@@ -295,7 +345,10 @@
               >
                 <i class="bi bi-x-circle me-1"></i> Cancelar
               </button>
-              <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg px-4 shadow-sm"
+              >
                 <i class="bi bi-save me-1"></i> Guardar Persona
               </button>
             </div>
@@ -314,18 +367,33 @@
       aria-labelledby="personalModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
         <div class="modal-content shadow-lg border-0">
-          <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #6f42c1 0%, #563d7c 100%);">
+          <div
+            class="modal-header bg-gradient"
+            style="
+              background: linear-gradient(135deg, #6f42c1 0%, #563d7c 100%);
+            "
+          >
             <div class="d-flex align-items-center w-100">
               <div class="bg-white rounded-circle p-2 me-3">
-                <i class="bi bi-person-badge text-purple fs-4" style="color: #6f42c1;"></i>
+                <i
+                  class="bi bi-person-badge text-purple fs-4"
+                  style="color: #6f42c1"
+                ></i>
               </div>
               <div>
-                <h5 class="modal-title text-white mb-0 fw-bold" id="personalModalLabel">
+                <h5
+                  class="modal-title text-white mb-0 fw-bold"
+                  id="personalModalLabel"
+                >
                   <span id="modalTitulo">Detalles del Personal</span>
                 </h5>
-                <small class="text-white opacity-75">Información completa del personal militar</small>
+                <small class="text-white opacity-75"
+                  >Información completa del personal militar</small
+                >
               </div>
             </div>
             <button
@@ -337,14 +405,17 @@
           </div>
           <form id="formPersonal" class="needs-validation" novalidate>
             <input type="hidden" id="personaId" name="id" />
-            <div class="modal-body p-4" style="background-color: #f8f9fa;">
+            <div class="modal-body p-4" style="background-color: #f8f9fa">
               <!-- Sección de Detalles (solo lectura) -->
               <div id="seccionDetalles">
                 <div class="row g-4">
                   <!-- Información Personal -->
                   <div class="col-md-12">
                     <div class="card mb-3 border-0 shadow-sm">
-                      <div class="card-header bg-purple text-white py-3" style="background: #6f42c1;">
+                      <div
+                        class="card-header bg-purple text-white py-3"
+                        style="background: #6f42c1"
+                      >
                         <h6 class="mb-0 fw-bold d-flex align-items-center">
                           <i class="bi bi-person me-2"></i>
                           Información Personal
@@ -353,20 +424,28 @@
                       <div class="card-body bg-white p-4">
                         <div class="row g-3">
                           <div class="col-md-6">
-                            <label class="form-label fw-semibold text-dark mb-2">
-                              <i class="bi bi-person-badge text-muted me-2"></i>Nombre
+                            <label
+                              class="form-label fw-semibold text-dark mb-2"
+                            >
+                              <i class="bi bi-person-badge text-muted me-2"></i
+                              >Nombre
                             </label>
                             <p
                               id="detalleNombre"
                               class="form-control-plaintext bg-light p-2 rounded border"
-                              style="min-height: 38px;"
+                              style="min-height: 38px"
                             >
                               -
                             </p>
                           </div>
                           <div class="col-md-6">
-                            <label class="form-label fw-semibold text-dark mb-2">
-                              <i class="bi bi-person-badge-fill text-muted me-2"></i>Apellido
+                            <label
+                              class="form-label fw-semibold text-dark mb-2"
+                            >
+                              <i
+                                class="bi bi-person-badge-fill text-muted me-2"
+                              ></i
+                              >Apellido
                             </label>
                             <p
                               id="detalleApellido"

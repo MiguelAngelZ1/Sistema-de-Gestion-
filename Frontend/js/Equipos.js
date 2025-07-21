@@ -126,6 +126,17 @@ if (btnAbrirModalUnidad)
 const formAgregarUnidad = document.getElementById("formAgregarUnidad");
 if (formAgregarUnidad)
   formAgregarUnidad.addEventListener("submit", guardarUnidad);
+
+  // Event listener para el botón de exportar detalles del equipo
+  const btnExportarDetalle = document.getElementById("btn-exportar-detalle");
+  if (btnExportarDetalle)
+    btnExportarDetalle.addEventListener("click", exportarDetalleEquipo);
+
+  // Event listener para el botón de imprimir detalles del equipo
+  const btnImprimirDetalle = document.getElementById("btn-imprimir-detalle");
+  if (btnImprimirDetalle)
+    btnImprimirDetalle.addEventListener("click", imprimirDetalleEquipo);
+
 // Evento para abrir el modal de creación de equipo.
 // document.getElementById('btnAbrirModalCrear').addEventListener('click', abrirModalCrear); // Deshabilitado temporalmente
 
@@ -444,21 +455,26 @@ async function guardarModelo(event) {
 
   if (errores.length > 0) {
     Swal.fire({
-      title: '⚠️ Campos Obligatorios',
+      title: "⚠️ Campos Obligatorios",
       html: `
         <div class="text-start">
           <p class="mb-3"><strong>Los siguientes campos son obligatorios:</strong></p>
           <ul class="list-unstyled">
-            ${errores.map(error => `<li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>${error}</li>`).join('')}
+            ${errores
+              .map(
+                (error) =>
+                  `<li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>${error}</li>`
+              )
+              .join("")}
           </ul>
         </div>
       `,
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#007bff',
+      icon: "warning",
+      confirmButtonText: "Entendido",
+      confirmButtonColor: "#007bff",
       customClass: {
-        container: 'swal-container-custom'
-      }
+        container: "swal-container-custom",
+      },
     });
     return;
   }
@@ -487,7 +503,8 @@ async function guardarModelo(event) {
   const primeraUnidad = {
     NumeroSerie: nroSerie,
     EstadoId: parseInt(estadoEquipoId, 10),
-    IdPersona: parseInt(document.getElementById("unidad-responsable").value, 10) || null,
+    IdPersona:
+      parseInt(document.getElementById("unidad-responsable").value, 10) || null,
   };
 
   // 3. Recolectar datos del Modelo
@@ -510,37 +527,40 @@ async function guardarModelo(event) {
 
   // 5. Mostrar indicador de carga
   Swal.fire({
-    title: 'Creando equipo...',
-    text: 'Por favor espere mientras se procesa la información',
-    icon: 'info',
+    title: "Creando equipo...",
+    text: "Por favor espere mientras se procesa la información",
+    icon: "info",
     allowOutsideClick: false,
     showConfirmButton: false,
     willOpen: () => {
       Swal.showLoading();
-    }
+    },
   });
 
   // 6. Enviar a la API
-  console.log("Datos que se van a enviar:", JSON.stringify(altaCompletaData, null, 2));
+  console.log(
+    "Datos que se van a enviar:",
+    JSON.stringify(altaCompletaData, null, 2)
+  );
   const resultado = await crearModelo(altaCompletaData);
 
   if (resultado) {
     modalCrearModelo.hide();
     Swal.fire({
-      title: '✅ ¡Equipo Creado!',
+      title: "✅ ¡Equipo Creado!",
       text: `El equipo ${nne} ha sido registrado exitosamente`,
-      icon: 'success',
-      confirmButtonText: 'Continuar',
-      confirmButtonColor: '#28a745'
+      icon: "success",
+      confirmButtonText: "Continuar",
+      confirmButtonColor: "#28a745",
     });
     cargarEquipos(); // Recargar la tabla para mostrar el nuevo equipo
   } else {
     Swal.fire({
-      title: '❌ Error al Crear',
-      text: 'No se pudo crear el equipo. Verifique los datos e intente nuevamente.',
-      icon: 'error',
-      confirmButtonText: 'Reintentar',
-      confirmButtonColor: '#dc3545'
+      title: "❌ Error al Crear",
+      text: "No se pudo crear el equipo. Verifique los datos e intente nuevamente.",
+      icon: "error",
+      confirmButtonText: "Reintentar",
+      confirmButtonColor: "#dc3545",
     });
   }
 }
@@ -1219,9 +1239,7 @@ async function actualizarEquipoPorNroSerie(nroSerie, equipoData) {
     console.log("[actualizarEquipoPorNroSerie] nroSerie:", nroSerie);
     console.log("[actualizarEquipoPorNroSerie] equipoData:", equipoData);
     const response = await fetch(
-      `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
-        nroSerie
-      )}`,
+      `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -1446,7 +1464,7 @@ async function cargarEquipos() {
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
     const noEquipos = document.getElementById("no-equipos");
     const tablaEquipos = document.getElementById("tablaEquipos");
-    
+
     // Limpiar la tabla
     cuerpoTabla.innerHTML = "";
 
@@ -1544,17 +1562,17 @@ async function cargarEquipos() {
     });
   } catch (error) {
     console.error("Error al cargar los equipos:", error);
-    
+
     // Mostrar estado vacío en caso de error
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
     const noEquipos = document.getElementById("no-equipos");
     const tablaEquipos = document.getElementById("tablaEquipos");
-    
+
     // Limpiar la tabla
     if (cuerpoTabla) {
       cuerpoTabla.innerHTML = "";
     }
-    
+
     // Ocultar la tabla y mostrar el mensaje de no equipos
     if (tablaEquipos && noEquipos) {
       tablaEquipos.style.display = "none";
@@ -1579,8 +1597,11 @@ async function cargarEquipos() {
           </td>
         </tr>`;
     }
-    
-    mostrarAlerta("No se pudo cargar la lista de equipos. Verifique la conexión al servidor.", "error");
+
+    mostrarAlerta(
+      "No se pudo cargar la lista de equipos. Verifique la conexión al servidor.",
+      "error"
+    );
   }
 }
 
@@ -2532,90 +2553,93 @@ async function exportarEquipos() {
   try {
     // Mostrar indicador de carga
     Swal.fire({
-      title: 'Exportando equipos...',
-      text: 'Por favor espere mientras se genera el archivo',
+      title: "Exportando equipos...",
+      text: "Por favor espere mientras se genera el archivo",
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
-      }
+      },
     });
 
     // Obtener todos los equipos
     const response = await fetch(`${API_URL}/agrupadosConDetalles`);
     if (!response.ok) {
-      throw new Error('Error al obtener los equipos');
+      throw new Error("Error al obtener los equipos");
     }
-    
+
     const equipos = await response.json();
-    
+
     if (!equipos || equipos.length === 0) {
       Swal.fire({
-        title: 'Sin datos',
-        text: 'No hay equipos para exportar',
-        icon: 'warning'
+        title: "Sin datos",
+        text: "No hay equipos para exportar",
+        icon: "warning",
       });
       return;
     }
 
     // Preparar datos para exportar
     const datosParaExportar = [];
-    
-    equipos.forEach(equipo => {
+
+    equipos.forEach((equipo) => {
       if (equipo.unidades && equipo.unidades.length > 0) {
-        equipo.unidades.forEach(unidad => {
+        equipo.unidades.forEach((unidad) => {
           datosParaExportar.push({
-            'Tipo de Equipo': equipo.tipoEquipo || 'N/A',
-            'Modelo': equipo.modelo || 'N/A',
-            'Marca': equipo.marca || 'N/A',
-            'NNE': unidad.nne || 'N/A',
-            'Número de Serie': unidad.numeroSerie || 'N/A',
-            'Estado': unidad.nombreEstado || 'N/A',
-            'Ubicación': unidad.ubicacion || 'N/A',
-            'Personal Asignado': unidad.personalAsignado || 'Sin asignar',
-            'Especificaciones': equipo.especificaciones ? 
-              equipo.especificaciones.map(esp => `${esp.clave}: ${esp.valor}`).join('; ') : 
-              'Sin especificaciones'
+            "Tipo de Equipo": equipo.tipoEquipo || "N/A",
+            Modelo: equipo.modelo || "N/A",
+            Marca: equipo.marca || "N/A",
+            NNE: unidad.nne || "N/A",
+            "Número de Serie": unidad.numeroSerie || "N/A",
+            Estado: unidad.nombreEstado || "N/A",
+            Ubicación: unidad.ubicacion || "N/A",
+            "Personal Asignado": unidad.personalAsignado || "Sin asignar",
+            Especificaciones: equipo.especificaciones
+              ? equipo.especificaciones
+                  .map((esp) => `${esp.clave}: ${esp.valor}`)
+                  .join("; ")
+              : "Sin especificaciones",
           });
         });
       } else {
         // Equipos sin unidades
         datosParaExportar.push({
-          'Tipo de Equipo': equipo.tipoEquipo || 'N/A',
-          'Modelo': equipo.modelo || 'N/A',
-          'Marca': equipo.marca || 'N/A',
-          'NNE': 'Sin unidades',
-          'Número de Serie': 'Sin unidades',
-          'Estado': 'Sin unidades',
-          'Ubicación': 'Sin unidades',
-          'Personal Asignado': 'Sin unidades',
-          'Especificaciones': equipo.especificaciones ? 
-            equipo.especificaciones.map(esp => `${esp.clave}: ${esp.valor}`).join('; ') : 
-            'Sin especificaciones'
+          "Tipo de Equipo": equipo.tipoEquipo || "N/A",
+          Modelo: equipo.modelo || "N/A",
+          Marca: equipo.marca || "N/A",
+          NNE: "Sin unidades",
+          "Número de Serie": "Sin unidades",
+          Estado: "Sin unidades",
+          Ubicación: "Sin unidades",
+          "Personal Asignado": "Sin unidades",
+          Especificaciones: equipo.especificaciones
+            ? equipo.especificaciones
+                .map((esp) => `${esp.clave}: ${esp.valor}`)
+                .join("; ")
+            : "Sin especificaciones",
         });
       }
     });
 
     // Crear archivo CSV
     const csvContent = generarCSV(datosParaExportar);
-    
+
     // Descargar archivo
-    const fecha = new Date().toISOString().split('T')[0];
+    const fecha = new Date().toISOString().split("T")[0];
     const nombreArchivo = `equipos_${fecha}.csv`;
-    descargarArchivo(csvContent, nombreArchivo, 'text/csv');
-    
+    descargarArchivo(csvContent, nombreArchivo, "text/csv");
+
     Swal.fire({
-      title: '¡Exportación exitosa!',
+      title: "¡Exportación exitosa!",
       text: `Se ha descargado el archivo: ${nombreArchivo}`,
-      icon: 'success',
-      timer: 3000
+      icon: "success",
+      timer: 3000,
     });
-    
   } catch (error) {
-    console.error('Error al exportar equipos:', error);
+    console.error("Error al exportar equipos:", error);
     Swal.fire({
-      title: 'Error',
-      text: 'No se pudo exportar la información. Inténtelo nuevamente.',
-      icon: 'error'
+      title: "Error",
+      text: "No se pudo exportar la información. Inténtelo nuevamente.",
+      icon: "error",
     });
   }
 }
@@ -2624,29 +2648,29 @@ async function exportarEquipos() {
  * Genera contenido CSV a partir de un array de objetos
  */
 function generarCSV(datos) {
-  if (!datos || datos.length === 0) return '';
-  
+  if (!datos || datos.length === 0) return "";
+
   // Obtener headers
   const headers = Object.keys(datos[0]);
-  
+
   // Función para escapar valores CSV
   const escaparCSV = (valor) => {
-    if (valor === null || valor === undefined) return '';
+    if (valor === null || valor === undefined) return "";
     const str = String(valor);
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
   };
-  
+
   // Generar contenido CSV
-  let csv = headers.map(escaparCSV).join(',') + '\n';
-  
-  datos.forEach(fila => {
-    const valores = headers.map(header => escaparCSV(fila[header]));
-    csv += valores.join(',') + '\n';
+  let csv = headers.map(escaparCSV).join(",") + "\n";
+
+  datos.forEach((fila) => {
+    const valores = headers.map((header) => escaparCSV(fila[header]));
+    csv += valores.join(",") + "\n";
   });
-  
+
   return csv;
 }
 
@@ -2656,17 +2680,385 @@ function generarCSV(datos) {
 function descargarArchivo(contenido, nombreArchivo, tipoMime) {
   const blob = new Blob([contenido], { type: tipoMime });
   const url = window.URL.createObjectURL(blob);
-  
-  const enlaceDescarga = document.createElement('a');
+
+  const enlaceDescarga = document.createElement("a");
   enlaceDescarga.href = url;
   enlaceDescarga.download = nombreArchivo;
-  enlaceDescarga.style.display = 'none';
-  
+  enlaceDescarga.style.display = "none";
+
   document.body.appendChild(enlaceDescarga);
   enlaceDescarga.click();
   document.body.removeChild(enlaceDescarga);
-  
+
   window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Exporta los detalles de un equipo específico
+ */
+function exportarDetalleEquipo() {
+  try {
+    // Obtener los datos actuales mostrados en el modal
+    const detalle = {
+      "INE": document.getElementById('detalle-ine').textContent || "N/A",
+      "NNE": document.getElementById('detalle-nne').textContent || "N/A",
+      "Número de Serie": document.getElementById('detalle-nro-serie').textContent || "N/A",
+      "Marca": document.getElementById('detalle-marca').textContent || "N/A",
+      "Modelo": document.getElementById('detalle-modelo').textContent || "N/A",
+      "Tipo de Equipo": document.getElementById('detalle-tipo').textContent || "N/A",
+      "Estado": document.getElementById('detalle-estado').textContent || "N/A",
+      "Personal Responsable": document.getElementById('detalle-responsable').textContent || "Sin asignar",
+      "Ubicación": document.getElementById('detalle-ubicacion').textContent || "N/A",
+      "Observaciones": document.getElementById('detalle-observaciones').textContent || "Sin observaciones"
+    };
+
+    // Agregar especificaciones técnicas si existen
+    const especificacionesContainer = document.getElementById('detalle-especificaciones');
+    if (especificacionesContainer) {
+      const badges = especificacionesContainer.querySelectorAll('.badge');
+      let especificaciones = [];
+      badges.forEach(badge => {
+        especificaciones.push(badge.textContent.trim());
+      });
+      detalle["Especificaciones Técnicas"] = especificaciones.length > 0 ? especificaciones.join("; ") : "Sin especificaciones";
+    }
+
+    // Crear archivo CSV con los detalles
+    const csvContent = generarCSV([detalle]);
+    
+    // Generar nombre del archivo con NNE y fecha
+    const nne = detalle.NNE.replace(/[^a-zA-Z0-9]/g, '_');
+    const fecha = new Date().toISOString().split("T")[0];
+    const nombreArchivo = `equipo_${nne}_${fecha}.csv`;
+    
+    // Descargar archivo
+    descargarArchivo(csvContent, nombreArchivo, "text/csv");
+
+    Swal.fire({
+      title: "¡Exportación exitosa!",
+      text: `Se ha descargado el archivo: ${nombreArchivo}`,
+      icon: "success",
+      timer: 3000,
+    });
+
+  } catch (error) {
+    console.error("Error al exportar detalle del equipo:", error);
+    Swal.fire({
+      title: "Error",
+      text: "No se pudo exportar la información del equipo. Inténtelo nuevamente.",
+      icon: "error",
+    });
+  }
+}
+
+/**
+ * Imprime la tabla principal de equipos
+ */
+function imprimirTablaEquipos() {
+  try {
+    const tabla = document.getElementById('tablaEquipos');
+    if (!tabla) {
+      Swal.fire('Error', 'No se pudo encontrar la tabla de equipos', 'error');
+      return;
+    }
+
+    // Crear ventana de impresión
+    const ventanaImpresion = window.open('', '_blank');
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+    const totalEquipos = document.querySelectorAll('#cuerpoTablaEquipos tr').length;
+    
+    ventanaImpresion.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Lista de Equipos - ${fechaActual}</title>
+          <style>
+              body { 
+                  font-family: Arial, sans-serif; 
+                  margin: 20px;
+                  font-size: 12px;
+              }
+              .header { 
+                  text-align: center; 
+                  margin-bottom: 20px; 
+                  border-bottom: 2px solid #333;
+                  padding-bottom: 10px;
+              }
+              .header h1 { 
+                  margin: 0; 
+                  color: #333; 
+                  font-size: 24px;
+              }
+              .header p { 
+                  margin: 5px 0; 
+                  color: #666; 
+                  font-size: 14px;
+              }
+              table { 
+                  width: 100%; 
+                  border-collapse: collapse; 
+                  margin-top: 10px;
+              }
+              th, td { 
+                  border: 1px solid #ddd; 
+                  padding: 8px; 
+                  text-align: left; 
+              }
+              th { 
+                  background-color: #f8f9fa; 
+                  font-weight: bold;
+                  color: #333;
+              }
+              .footer { 
+                  margin-top: 20px; 
+                  text-align: center; 
+                  font-size: 10px; 
+                  color: #666;
+                  border-top: 1px solid #ddd;
+                  padding-top: 10px;
+              }
+              @media print {
+                  body { margin: 0; }
+                  .no-print { display: none; }
+              }
+          </style>
+      </head>
+      <body>
+          <div class="header">
+              <h1>SISTEMA DE GESTIÓN - LISTA DE EQUIPOS</h1>
+              <p>Fecha de impresión: ${fechaActual}</p>
+              <p>Total de equipos: ${totalEquipos}</p>
+          </div>
+          ${tabla.outerHTML.replace(/<th[^>]*>Acciones<\/th>/gi, '').replace(/<td[^>]*class="[^"]*text-center[^"]*"[^>]*>.*?<\/td>/gi, '')}
+          <div class="footer">
+              <p>© 2025 Sistema de Control y Gestión - Documento generado automáticamente</p>
+          </div>
+      </body>
+      </html>
+    `);
+    
+    ventanaImpresion.document.close();
+    
+    // Esperar a que se cargue el contenido antes de imprimir
+    ventanaImpresion.onload = function() {
+      ventanaImpresion.print();
+      ventanaImpresion.close();
+    };
+
+  } catch (error) {
+    console.error('Error al imprimir tabla:', error);
+    Swal.fire('Error', 'Error al preparar la impresión', 'error');
+  }
+}
+
+/**
+ * Imprime el detalle del equipo seleccionado
+ */
+function imprimirDetalleEquipo() {
+  try {
+    // Obtener los datos actuales mostrados en el modal
+    const detalle = {
+      ine: document.getElementById('detalle-ine').textContent || "N/A",
+      nne: document.getElementById('detalle-nne').textContent || "N/A",
+      numeroSerie: document.getElementById('detalle-nro-serie').textContent || "N/A",
+      marca: document.getElementById('detalle-marca').textContent || "N/A",
+      modelo: document.getElementById('detalle-modelo').textContent || "N/A",
+      tipoEquipo: document.getElementById('detalle-tipo').textContent || "N/A",
+      estadoEquipo: document.getElementById('detalle-estado').textContent || "N/A",
+      responsable: document.getElementById('detalle-responsable').textContent || "Sin asignar",
+      ubicacion: document.getElementById('detalle-ubicacion').textContent || "N/A",
+      observaciones: document.getElementById('detalle-observaciones').textContent || "Sin observaciones"
+    };
+
+    // Obtener especificaciones técnicas si existen
+    let especificaciones = [];
+    const especificacionesContainer = document.getElementById('detalle-especificaciones');
+    if (especificacionesContainer) {
+      const badges = especificacionesContainer.querySelectorAll('.badge');
+      badges.forEach(badge => {
+        especificaciones.push(badge.textContent.trim());
+      });
+    }
+
+    // Crear ventana de impresión
+    const ventanaImpresion = window.open('', '_blank');
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+    
+    ventanaImpresion.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Detalle del Equipo - ${detalle.nne}</title>
+          <style>
+              body { 
+                  font-family: Arial, sans-serif; 
+                  margin: 20px;
+                  line-height: 1.6;
+              }
+              .header { 
+                  text-align: center; 
+                  margin-bottom: 30px; 
+                  border-bottom: 3px solid #007bff;
+                  padding-bottom: 15px;
+              }
+              .header h1 { 
+                  margin: 0; 
+                  color: #007bff; 
+                  font-size: 28px;
+              }
+              .header p { 
+                  margin: 5px 0; 
+                  color: #666; 
+              }
+              .seccion {
+                  margin-bottom: 25px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+                  overflow: hidden;
+              }
+              .seccion-header {
+                  background-color: #f8f9fa;
+                  padding: 10px 15px;
+                  font-weight: bold;
+                  color: #333;
+                  border-bottom: 1px solid #ddd;
+              }
+              .seccion-content {
+                  padding: 15px;
+              }
+              .campo {
+                  display: flex;
+                  margin-bottom: 10px;
+                  border-bottom: 1px solid #eee;
+                  padding-bottom: 5px;
+              }
+              .campo-label {
+                  font-weight: bold;
+                  color: #555;
+                  width: 200px;
+                  flex-shrink: 0;
+              }
+              .campo-valor {
+                  color: #333;
+                  flex-grow: 1;
+              }
+              .footer { 
+                  margin-top: 30px; 
+                  text-align: center; 
+                  font-size: 12px; 
+                  color: #666;
+                  border-top: 2px solid #ddd;
+                  padding-top: 15px;
+              }
+              @media print {
+                  body { margin: 0; }
+                  .no-print { display: none; }
+              }
+          </style>
+      </head>
+      <body>
+          <div class="header">
+              <h1>DETALLE DE EQUIPO</h1>
+              <p>Fecha de impresión: ${fechaActual}</p>
+              <p>Equipo: ${detalle.nne}</p>
+          </div>
+          
+          <div class="seccion">
+              <div class="seccion-header">Información de Identificación</div>
+              <div class="seccion-content">
+                  <div class="campo">
+                      <span class="campo-label">Código INE:</span>
+                      <span class="campo-valor">${detalle.ine}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Número NNE:</span>
+                      <span class="campo-valor">${detalle.nne}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Número de Serie:</span>
+                      <span class="campo-valor">${detalle.numeroSerie}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div class="seccion">
+              <div class="seccion-header">Especificaciones Técnicas</div>
+              <div class="seccion-content">
+                  <div class="campo">
+                      <span class="campo-label">Marca:</span>
+                      <span class="campo-valor">${detalle.marca}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Modelo:</span>
+                      <span class="campo-valor">${detalle.modelo}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Tipo de Equipo:</span>
+                      <span class="campo-valor">${detalle.tipoEquipo}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Estado:</span>
+                      <span class="campo-valor">${detalle.estadoEquipo}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div class="seccion">
+              <div class="seccion-header">Asignación y Ubicación</div>
+              <div class="seccion-content">
+                  <div class="campo">
+                      <span class="campo-label">Ubicación Física:</span>
+                      <span class="campo-valor">${detalle.ubicacion}</span>
+                  </div>
+                  <div class="campo">
+                      <span class="campo-label">Personal Responsable:</span>
+                      <span class="campo-valor">${detalle.responsable}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div class="seccion">
+              <div class="seccion-header">Observaciones</div>
+              <div class="seccion-content">
+                  <div class="campo">
+                      <span class="campo-label">Observaciones Generales:</span>
+                      <span class="campo-valor">${detalle.observaciones}</span>
+                  </div>
+              </div>
+          </div>
+
+          ${especificaciones.length > 0 ? `
+          <div class="seccion">
+              <div class="seccion-header">Especificaciones Técnicas Adicionales</div>
+              <div class="seccion-content">
+                  <div class="campo">
+                      <span class="campo-label">Especificaciones:</span>
+                      <span class="campo-valor">${especificaciones.join(', ')}</span>
+                  </div>
+              </div>
+          </div>
+          ` : ''}
+          
+          <div class="footer">
+              <p>© 2025 Sistema de Control y Gestión - Documento generado automáticamente</p>
+              <p>Este documento contiene información confidencial del sistema de gestión</p>
+          </div>
+      </body>
+      </html>
+    `);
+    
+    ventanaImpresion.document.close();
+    
+    // Esperar a que se cargue el contenido antes de imprimir
+    ventanaImpresion.onload = function() {
+      ventanaImpresion.print();
+      ventanaImpresion.close();
+    };
+
+  } catch (error) {
+    console.error('Error al imprimir detalle:', error);
+    Swal.fire('Error', 'Error al preparar la impresión del detalle', 'error');
+  }
 }
 
 console.log("[DOMContentLoaded] Inicialización completada");
