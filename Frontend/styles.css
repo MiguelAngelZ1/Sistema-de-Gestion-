@@ -10,12 +10,11 @@
 
 /* Estilos generales del body */
 html, body {
-  height: 100vh; /* Fijar altura para controlar el scroll */
+  height: 100vh;
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
   background: #f1f4f9;
-  overflow: hidden; /* Evitar scroll en el body */
   display: flex;
   flex-direction: column;
 }
@@ -29,10 +28,10 @@ html, body {
 
 /* Contenido principal */
 .main-content {
-  flex: 1 1 auto; /* Permitir que el contenido se ajuste y ocupe el espacio disponible */
+  flex: 1 1 auto;
   padding: 1rem 0 0.5rem 0;
   width: 100%;
-  overflow-y: auto; /* Añadir scroll solo a esta área para confinar el desbordamiento */
+  overflow-y: auto;
 }
 
 /* Estilos para botones de acción en tablas */
@@ -76,7 +75,7 @@ html, body {
 .hero-section {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
-    padding: 2.5rem 0 1.5rem 0; /* Menos padding superior e inferior */
+    padding: 2.5rem 0 1.5rem 0;
     margin-bottom: 1rem;
     border-radius: 0 0 1rem 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -114,6 +113,86 @@ html, body {
     font-size: 2.5rem;
     margin-bottom: 1rem;
     color: #2a5298;
+}
+
+/* Media queries para responsividad móvil */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0 1rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+        line-height: 1.2;
+        margin-bottom: 0.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.4;
+    }
+    
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .feature-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-card .small {
+        font-size: 0.85rem;
+    }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 1.5rem 0 1rem 0;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .feature-card {
+        margin-bottom: 1rem;
+    }
+    
+    .feature-card h4 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .container {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+    
+    /* Ajustes para las tarjetas en móvil */
+    .feature-card .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 /* Ajustes para la barra de navegación */
