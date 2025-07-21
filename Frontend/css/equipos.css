@@ -856,3 +856,237 @@
     min-width: 80px;
   }
 }
+
+/* ===== ESTILOS PARA MODALES PROFESIONALES ===== */
+
+/* Modal de Agregar Equipo - Estilo Profesional */
+#modalCrearModelo .modal-content {
+  border: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+#modalCrearModelo .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#modalCrearModelo .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+#modalCrearModelo .form-control:focus,
+#modalCrearModelo .form-select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+#modalCrearModelo .form-control-lg,
+#modalCrearModelo .form-select-lg {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+#modalCrearModelo .card-header {
+  border: none;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+/* Animación de entrada para las tarjetas */
+#modalCrearModelo .card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal de Detalles - Estilo Profesional */
+#modalDetallesEquipo .modal-content {
+  border: none;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+#modalDetallesEquipo .card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+#modalDetallesEquipo .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Estilos para campos de visualización */
+#modalDetallesEquipo .campo-display .bg-light {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#modalDetallesEquipo .campo-display .bg-light::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.5s;
+}
+
+#modalDetallesEquipo .campo-display .bg-light:hover::before {
+  left: 100%;
+}
+
+#modalDetallesEquipo .campo-display .bg-light:hover {
+  border-color: var(--bs-primary);
+  background-color: #f8f9ff !important;
+}
+
+/* Campos de edición mejorados */
+#modalDetallesEquipo .campo-edit .form-control:focus,
+#modalDetallesEquipo .campo-edit .form-select:focus {
+  border-color: var(--bs-success);
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* Badges con estilo mejorado */
+#modalDetallesEquipo .badge {
+  font-size: 0.75rem;
+  padding: 0.5em 0.75em;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Iconos con animación */
+#modalCrearModelo .card-header i,
+#modalDetallesEquipo .card-header i {
+  transition: transform 0.3s ease;
+}
+
+#modalCrearModelo .card:hover .card-header i,
+#modalDetallesEquipo .card:hover .card-header i {
+  transform: rotate(360deg);
+}
+
+/* Gradientes mejorados para headers */
+.bg-gradient {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 1s;
+}
+
+.bg-gradient:hover::before {
+  left: 100%;
+}
+
+/* Efectos de hover para botones */
+#modalCrearModelo .btn,
+#modalDetallesEquipo .btn {
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+#modalCrearModelo .btn:hover,
+#modalDetallesEquipo .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Separadores visuales */
+#modalCrearModelo .border-top {
+  border-width: 2px !important;
+  border-style: dashed !important;
+  border-color: #dee2e6 !important;
+  margin: 2rem 0;
+}
+
+/* Estilos responsivos para modales */
+@media (max-width: 768px) {
+  #modalCrearModelo .modal-dialog,
+  #modalDetallesEquipo .modal-dialog {
+    margin: 0.5rem;
+    max-width: none;
+  }
+  
+  #modalCrearModelo .card-body,
+  #modalDetallesEquipo .card-body {
+    padding: 2rem;
+  }
+  
+  #modalCrearModelo .row.g-3,
+  #modalDetallesEquipo .row.g-4 {
+    --bs-gutter-x: 1rem;
+  }
+}
+
+/* Estados de validación mejorados */
+.was-validated .form-control:valid,
+.form-control.is-valid {
+  border-color: #28a745;
+  background-image: none;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+  border-color: #dc3545;
+  background-image: none;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Placeholder personalizado */
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* Badge de estado en modal de detalles */
+#estadoEquipoBadge {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 100px;
+  text-align: center;
+}

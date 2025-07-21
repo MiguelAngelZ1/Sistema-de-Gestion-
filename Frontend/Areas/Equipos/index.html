@@ -174,103 +174,198 @@
       </div>
     </div>
 
-  <!-- MODAL PARA AGREGAR EQUIPO -->
+  <!-- MODAL PARA AGREGAR EQUIPO - DISEÑO PROFESIONAL -->
   <div class="modal fade" id="modalCrearModelo" tabindex="-1" aria-labelledby="modalCrearModeloLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title" id="modalCrearModeloLabel"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Equipo</h5>
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+          <div class="d-flex align-items-center w-100">
+            <div class="bg-white rounded-circle p-2 me-3">
+              <i class="bi bi-plus-circle text-success fs-4"></i>
+            </div>
+            <div>
+              <h5 class="modal-title text-white mb-0 fw-bold" id="modalCrearModeloLabel">Crear Nuevo Equipo</h5>
+              <small class="text-white opacity-75">Complete todos los campos requeridos</small>
+            </div>
+          </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-4" style="background-color: #f8f9fa;">
           <form id="formCrearModelo" class="needs-validation" novalidate>
 
-            <!-- === Sección Datos Principales === -->
-            <fieldset class="border p-3 mb-4 rounded">
-              <legend class="w-auto px-2 h6 fw-bold">Datos Principales</legend>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="crear-ine" class="form-label"><i class="bi bi-card-heading me-2"></i>INE</label>
-                  <input type="text" class="form-control" id="crear-ine" placeholder="(Opcional)">
+            <!-- === Sección 1: Identificación === -->
+            <div class="card mb-4 border-0 shadow-sm">
+              <div class="card-header bg-primary text-white py-3">
+                <h6 class="mb-0 fw-bold d-flex align-items-center">
+                  <i class="bi bi-card-heading me-2"></i>
+                  Información de Identificación
+                </h6>
+              </div>
+              <div class="card-body bg-white p-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="crear-ine" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-card-text text-muted me-2"></i>Código INE
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-ine" 
+                           placeholder="Ingrese el código INE (opcional)" 
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                    <small class="text-muted">Campo opcional - Identificación interna del equipo</small>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="crear-nne" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-hash text-danger me-2"></i>Número NNE <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-nne" 
+                           placeholder="Ingrese el número NNE" required
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                    <small class="text-muted">Campo obligatorio - Número Nacional de Equipo</small>
+                  </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="crear-nne" class="form-label"><i class="bi bi-hash me-2"></i>NNE</label>
-                  <input type="text" class="form-control" id="crear-nne" required>
+                <div class="row g-3 mt-1">
+                  <div class="col-12">
+                    <label for="crear-nro-serie" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-upc-scan text-info me-2"></i>Número de Serie <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-nro-serie" 
+                           placeholder="Ingrese el número de serie del equipo" required
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                    <small class="text-muted">Serie única del fabricante</small>
+                  </div>
                 </div>
               </div>
-              <div class="mb-3">
-                <label for="crear-nro-serie" class="form-label"><i class="bi bi-upc me-2"></i>Número de Serie</label>
-                <input type="text" class="form-control" id="crear-nro-serie" required>
-              </div>
+            </div>
 
-              <div class="mb-3">
-                <label for="crear-observaciones" class="form-label"><i class="bi bi-journal-text me-2"></i>Observaciones Generales</label>
-                <textarea class="form-control" id="crear-observaciones" rows="2"></textarea>
+            <!-- === Sección 2: Especificaciones Técnicas === -->
+            <div class="card mb-4 border-0 shadow-sm">
+              <div class="card-header bg-info text-white py-3">
+                <h6 class="mb-0 fw-bold d-flex align-items-center">
+                  <i class="bi bi-cpu me-2"></i>
+                  Especificaciones Técnicas
+                </h6>
               </div>
-            </fieldset>
+              <div class="card-body bg-white p-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="crear-marca" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-building text-warning me-2"></i>Marca <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-marca" 
+                           placeholder="Ej: Dell, HP, Lenovo" required
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="crear-modelo" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-gear text-secondary me-2"></i>Modelo <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-modelo" 
+                           placeholder="Ej: Latitude 5520, ThinkPad" required
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                  </div>
+                </div>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6">
+                    <label for="crear-tipo-equipo" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-tag-fill text-success me-2"></i>Tipo de Equipo <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select form-select-lg border-2" id="crear-tipo-equipo" required
+                            style="background-color: #fafafa; border-color: #e9ecef;">
+                      <option value="" selected disabled>-- Seleccione el tipo de equipo --</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="crear-estado-equipo" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-check-circle-fill text-success me-2"></i>Estado del Equipo <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select form-select-lg border-2" id="crear-estado-equipo" required
+                            style="background-color: #fafafa; border-color: #e9ecef;">
+                      <option value="" selected disabled>-- Seleccione el estado --</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-            <!-- === Sección Ubicación y Responsable === -->
-            <fieldset class="border p-3 mb-4 rounded">
-              <legend class="w-auto px-2 h6 fw-bold">Ubicación y Responsable</legend>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="crear-ubicacion" class="form-label"><i class="bi bi-geo-alt me-2"></i>Ubicación</label>
-                  <input type="text" class="form-control" id="crear-ubicacion" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="unidad-responsable" class="form-label"><i class="bi bi-person-check-fill me-2"></i>Personal Asignado</label>
-                  <select class="form-select" id="unidad-responsable">
-                    <option selected disabled value="">Cargando...</option>
-                  </select>
+            <!-- === Sección 3: Asignación y Ubicación === -->
+            <div class="card mb-4 border-0 shadow-sm">
+              <div class="card-header bg-warning text-dark py-3">
+                <h6 class="mb-0 fw-bold d-flex align-items-center">
+                  <i class="bi bi-geo-alt me-2"></i>
+                  Asignación y Ubicación
+                </h6>
+              </div>
+              <div class="card-body bg-white p-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="crear-ubicacion" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-pin-map text-primary me-2"></i>Ubicación Física <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control form-control-lg border-2" id="crear-ubicacion" 
+                           placeholder="Ej: Oficina 201, Sala de Servidores" required
+                           style="background-color: #fafafa; border-color: #e9ecef;">
+                    <small class="text-muted">Ubicación donde se encuentra el equipo</small>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="unidad-responsable" class="form-label fw-semibold text-dark mb-2">
+                      <i class="bi bi-person-check-fill text-info me-2"></i>Personal Responsable
+                    </label>
+                    <select class="form-select form-select-lg border-2" id="unidad-responsable"
+                            style="background-color: #fafafa; border-color: #e9ecef;">
+                      <option selected disabled value="">Cargando personal disponible...</option>
+                    </select>
+                    <small class="text-muted">Personal encargado del equipo</small>
+                  </div>
                 </div>
               </div>
-            </fieldset>
+            </div>
 
-            <!-- === Sección Tipo y Estado === -->
-            <fieldset class="border p-3 mb-4 rounded">
-              <legend class="w-auto px-2 h6 fw-bold">Tipo y Estado</legend>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="crear-tipo-equipo" class="form-label"><i class="bi bi-tag-fill me-2"></i>Tipo de Equipo</label>
-                  <select class="form-select" id="crear-tipo-equipo" required>
-                    <option value="" selected disabled>Seleccionar una categoría...</option>
-                  </select>
+            <!-- === Sección 4: Observaciones y Especificaciones Adicionales === -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-secondary text-white py-3">
+                <h6 class="mb-0 fw-bold d-flex align-items-center">
+                  <i class="bi bi-journal-text me-2"></i>
+                  Información Adicional
+                </h6>
+              </div>
+              <div class="card-body bg-white p-4">
+                <div class="mb-4">
+                  <label for="crear-observaciones" class="form-label fw-semibold text-dark mb-2">
+                    <i class="bi bi-chat-left-text text-muted me-2"></i>Observaciones Generales
+                  </label>
+                  <textarea class="form-control border-2" id="crear-observaciones" rows="3" 
+                            placeholder="Ingrese cualquier observación adicional sobre el equipo..."
+                            style="background-color: #fafafa; border-color: #e9ecef; resize: vertical;"></textarea>
+                  <small class="text-muted">Campo opcional - Información adicional relevante</small>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="crear-estado-equipo" class="form-label"><i class="bi bi-check-circle-fill me-2"></i>Estado del Equipo</label>
-                  <select class="form-select" id="crear-estado-equipo" required>
-                    <option value="" selected disabled>Seleccionar un estado...</option>
-                  </select>
+                
+                <div class="border-top pt-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold text-dark">
+                      <i class="bi bi-list-ul text-success me-2"></i>Especificaciones Técnicas Adicionales
+                    </h6>
+                    <button type="button" class="btn btn-outline-success btn-sm" id="btn-agregar-especificacion">
+                      <i class="bi bi-plus-circle me-1"></i>Agregar Especificación
+                    </button>
+                  </div>
+                  <div id="especificaciones-dinamicas-container" class="bg-light p-3 rounded">
+                    <p class="text-muted mb-0 text-center">
+                      <i class="bi bi-info-circle me-2"></i>
+                      Las especificaciones adicionales aparecerán aquí
+                    </p>
+                  </div>
                 </div>
               </div>
-            </fieldset>
-
-            <!-- === Sección Especificaciones === -->
-            <fieldset class="border p-3 rounded">
-              <legend class="w-auto px-2 h6 fw-bold">Especificaciones</legend>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="crear-marca" class="form-label"><i class="bi bi-building me-2"></i>Marca</label>
-                  <input type="text" class="form-control" id="crear-marca" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="crear-modelo" class="form-label"><i class="bi bi-cpu me-2"></i>Modelo</label>
-                  <input type="text" class="form-control" id="crear-modelo" required>
-                </div>
-              </div>
-              <div id="especificaciones-dinamicas-container">
-                <!-- Contenedor para especificaciones dinámicas -->
-              </div>
-              <button type="button" class="btn btn-outline-success btn-sm mt-2" id="btn-agregar-especificacion">
-                <i class="bi bi-plus"></i> Agregar Especificación
-              </button>
-            </fieldset>
+            </div>
 
           </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" form="formCrearModelo" class="btn btn-success"><i class="bi bi-check-lg me-2"></i>Guardar Equipo</button>
+        <div class="modal-footer bg-light py-3 px-4 border-top">
+          <button type="button" class="btn btn-light btn-lg me-2" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-2"></i>Cancelar
+          </button>
+          <button type="submit" form="formCrearModelo" class="btn btn-success btn-lg px-4">
+            <i class="bi bi-check-lg me-2"></i>Crear Equipo
+          </button>
         </div>
       </div>
     </div>
@@ -278,118 +373,336 @@
 
 
 
-<!-- Modal Detalles del Modelo (nuevo diseño) -->
+<!-- Modal Detalles del Equipo - DISEÑO PROFESIONAL -->
 <div class="modal fade" id="modalDetallesEquipo" tabindex="-1" aria-labelledby="modalDetallesEquipoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-detalles-compacto modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title w-100 text-center" id="modalDetallesEquipoLabel">
-          <i class="bi bi-laptop me-2"></i>
-          <span>Detalles del Modelo</span>
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-12 mb-3">
-              <div class="border rounded p-3">
-                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-2"></i>Datos Generales</h6>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-card-heading me-2"></i>INE:</span>
-                  <span id="detalle-ine" class="text-dark campo-display"></span>
-                  <input id="input-ine" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-hash me-2"></i>NNE:</span>
-                  <span id="detalle-nne" class="text-dark campo-display"></span>
-                  <input id="input-nne" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-upc me-2"></i>Nro. Serie:</span>
-                  <span id="detalle-nro-serie" class="text-dark campo-display"></span>
-                  <input id="input-nro-serie" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-check-circle me-2"></i>Estado:</span>
-                  <span id="detalle-estado" class="text-dark campo-display"></span>
-                  <div class="campo-edit d-none">
-                    <span class="badge bg-info mb-1">Actual: <span id="badge-estado"></span></span>
-                    <select id="input-estado" class="form-select form-select-sm"></select>
-                  </div>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-tag-fill me-2"></i>Tipo de Equipo:</span>
-                  <span id="detalle-tipo" class="text-dark campo-display"></span>
-                  <div class="campo-edit d-none">
-                    <span class="badge bg-info mb-1">Actual: <span id="badge-tipo"></span></span>
-                    <select id="input-tipo" class="form-select form-select-sm"></select>
-                  </div>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-building me-2"></i>Marca:</span>
-                  <span id="detalle-marca" class="text-dark campo-display"></span>
-                  <input id="input-marca" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-cpu me-2"></i>Modelo:</span>
-                  <span id="detalle-modelo" class="text-dark campo-display"></span>
-                  <input id="input-modelo" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-              </div>
-            </div>
-            <div class="col-12 mb-3">
-              <div class="border rounded p-3">
-                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-lines-fill me-2"></i>Responsable, Ubicación y Observaciones</h6>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-person-check-fill me-2"></i>Responsable:</span>
-                  <span id="detalle-responsable" class="text-dark campo-display"></span>
-                  <div class="campo-edit d-none">
-                    <span class="badge bg-info mb-1">Actual: <span id="badge-responsable"></span></span>
-                    <select id="input-responsable" class="form-select form-select-sm"></select>
-                  </div>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-geo-alt me-2"></i>Ubicación:</span>
-                  <span id="detalle-ubicacion" class="text-dark campo-display"></span>
-                  <input id="input-ubicacion" class="form-control form-control-sm campo-edit d-none" type="text">
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold"><i class="bi bi-journal-text me-2"></i>Observaciones:</span>
-                  <span id="detalle-observaciones" class="text-dark campo-display"></span>
-                  <textarea id="input-observaciones" class="form-control form-control-sm campo-edit d-none" rows="2"></textarea>
-                </div>
-              </div>
-            </div>
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);">
+        <div class="d-flex align-items-center w-100">
+          <div class="bg-white rounded-circle p-2 me-3">
+            <i class="bi bi-laptop text-primary fs-4"></i>
           </div>
-          <!-- Especificaciones Técnicas (full width) -->
-          <div class="row">
-            <div class="col-12 mb-2">
-              <div class="border rounded p-3">
-                <h6 class="fw-bold text-primary mb-3 d-flex align-items-center">
-                  <i class="bi bi-card-list me-2"></i>Especificaciones Técnicas
-                  <button id="btn-agregar-especificacion-detalle" type="button" class="btn btn-outline-success btn-sm ms-auto campo-edit d-none"><i class="bi bi-plus"></i> Agregar</button>
-                </h6>
-                <ul id="detalle-especificaciones" class="list-group list-group-flush d-flex flex-wrap justify-content-start gap-2" style="flex-wrap:wrap; gap:0.5rem;">
-                  <!-- Aquí se inyectan las especificaciones técnicas dinámicamente -->
-                </ul>
-              </div>
-            </div>
+          <div>
+            <h5 class="modal-title text-white mb-0 fw-bold" id="modalDetallesEquipoLabel">Detalles del Equipo</h5>
+            <small class="text-white opacity-75" id="modalSubtitle">Información completa y editable</small>
+          </div>
+          <div class="ms-auto me-3">
+            <span class="badge bg-light text-dark fs-6" id="estadoEquipoBadge">---</span>
           </div>
         </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="bi bi-x-lg me-2"></i>Cerrar
+      <div class="modal-body p-0" style="background-color: #f8f9fa;">
+        <div class="container-fluid p-4">
+          
+          <!-- Sección 1: Información Básica -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                  <h6 class="mb-0 fw-bold d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información Básica de Identificación
+                  </h6>
+                </div>
+                <div class="card-body bg-white p-4">
+                  <div class="row g-4">
+                    <!-- INE -->
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-card-text text-muted me-2"></i>Código INE
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-ine" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-ine" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese código INE"
+                                 style="background-color: #fff; border-color: #007bff;">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- NNE -->
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-hash text-danger me-2"></i>Número NNE
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-nne" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-nne" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese número NNE"
+                                 style="background-color: #fff; border-color: #007bff;">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Número de Serie -->
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-upc-scan text-info me-2"></i>Número de Serie
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-nro-serie" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-nro-serie" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese número de serie"
+                                 style="background-color: #fff; border-color: #007bff;">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 2: Especificaciones Técnicas -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white py-3">
+                  <h6 class="mb-0 fw-bold d-flex align-items-center">
+                    <i class="bi bi-cpu me-2"></i>
+                    Especificaciones Técnicas
+                  </h6>
+                </div>
+                <div class="card-body bg-white p-4">
+                  <div class="row g-4">
+                    <!-- Marca -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-building text-warning me-2"></i>Marca
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-marca" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-marca" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese marca"
+                                 style="background-color: #fff; border-color: #28a745;">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Modelo -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-gear text-secondary me-2"></i>Modelo
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-modelo" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-modelo" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese modelo"
+                                 style="background-color: #fff; border-color: #28a745;">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Tipo de Equipo -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-tag-fill text-success me-2"></i>Tipo de Equipo
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-tipo" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <div class="mb-2">
+                            <span class="badge bg-info">Actual: <span id="badge-tipo"></span></span>
+                          </div>
+                          <select id="input-tipo" class="form-select form-select-lg border-2"
+                                  style="background-color: #fff; border-color: #28a745;">
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Estado -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-check-circle text-success me-2"></i>Estado
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <span id="detalle-estado" class="fs-5 fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <div class="mb-2">
+                            <span class="badge bg-info">Actual: <span id="badge-estado"></span></span>
+                          </div>
+                          <select id="input-estado" class="form-select form-select-lg border-2"
+                                  style="background-color: #fff; border-color: #28a745;">
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 3: Asignación y Ubicación -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark py-3">
+                  <h6 class="mb-0 fw-bold d-flex align-items-center">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    Asignación y Ubicación
+                  </h6>
+                </div>
+                <div class="card-body bg-white p-4">
+                  <div class="row g-4">
+                    <!-- Responsable -->
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-person-check-fill text-info me-2"></i>Personal Responsable
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <i class="bi bi-person-circle text-muted me-3 fs-4"></i>
+                            <span id="detalle-responsable" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <div class="mb-2">
+                            <span class="badge bg-info">Actual: <span id="badge-responsable"></span></span>
+                          </div>
+                          <select id="input-responsable" class="form-select form-select-lg border-2"
+                                  style="background-color: #fff; border-color: #ffc107;">
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Ubicación -->
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                          <i class="bi bi-pin-map text-primary me-2"></i>Ubicación Física
+                        </label>
+                        <div class="campo-display">
+                          <div class="bg-light border rounded p-3 d-flex align-items-center">
+                            <i class="bi bi-building text-muted me-3 fs-4"></i>
+                            <span id="detalle-ubicacion" class="fs-5 text-dark fw-medium">---</span>
+                          </div>
+                        </div>
+                        <div class="campo-edit d-none">
+                          <input id="input-ubicacion" class="form-control form-control-lg border-2" 
+                                 type="text" placeholder="Ingrese ubicación"
+                                 style="background-color: #fff; border-color: #ffc107;">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 4: Observaciones -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white py-3">
+                  <h6 class="mb-0 fw-bold d-flex align-items-center">
+                    <i class="bi bi-journal-text me-2"></i>
+                    Observaciones y Notas
+                  </h6>
+                </div>
+                <div class="card-body bg-white p-4">
+                  <div class="mb-3">
+                    <label class="form-label fw-bold text-dark mb-2 d-flex align-items-center">
+                      <i class="bi bi-chat-left-text text-muted me-2"></i>Observaciones Generales
+                    </label>
+                    <div class="campo-display">
+                      <div class="bg-light border rounded p-3" style="min-height: 60px;">
+                        <span id="detalle-observaciones" class="text-dark">---</span>
+                      </div>
+                    </div>
+                    <div class="campo-edit d-none">
+                      <textarea id="input-observaciones" class="form-control border-2" 
+                                rows="3" placeholder="Ingrese observaciones adicionales..."
+                                style="background-color: #fff; border-color: #6c757d; resize: vertical;"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 5: Especificaciones Técnicas Adicionales -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white py-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold d-flex align-items-center">
+                      <i class="bi bi-list-ul me-2"></i>
+                      Especificaciones Técnicas Adicionales
+                    </h6>
+                    <button id="btn-agregar-especificacion-detalle" type="button" 
+                            class="btn btn-light btn-sm campo-edit d-none">
+                      <i class="bi bi-plus-circle me-1"></i>Agregar
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body bg-white p-4">
+                  <div id="detalle-especificaciones" class="d-flex flex-wrap gap-2">
+                    <!-- Especificaciones dinámicas aparecen aquí -->
+                  </div>
+                  <div id="sin-especificaciones" class="text-center py-4 text-muted">
+                    <i class="bi bi-info-circle fs-4 mb-2 d-block"></i>
+                    <p class="mb-0">No hay especificaciones técnicas adicionales registradas</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-3 px-4 border-top">
+        <button type="button" class="btn btn-light btn-lg" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-2"></i>Cerrar
         </button>
-        <button type="button" class="btn btn-warning campo-edit d-none me-auto" id="btn-cancelar-edicion">
-          <i class="bi bi-x-circle me-2"></i>Cancelar
+        <!-- Botones de edición -->
+        <button type="button" class="btn btn-outline-warning btn-lg campo-edit d-none" id="btn-cancelar-edicion">
+          <i class="bi bi-arrow-counterclockwise me-2"></i>Cancelar Edición
         </button>
-        <button type="button" class="btn btn-primary campo-edit d-none" id="btn-guardar-cambios">
+        <button type="button" class="btn btn-success btn-lg campo-edit d-none" id="btn-guardar-cambios">
           <i class="bi bi-check-lg me-2"></i>Guardar Cambios
         </button>
-        <button type="button" class="btn btn-primary" id="btn-editar">
-          <i class="bi bi-pencil me-2"></i>Editar
+        <button type="button" class="btn btn-primary btn-lg" id="btn-editar">
+          <i class="bi bi-pencil-square me-2"></i>Editar Equipo
         </button>
       </div>
     </div>
