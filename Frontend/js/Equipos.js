@@ -127,15 +127,15 @@ const formAgregarUnidad = document.getElementById("formAgregarUnidad");
 if (formAgregarUnidad)
   formAgregarUnidad.addEventListener("submit", guardarUnidad);
 
-  // Event listener para el botón de exportar detalles del equipo
-  const btnExportarDetalle = document.getElementById("btn-exportar-detalle");
-  if (btnExportarDetalle)
-    btnExportarDetalle.addEventListener("click", exportarDetalleEquipo);
+// Event listener para el botón de exportar detalles del equipo
+const btnExportarDetalle = document.getElementById("btn-exportar-detalle");
+if (btnExportarDetalle)
+  btnExportarDetalle.addEventListener("click", exportarDetalleEquipo);
 
-  // Event listener para el botón de imprimir detalles del equipo
-  const btnImprimirDetalle = document.getElementById("btn-imprimir-detalle");
-  if (btnImprimirDetalle)
-    btnImprimirDetalle.addEventListener("click", imprimirDetalleEquipo);
+// Event listener para el botón de imprimir detalles del equipo
+const btnImprimirDetalle = document.getElementById("btn-imprimir-detalle");
+if (btnImprimirDetalle)
+  btnImprimirDetalle.addEventListener("click", imprimirDetalleEquipo);
 
 // Evento para abrir el modal de creación de equipo.
 // document.getElementById('btnAbrirModalCrear').addEventListener('click', abrirModalCrear); // Deshabilitado temporalmente
@@ -2587,9 +2587,10 @@ function exportarEquipos() {
     }
 
     // Cargar jsPDF desde CDN si no está disponible
-    if (typeof window.jsPDF === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    if (typeof window.jsPDF === "undefined") {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
       script.onload = () => {
         generarPDFEquipos();
       };
@@ -2619,92 +2620,101 @@ function exportarEquipos() {
 function generarPDFEquipos() {
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape', 'mm', 'a4');
-    
+    const doc = new jsPDF("landscape", "mm", "a4");
+
     // Crear mapas para acceso rápido
     const equiposMap = new Map(window.equipos.map((e) => [e.id, e]));
     const estadosMap = new Map(window.estados.map((e) => [e.id, e.nombre]));
 
     // Configurar fuente y tamaño
-    doc.setFont('helvetica');
-    
+    doc.setFont("helvetica");
+
     // Header del documento
     doc.setFontSize(16);
     doc.setTextColor(40, 40, 40);
-    doc.text('SISTEMA DE GESTIÓN - INVENTARIO DE EQUIPOS', 20, 20);
-    
-    const fechaActual = new Date().toLocaleDateString('es-ES');
-    const horaActual = new Date().toLocaleTimeString('es-ES');
-    
+    doc.text("SISTEMA DE GESTIÓN - INVENTARIO DE EQUIPOS", 20, 20);
+
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
+
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 28);
     doc.text(`Total de equipos: ${window.unidades.length}`, 20, 34);
-    
+
     // Línea separadora
     doc.setDrawColor(0, 123, 255);
     doc.setLineWidth(0.5);
     doc.line(20, 38, 277, 38);
-    
+
     // Headers de la tabla
-    const headers = ['#', 'INE', 'NNE', 'Nro. Serie', 'Marca', 'Modelo', 'Tipo', 'Estado'];
+    const headers = [
+      "#",
+      "INE",
+      "NNE",
+      "Nro. Serie",
+      "Marca",
+      "Modelo",
+      "Tipo",
+      "Estado",
+    ];
     const startY = 50;
     const rowHeight = 8;
     const colWidths = [12, 35, 35, 35, 25, 25, 35, 35];
     let currentX = 20;
-    
+
     // Dibujar headers
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
     doc.setFillColor(0, 123, 255);
-    
+
     headers.forEach((header, index) => {
-      doc.rect(currentX, startY - 6, colWidths[index], 8, 'F');
+      doc.rect(currentX, startY - 6, colWidths[index], 8, "F");
       doc.text(header, currentX + 2, startY - 1);
       currentX += colWidths[index];
     });
-    
+
     // Preparar datos para la tabla
     let currentY = startY + 2;
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(8);
-    
+
     window.unidades.forEach((unidad, idx) => {
       const equipo = equiposMap.get(unidad.equipoId) || {};
       const estadoNombre = estadosMap.get(unidad.estadoId) || "Sin estado";
-      
+
       // Verificar si necesitamos una nueva página
       if (currentY > 180) {
         doc.addPage();
         currentY = 20;
-        
+
         // Redibujar headers en nueva página
         currentX = 20;
         doc.setFontSize(9);
         doc.setTextColor(255, 255, 255);
         doc.setFillColor(0, 123, 255);
-        
+
         headers.forEach((header, index) => {
-          doc.rect(currentX, currentY - 6, colWidths[index], 8, 'F');
+          doc.rect(currentX, currentY - 6, colWidths[index], 8, "F");
           doc.text(header, currentX + 2, currentY - 1);
           currentX += colWidths[index];
         });
-        
+
         currentY += 2;
         doc.setTextColor(40, 40, 40);
         doc.setFontSize(8);
       }
-      
+
       // Alternar color de fondo de filas
       if (idx % 2 === 0) {
         doc.setFillColor(248, 249, 250);
         currentX = 20;
-        colWidths.forEach(width => {
-          doc.rect(currentX, currentY - 2, width, rowHeight, 'F');
+        colWidths.forEach((width) => {
+          doc.rect(currentX, currentY - 2, width, rowHeight, "F");
           currentX += width;
         });
       }
-      
+
       // Datos de la fila
       const rowData = [
         String(idx + 1),
@@ -2714,40 +2724,43 @@ function generarPDFEquipos() {
         (equipo.marca || "N/A").substring(0, 12),
         (equipo.modelo || "N/A").substring(0, 12),
         (equipo.tipoNombre || "N/A").substring(0, 18),
-        estadoNombre.substring(0, 18)
+        estadoNombre.substring(0, 18),
       ];
-      
+
       currentX = 20;
       rowData.forEach((data, colIndex) => {
         doc.text(data, currentX + 2, currentY + 4);
         currentX += colWidths[colIndex];
       });
-      
+
       currentY += rowHeight;
     });
-    
+
     // Footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text(`© 2025 Sistema de Control y Gestión - Página ${i} de ${pageCount}`, 20, 200);
+      doc.text(
+        `© 2025 Sistema de Control y Gestión - Página ${i} de ${pageCount}`,
+        20,
+        200
+      );
       doc.text(`Generado el ${fechaActual} a las ${horaActual}`, 200, 200);
     }
-    
+
     // Guardar el PDF
     const fecha = new Date().toISOString().split("T")[0];
     const nombreArchivo = `equipos_${fecha}.pdf`;
     doc.save(nombreArchivo);
-    
+
     Swal.fire({
       title: "¡PDF generado exitosamente!",
       text: `Se ha descargado el archivo: ${nombreArchivo}`,
       icon: "success",
       timer: 3000,
     });
-    
   } catch (error) {
     console.error("Error al generar PDF:", error);
     Swal.fire({
@@ -2774,19 +2787,19 @@ function exportarEquiposCSV() {
     window.unidades.forEach((unidad, idx) => {
       const equipo = equiposMap.get(unidad.equipoId) || {};
       const estadoNombre = estadosMap.get(unidad.estadoId) || "Sin estado";
-      
+
       datosParaExportar.push({
         "Nro Orden": idx + 1,
-        "INE": equipo.ine || "N/A",
-        "NNE": equipo.nne || "N/A",
+        INE: equipo.ine || "N/A",
+        NNE: equipo.nne || "N/A",
         "Número de Serie": unidad.nroSerie || "N/A",
-        "Marca": equipo.marca || "N/A",
-        "Modelo": equipo.modelo || "N/A",
+        Marca: equipo.marca || "N/A",
+        Modelo: equipo.modelo || "N/A",
         "Tipo de Equipo": equipo.tipoNombre || "N/A",
-        "Estado": estadoNombre,
-        "Ubicación": unidad.ubicacion || "N/A",
+        Estado: estadoNombre,
+        Ubicación: unidad.ubicacion || "N/A",
         "Personal Asignado": unidad.personalAsignado || "Sin asignar",
-        "Observaciones": unidad.observaciones || "Sin observaciones"
+        Observaciones: unidad.observaciones || "Sin observaciones",
       });
     });
 
@@ -2879,9 +2892,10 @@ function exportarDetalleEquipo() {
     });
 
     // Cargar jsPDF desde CDN si no está disponible
-    if (typeof window.jsPDF === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    if (typeof window.jsPDF === "undefined") {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
       script.onload = () => {
         generarPDFDetalle();
       };
@@ -2911,157 +2925,184 @@ function exportarDetalleEquipo() {
 function generarPDFDetalle() {
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('portrait', 'mm', 'a4');
-    
+    const doc = new jsPDF("portrait", "mm", "a4");
+
     // Obtener los datos actuales mostrados en el modal
     const detalle = {
-      ine: document.getElementById('detalle-ine').textContent || "N/A",
-      nne: document.getElementById('detalle-nne').textContent || "N/A",
-      numeroSerie: document.getElementById('detalle-nro-serie').textContent || "N/A",
-      marca: document.getElementById('detalle-marca').textContent || "N/A",
-      modelo: document.getElementById('detalle-modelo').textContent || "N/A",
-      tipoEquipo: document.getElementById('detalle-tipo').textContent || "N/A",
-      estadoEquipo: document.getElementById('detalle-estado').textContent || "N/A",
-      responsable: document.getElementById('detalle-responsable').textContent || "Sin asignar",
-      ubicacion: document.getElementById('detalle-ubicacion').textContent || "N/A",
-      observaciones: document.getElementById('detalle-observaciones').textContent || "Sin observaciones"
+      ine: document.getElementById("detalle-ine").textContent || "N/A",
+      nne: document.getElementById("detalle-nne").textContent || "N/A",
+      numeroSerie:
+        document.getElementById("detalle-nro-serie").textContent || "N/A",
+      marca: document.getElementById("detalle-marca").textContent || "N/A",
+      modelo: document.getElementById("detalle-modelo").textContent || "N/A",
+      tipoEquipo: document.getElementById("detalle-tipo").textContent || "N/A",
+      estadoEquipo:
+        document.getElementById("detalle-estado").textContent || "N/A",
+      responsable:
+        document.getElementById("detalle-responsable").textContent ||
+        "Sin asignar",
+      ubicacion:
+        document.getElementById("detalle-ubicacion").textContent || "N/A",
+      observaciones:
+        document.getElementById("detalle-observaciones").textContent ||
+        "Sin observaciones",
     };
 
     // Obtener especificaciones técnicas si existen
     let especificaciones = [];
-    const especificacionesContainer = document.getElementById('detalle-especificaciones');
+    const especificacionesContainer = document.getElementById(
+      "detalle-especificaciones"
+    );
     if (especificacionesContainer) {
-      const badges = especificacionesContainer.querySelectorAll('.badge');
-      badges.forEach(badge => {
+      const badges = especificacionesContainer.querySelectorAll(".badge");
+      badges.forEach((badge) => {
         especificaciones.push(badge.textContent.trim());
       });
     }
 
     // Configurar fuente y tamaño
-    doc.setFont('helvetica');
-    
+    doc.setFont("helvetica");
+
     // Header del documento
     doc.setFontSize(18);
     doc.setTextColor(0, 123, 255);
-    doc.text('DETALLE COMPLETO DE EQUIPO', 20, 25);
-    
-    const fechaActual = new Date().toLocaleDateString('es-ES');
-    const horaActual = new Date().toLocaleTimeString('es-ES');
-    
+    doc.text("DETALLE COMPLETO DE EQUIPO", 20, 25);
+
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
+
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 32);
-    doc.text('Sistema de Control y Gestión de Equipos', 20, 38);
-    
+    doc.text("Sistema de Control y Gestión de Equipos", 20, 38);
+
     // Equipo ID destacado
     doc.setFontSize(12);
     doc.setTextColor(40, 40, 40);
     doc.setFillColor(248, 249, 250);
-    doc.rect(20, 42, 170, 8, 'F');
+    doc.rect(20, 42, 170, 8, "F");
     doc.text(`Equipo: ${detalle.nne}`, 25, 48);
-    
+
     // Línea separadora
     doc.setDrawColor(0, 123, 255);
     doc.setLineWidth(0.5);
     doc.line(20, 55, 190, 55);
-    
+
     let currentY = 65;
-    
+
     // Función para agregar una sección
-    const agregarSeccion = (titulo, campos, emoji = '') => {
+    const agregarSeccion = (titulo, campos, emoji = "") => {
       // Header de sección
       doc.setFillColor(0, 123, 255);
-      doc.rect(20, currentY - 5, 170, 8, 'F');
-      
+      doc.rect(20, currentY - 5, 170, 8, "F");
+
       doc.setFontSize(11);
       doc.setTextColor(255, 255, 255);
       doc.text(`${emoji} ${titulo}`, 25, currentY);
-      
+
       currentY += 10;
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(9);
-      
+
       // Campos de la sección
-      campos.forEach(campo => {
+      campos.forEach((campo) => {
         if (currentY > 270) {
           doc.addPage();
           currentY = 20;
         }
-        
+
         // Fondo alternado para campos
         doc.setFillColor(248, 249, 250);
-        doc.rect(20, currentY - 2, 170, 8, 'F');
-        
+        doc.rect(20, currentY - 2, 170, 8, "F");
+
         doc.setTextColor(60, 60, 60);
         doc.text(`${campo.label}:`, 25, currentY + 3);
-        
+
         doc.setTextColor(20, 20, 20);
-        const valor = campo.valor.length > 80 ? campo.valor.substring(0, 77) + '...' : campo.valor;
+        const valor =
+          campo.valor.length > 80
+            ? campo.valor.substring(0, 77) + "..."
+            : campo.valor;
         doc.text(valor, 70, currentY + 3);
-        
+
         currentY += 10;
       });
-      
+
       currentY += 5; // Espacio entre secciones
     };
-    
+
     // Sección 1: Información de Identificación
-    agregarSeccion('Información de Identificación', [
-      { label: 'Código INE', valor: detalle.ine },
-      { label: 'Número NNE', valor: detalle.nne },
-      { label: 'Número de Serie', valor: detalle.numeroSerie }
-    ], '📋');
-    
+    agregarSeccion(
+      "Información de Identificación",
+      [
+        { label: "Código INE", valor: detalle.ine },
+        { label: "Número NNE", valor: detalle.nne },
+        { label: "Número de Serie", valor: detalle.numeroSerie },
+      ],
+      "📋"
+    );
+
     // Sección 2: Especificaciones Técnicas
-    agregarSeccion('Especificaciones Técnicas', [
-      { label: 'Marca', valor: detalle.marca },
-      { label: 'Modelo', valor: detalle.modelo },
-      { label: 'Tipo de Equipo', valor: detalle.tipoEquipo },
-      { label: 'Estado Actual', valor: detalle.estadoEquipo }
-    ], '⚙️');
-    
+    agregarSeccion(
+      "Especificaciones Técnicas",
+      [
+        { label: "Marca", valor: detalle.marca },
+        { label: "Modelo", valor: detalle.modelo },
+        { label: "Tipo de Equipo", valor: detalle.tipoEquipo },
+        { label: "Estado Actual", valor: detalle.estadoEquipo },
+      ],
+      "⚙️"
+    );
+
     // Sección 3: Asignación y Ubicación
-    agregarSeccion('Asignación y Ubicación', [
-      { label: 'Ubicación Física', valor: detalle.ubicacion },
-      { label: 'Personal Responsable', valor: detalle.responsable }
-    ], '📍');
-    
+    agregarSeccion(
+      "Asignación y Ubicación",
+      [
+        { label: "Ubicación Física", valor: detalle.ubicacion },
+        { label: "Personal Responsable", valor: detalle.responsable },
+      ],
+      "📍"
+    );
+
     // Sección 4: Observaciones
-    agregarSeccion('Observaciones y Notas', [
-      { label: 'Observaciones Generales', valor: detalle.observaciones }
-    ], '📝');
-    
+    agregarSeccion(
+      "Observaciones y Notas",
+      [{ label: "Observaciones Generales", valor: detalle.observaciones }],
+      "📝"
+    );
+
     // Sección 5: Especificaciones Adicionales (si existen)
     if (especificaciones.length > 0) {
-      agregarSeccion('Especificaciones Técnicas Adicionales', [
-        { label: 'Especificaciones', valor: especificaciones.join(' • ') }
-      ], '🔧');
+      agregarSeccion(
+        "Especificaciones Técnicas Adicionales",
+        [{ label: "Especificaciones", valor: especificaciones.join(" • ") }],
+        "🔧"
+      );
     }
-    
+
     // Footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text('© 2025 Sistema de Control y Gestión', 20, 285);
+      doc.text("© 2025 Sistema de Control y Gestión", 20, 285);
       doc.text(`Página ${i} de ${pageCount}`, 160, 285);
       doc.text(`Generado: ${fechaActual} ${horaActual}`, 20, 290);
     }
-    
+
     // Guardar el PDF
-    const nne = detalle.nne.replace(/[^a-zA-Z0-9]/g, '_');
+    const nne = detalle.nne.replace(/[^a-zA-Z0-9]/g, "_");
     const fecha = new Date().toISOString().split("T")[0];
     const nombreArchivo = `equipo_${nne}_${fecha}.pdf`;
     doc.save(nombreArchivo);
-    
+
     Swal.fire({
       title: "¡PDF generado exitosamente!",
       text: `Se ha descargado el archivo: ${nombreArchivo}`,
       icon: "success",
       timer: 3000,
     });
-    
   } catch (error) {
     console.error("Error al generar PDF de detalle:", error);
     Swal.fire({
@@ -3080,37 +3121,49 @@ function exportarDetalleCSV() {
   try {
     // Obtener los datos actuales mostrados en el modal
     const detalle = {
-      "INE": document.getElementById('detalle-ine').textContent || "N/A",
-      "NNE": document.getElementById('detalle-nne').textContent || "N/A",
-      "Número de Serie": document.getElementById('detalle-nro-serie').textContent || "N/A",
-      "Marca": document.getElementById('detalle-marca').textContent || "N/A",
-      "Modelo": document.getElementById('detalle-modelo').textContent || "N/A",
-      "Tipo de Equipo": document.getElementById('detalle-tipo').textContent || "N/A",
-      "Estado": document.getElementById('detalle-estado').textContent || "N/A",
-      "Personal Responsable": document.getElementById('detalle-responsable').textContent || "Sin asignar",
-      "Ubicación": document.getElementById('detalle-ubicacion').textContent || "N/A",
-      "Observaciones": document.getElementById('detalle-observaciones').textContent || "Sin observaciones"
+      INE: document.getElementById("detalle-ine").textContent || "N/A",
+      NNE: document.getElementById("detalle-nne").textContent || "N/A",
+      "Número de Serie":
+        document.getElementById("detalle-nro-serie").textContent || "N/A",
+      Marca: document.getElementById("detalle-marca").textContent || "N/A",
+      Modelo: document.getElementById("detalle-modelo").textContent || "N/A",
+      "Tipo de Equipo":
+        document.getElementById("detalle-tipo").textContent || "N/A",
+      Estado: document.getElementById("detalle-estado").textContent || "N/A",
+      "Personal Responsable":
+        document.getElementById("detalle-responsable").textContent ||
+        "Sin asignar",
+      Ubicación:
+        document.getElementById("detalle-ubicacion").textContent || "N/A",
+      Observaciones:
+        document.getElementById("detalle-observaciones").textContent ||
+        "Sin observaciones",
     };
 
     // Agregar especificaciones técnicas si existen
-    const especificacionesContainer = document.getElementById('detalle-especificaciones');
+    const especificacionesContainer = document.getElementById(
+      "detalle-especificaciones"
+    );
     if (especificacionesContainer) {
-      const badges = especificacionesContainer.querySelectorAll('.badge');
+      const badges = especificacionesContainer.querySelectorAll(".badge");
       let especificaciones = [];
-      badges.forEach(badge => {
+      badges.forEach((badge) => {
         especificaciones.push(badge.textContent.trim());
       });
-      detalle["Especificaciones Técnicas"] = especificaciones.length > 0 ? especificaciones.join("; ") : "Sin especificaciones";
+      detalle["Especificaciones Técnicas"] =
+        especificaciones.length > 0
+          ? especificaciones.join("; ")
+          : "Sin especificaciones";
     }
 
     // Crear archivo CSV con los detalles
     const csvContent = generarCSV([detalle]);
-    
+
     // Generar nombre del archivo con NNE y fecha
-    const nne = detalle.NNE.replace(/[^a-zA-Z0-9]/g, '_');
+    const nne = detalle.NNE.replace(/[^a-zA-Z0-9]/g, "_");
     const fecha = new Date().toISOString().split("T")[0];
     const nombreArchivo = `equipo_${nne}_${fecha}.csv`;
-    
+
     // Descargar archivo
     descargarArchivo(csvContent, nombreArchivo, "text/csv");
 
@@ -3120,7 +3173,6 @@ function exportarDetalleCSV() {
       icon: "success",
       timer: 3000,
     });
-
   } catch (error) {
     console.error("Error al exportar detalle del equipo:", error);
     Swal.fire({
@@ -3140,25 +3192,29 @@ function imprimirTablaEquipos() {
       Swal.fire({
         title: "No hay datos",
         text: "No hay equipos para imprimir. Cargue los datos primero.",
-        icon: "warning"
+        icon: "warning",
       });
       return;
     }
 
     // Crear ventana de impresión con parámetros más específicos
-    const ventanaImpresion = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-    
+    const ventanaImpresion = window.open(
+      "",
+      "_blank",
+      "width=1200,height=800,scrollbars=yes,resizable=yes"
+    );
+
     if (!ventanaImpresion) {
       Swal.fire({
         title: "Error de Impresión",
         text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
-        icon: "error"
+        icon: "error",
       });
       return;
     }
 
-    const fechaActual = new Date().toLocaleDateString('es-ES');
-    const horaActual = new Date().toLocaleTimeString('es-ES');
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
 
     // HTML para impresión optimizada para diferentes tamaños de papel
     ventanaImpresion.document.write(`
@@ -3408,24 +3464,39 @@ function imprimirTablaEquipos() {
                 </tr>
               </thead>
               <tbody>
-                ${window.equipos.map((equipo, index) => {
-                  const claseEstado = equipo.estadoEquipo ? 
-                    `estado-${equipo.estadoEquipo.toLowerCase().replace(/\s+/g, '-')}` : '';
-                  
-                  return `
-                    <tr class="${index > 0 && index % 30 === 0 ? 'page-break' : ''}">
-                      <td class="col-ine">${equipo.ine || 'N/A'}</td>
-                      <td class="col-nne"><strong>${equipo.nne || 'N/A'}</strong></td>
-                      <td class="col-serie">${equipo.numeroSerie || 'N/A'}</td>
-                      <td class="col-marca">${equipo.marca || 'N/A'}</td>
-                      <td class="col-modelo">${equipo.modelo || 'N/A'}</td>
-                      <td class="col-tipo">${equipo.tipoEquipo || 'N/A'}</td>
-                      <td class="col-estado ${claseEstado}">${equipo.estadoEquipo || 'N/A'}</td>
-                      <td class="col-responsable">${equipo.responsable || 'Sin asignar'}</td>
-                      <td class="col-ubicacion">${equipo.ubicacion || 'N/A'}</td>
+                ${window.equipos
+                  .map((equipo, index) => {
+                    const claseEstado = equipo.estadoEquipo
+                      ? `estado-${equipo.estadoEquipo
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`
+                      : "";
+
+                    return `
+                    <tr class="${
+                      index > 0 && index % 30 === 0 ? "page-break" : ""
+                    }">
+                      <td class="col-ine">${equipo.ine || "N/A"}</td>
+                      <td class="col-nne"><strong>${
+                        equipo.nne || "N/A"
+                      }</strong></td>
+                      <td class="col-serie">${equipo.numeroSerie || "N/A"}</td>
+                      <td class="col-marca">${equipo.marca || "N/A"}</td>
+                      <td class="col-modelo">${equipo.modelo || "N/A"}</td>
+                      <td class="col-tipo">${equipo.tipoEquipo || "N/A"}</td>
+                      <td class="col-estado ${claseEstado}">${
+                      equipo.estadoEquipo || "N/A"
+                    }</td>
+                      <td class="col-responsable">${
+                        equipo.responsable || "Sin asignar"
+                      }</td>
+                      <td class="col-ubicacion">${
+                        equipo.ubicacion || "N/A"
+                      }</td>
                     </tr>
                   `;
-                }).join('')}
+                  })
+                  .join("")}
               </tbody>
             </table>
           </div>
@@ -3474,9 +3545,8 @@ function imprimirTablaEquipos() {
       text: "La ventana de impresión se ha abierto correctamente. El documento se adaptará automáticamente a su papel.",
       icon: "success",
       timer: 2500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
-
   } catch (error) {
     console.error("Error al preparar impresión de tabla:", error);
     Swal.fire({
@@ -3496,64 +3566,76 @@ function imprimirDetalleEquipo() {
     function obtenerTextoElemento(id, fallback = "N/A") {
       const elemento = document.getElementById(id);
       if (!elemento) return fallback;
-      
+
       // Si el elemento tiene textContent visible, usar eso
       if (elemento.textContent && elemento.textContent.trim()) {
         const texto = elemento.textContent.trim();
         return texto === "---" || texto === "-" ? fallback : texto;
       }
-      
+
       return fallback;
     }
 
     // Obtener los datos actuales mostrados en el modal
     const detalle = {
-      ine: obtenerTextoElemento('detalle-ine'),
-      nne: obtenerTextoElemento('detalle-nne'),
-      numeroSerie: obtenerTextoElemento('detalle-nro-serie'),
-      marca: obtenerTextoElemento('detalle-marca'),
-      modelo: obtenerTextoElemento('detalle-modelo'),
-      tipoEquipo: obtenerTextoElemento('detalle-tipo'),
-      estadoEquipo: obtenerTextoElemento('detalle-estado'),
-      responsable: obtenerTextoElemento('detalle-responsable', 'Sin asignar'),
-      ubicacion: obtenerTextoElemento('detalle-ubicacion'),
-      observaciones: obtenerTextoElemento('detalle-observaciones', 'Sin observaciones')
+      ine: obtenerTextoElemento("detalle-ine"),
+      nne: obtenerTextoElemento("detalle-nne"),
+      numeroSerie: obtenerTextoElemento("detalle-nro-serie"),
+      marca: obtenerTextoElemento("detalle-marca"),
+      modelo: obtenerTextoElemento("detalle-modelo"),
+      tipoEquipo: obtenerTextoElemento("detalle-tipo"),
+      estadoEquipo: obtenerTextoElemento("detalle-estado"),
+      responsable: obtenerTextoElemento("detalle-responsable", "Sin asignar"),
+      ubicacion: obtenerTextoElemento("detalle-ubicacion"),
+      observaciones: obtenerTextoElemento(
+        "detalle-observaciones",
+        "Sin observaciones"
+      ),
     };
 
     // Obtener especificaciones técnicas si existen
     let especificaciones = [];
-    const especificacionesContainer = document.getElementById('detalle-especificaciones');
+    const especificacionesContainer = document.getElementById(
+      "detalle-especificaciones"
+    );
     if (especificacionesContainer) {
       // Buscar elementos li dentro del contenedor
-      const liElements = especificacionesContainer.querySelectorAll('li');
-      liElements.forEach(li => {
+      const liElements = especificacionesContainer.querySelectorAll("li");
+      liElements.forEach((li) => {
         const text = li.textContent.trim();
         // Extraer texto omitiendo el punto inicial si existe
-        const cleanText = text.replace(/^•\s*/, '').trim();
-        if (cleanText && cleanText !== "No hay especificaciones técnicas para este modelo.") {
+        const cleanText = text.replace(/^•\s*/, "").trim();
+        if (
+          cleanText &&
+          cleanText !== "No hay especificaciones técnicas para este modelo."
+        ) {
           especificaciones.push(cleanText);
         }
       });
     }
 
     // Crear ventana de impresión con parámetros optimizados
-    const ventanaImpresion = window.open('', '_blank', 'width=800,height=1000,scrollbars=yes,resizable=yes');
-    
+    const ventanaImpresion = window.open(
+      "",
+      "_blank",
+      "width=800,height=1000,scrollbars=yes,resizable=yes"
+    );
+
     if (!ventanaImpresion) {
       Swal.fire({
         title: "Error de Impresión",
         text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
-        icon: "error"
+        icon: "error",
       });
       return;
     }
-    const fechaActual = new Date().toLocaleDateString('es-ES');
-    const horaActual = new Date().toLocaleTimeString('es-ES');
-    
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
+
     if (!ventanaImpresion) {
-      throw new Error('No se pudo abrir la ventana de impresión');
+      throw new Error("No se pudo abrir la ventana de impresión");
     }
-    
+
     ventanaImpresion.document.write(`
       <!DOCTYPE html>
       <html lang="es">
@@ -3856,7 +3938,14 @@ function imprimirDetalleEquipo() {
                   </div>
                   <div class="campo">
                       <div class="campo-label">Estado Actual:</div>
-                      <div class="campo-valor ${detalle.estadoEquipo ? 'estado-' + detalle.estadoEquipo.toLowerCase().replace(/\s+/g, '-') : ''}">${detalle.estadoEquipo}</div>
+                      <div class="campo-valor ${
+                        detalle.estadoEquipo
+                          ? "estado-" +
+                            detalle.estadoEquipo
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                          : ""
+                      }">${detalle.estadoEquipo}</div>
                   </div>
               </div>
               
@@ -3888,7 +3977,9 @@ function imprimirDetalleEquipo() {
                   </div>
               </div>
               
-              ${especificaciones.length > 0 ? `
+              ${
+                especificaciones.length > 0
+                  ? `
               <!-- Sección: Especificaciones Adicionales -->
               <div class="seccion">
                   <div class="seccion-titulo">
@@ -3899,12 +3990,16 @@ function imprimirDetalleEquipo() {
                       <div class="campo-label">Especificaciones:</div>
                       <div class="campo-valor">
                           <ul class="especificaciones-list">
-                              ${especificaciones.map(esp => `<li>${esp}</li>`).join('')}
+                              ${especificaciones
+                                .map((esp) => `<li>${esp}</li>`)
+                                .join("")}
                           </ul>
                       </div>
                   </div>
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
               
               <div class="footer">
                   <p><strong>© 2025 Sistema de Control y Gestión de Equipos</strong></p>
@@ -3942,7 +4037,7 @@ function imprimirDetalleEquipo() {
       </body>
       </html>
     `);
-    
+
     ventanaImpresion.document.close();
 
     // Mostrar confirmación de éxito
@@ -3951,15 +4046,14 @@ function imprimirDetalleEquipo() {
       text: "La ventana con el detalle completo del equipo se ha abierto correctamente.",
       icon: "success",
       timer: 2500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
-
   } catch (error) {
     console.error("Error al imprimir detalle del equipo:", error);
     Swal.fire({
-      title: "Error de Impresión", 
+      title: "Error de Impresión",
       text: "No se pudo preparar la impresión del detalle. Verifique su configuración de navegador.",
-      icon: "error"
+      icon: "error",
     });
   }
 }
