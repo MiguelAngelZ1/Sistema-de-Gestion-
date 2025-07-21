@@ -101,40 +101,57 @@
                 </button>
               </div>
 
-              <!-- Tabla de personal -->
-              <div class="table-responsive">
-                <table class="table" id="tablaPersonal">
-                  <thead>
-                    <tr>
-                      <th>Grado</th>
-                      <th>Apellido</th>
-                      <th>Nombre</th>
-                      <th>Arma/Especialidad</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="personal-table">
-                    <!-- Se cargan los datos de forma dinámica -->
-                    <tr>
-                      <td colspan="5" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                          <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p class="mt-2 mb-0 text-muted">Cargando personal...</p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <!-- Tarjeta de la tabla -->
+              <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table
+                      class="table table-hover align-middle mb-0"
+                      id="tablaPersonal"
+                    >
+                      <thead class="bg-light">
+                        <tr>
+                          <th class="ps-4">Grado</th>
+                          <th>Apellido</th>
+                          <th>Nombre</th>
+                          <th>Arma/Especialidad</th>
+                          <th class="text-center" style="width: 120px">
+                            Acciones
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="personal-table">
+                        <!-- Se cargan los datos de forma dinámica -->
+                        <tr>
+                          <td colspan="5" class="text-center py-4">
+                            <div
+                              class="spinner-border text-primary"
+                              role="status"
+                            >
+                              <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 mb-0 text-muted">
+                              Cargando personal...
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-              <!-- Estado vacío (oculto por defecto) -->
-              <div id="empty-state" class="d-none">
-                <div class="text-center py-5">
-                  <i class="bi bi-people display-4 text-muted mb-3"></i>
-                  <h5 class="text-muted">No hay personal registrado</h5>
-                  <p class="text-muted mb-0">
-                    Comienza agregando un nuevo miembro del personal
-                  </p>
+                  <!-- Estado vacío -->
+                  <div id="empty-state" class="text-center py-5 d-none">
+                    <div class="mb-3">
+                      <i
+                        class="bi bi-people text-muted"
+                        style="font-size: 2.5rem"
+                      ></i>
+                    </div>
+                    <h5 class="text-muted mb-2">No hay personal registrado</h5>
+                    <p class="text-muted mb-0">
+                      Comienza agregando un nuevo miembro del personal
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
