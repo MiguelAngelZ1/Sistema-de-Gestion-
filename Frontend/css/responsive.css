@@ -1,0 +1,450 @@
+/* ===== SISTEMA RESPONSIVO PROFESIONAL ===== */
+
+/* Variables para breakpoints */
+:root {
+  --breakpoint-xs: 576px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 992px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1400px;
+}
+
+/* ===== BASE RESPONSIVA ===== */
+
+/* Container fluido mejorado */
+.container-responsive {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+@media (min-width: 576px) {
+  .container-responsive {
+    padding: 0 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding: 0 30px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container-responsive {
+    padding: 0 40px;
+  }
+}
+
+/* ===== NAVBAR RESPONSIVA ===== */
+
+@media (max-width: 991px) {
+  .navbar-nav {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .navbar-nav .nav-item {
+    text-align: center;
+    margin: 0.25rem 0;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ===== TABLES RESPONSIVAS ===== */
+
+.table-responsive-enhanced {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+  .table-responsive-enhanced {
+    border: none;
+    box-shadow: none;
+  }
+  
+  .table-responsive-enhanced .table {
+    border: none;
+    margin-bottom: 0;
+  }
+  
+  .table-responsive-enhanced .table thead {
+    display: none;
+  }
+  
+  .table-responsive-enhanced .table tbody tr {
+    display: block;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .table-responsive-enhanced .table tbody td {
+    display: block;
+    text-align: left;
+    border: none;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .table-responsive-enhanced .table tbody td:last-child {
+    border-bottom: none;
+  }
+  
+  .table-responsive-enhanced .table tbody td::before {
+    content: attr(data-label) ": ";
+    font-weight: bold;
+    color: var(--text-secondary);
+    display: inline-block;
+    width: 40%;
+    min-width: 100px;
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(1)::before {
+    content: "Nro Orden: ";
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(2)::before {
+    content: "INE: ";
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(3)::before {
+    content: "NNE: ";
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(4)::before {
+    content: "Nro. Serie: ";
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(5)::before {
+    content: "Estado: ";
+  }
+  
+  .table-responsive-enhanced .table tbody td:nth-child(6)::before {
+    content: "Acciones: ";
+  }
+}
+
+/* ===== MODALES RESPONSIVOS ===== */
+
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: none;
+    width: auto;
+  }
+  
+  .modal-dialog-centered {
+    min-height: calc(100vh - 1rem);
+  }
+  
+  .modal-content {
+    border-radius: 8px;
+    border: none;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .modal-header .btn-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-footer .btn:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 991px) {
+  .modal-lg {
+    max-width: 90%;
+  }
+  
+  .modal-xl {
+    max-width: 95%;
+  }
+}
+
+/* ===== CARDS RESPONSIVAS ===== */
+
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .row .col-md-6,
+  .row .col-md-4,
+  .row .col-md-3 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* ===== FORMS RESPONSIVOS ===== */
+
+@media (max-width: 576px) {
+  .form-control-lg,
+  .form-select-lg {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .btn-lg {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ===== BUTTONS RESPONSIVOS ===== */
+
+@media (max-width: 576px) {
+  .btn-group-vertical .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+  
+  .d-flex.gap-2 .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ===== THEME TOGGLE BUTTON RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+  .theme-toggle {
+    top: 60px;
+    right: 10px;
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .theme-toggle {
+    top: 55px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+}
+
+/* ===== TOAST NOTIFICATIONS RESPONSIVE ===== */
+
+@media (max-width: 576px) {
+  .toast-notification {
+    right: 10px !important;
+    left: 10px !important;
+    top: 100px !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+}
+
+/* ===== UTILITY CLASSES RESPONSIVE ===== */
+
+/* Spacing responsive */
+@media (max-width: 576px) {
+  .p-responsive {
+    padding: 1rem !important;
+  }
+  
+  .m-responsive {
+    margin: 1rem !important;
+  }
+  
+  .mb-responsive {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mt-responsive {
+    margin-top: 1rem !important;
+  }
+}
+
+@media (min-width: 577px) {
+  .p-responsive {
+    padding: 2rem !important;
+  }
+  
+  .m-responsive {
+    margin: 2rem !important;
+  }
+  
+  .mb-responsive {
+    margin-bottom: 2rem !important;
+  }
+  
+  .mt-responsive {
+    margin-top: 2rem !important;
+  }
+}
+
+/* Text responsive */
+@media (max-width: 576px) {
+  .text-responsive-sm {
+    font-size: 0.9rem !important;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1.1rem !important;
+  }
+  
+  h1, .h1 { font-size: 2rem !important; }
+  h2, .h2 { font-size: 1.75rem !important; }
+  h3, .h3 { font-size: 1.5rem !important; }
+  h4, .h4 { font-size: 1.25rem !important; }
+  h5, .h5 { font-size: 1.1rem !important; }
+  h6, .h6 { font-size: 1rem !important; }
+}
+
+/* ===== GRID SYSTEM ENHANCEMENTS ===== */
+
+@media (max-width: 576px) {
+  .row.g-4 {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+  }
+  
+  .row.g-3 {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.75rem;
+  }
+}
+
+/* ===== SPECIAL RESPONSIVE COMPONENTS ===== */
+
+/* Badge responsive */
+@media (max-width: 576px) {
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.5em;
+  }
+}
+
+/* Alert responsive */
+@media (max-width: 576px) {
+  .alert {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* List responsive */
+@media (max-width: 576px) {
+  .list-group-item {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ===== SCROLLBAR RESPONSIVE ===== */
+
+/* Scrollbar más delgada en dispositivos móviles */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+}
+
+/* ===== ANIMATIONS RESPONSIVE ===== */
+
+/* Reducir animaciones en dispositivos móviles para mejor performance */
+@media (max-width: 768px) {
+  *, *::before, *::after {
+    animation-duration: 0.2s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.2s !important;
+  }
+}
+
+/* ===== ACCESSIBILITY RESPONSIVE ===== */
+
+/* Asegurar que los elementos táctiles tengan el tamaño mínimo recomendado */
+@media (max-width: 768px) {
+  .btn, .form-control, .form-select, .form-check-input {
+    min-height: 44px;
+  }
+  
+  .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

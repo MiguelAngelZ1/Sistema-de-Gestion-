@@ -143,6 +143,12 @@ function configurarModalAgregarPersona() {
       // Limpiar opciones existentes excepto la primera
       selectGrado.innerHTML = '<option value="">Seleccione un grado</option>';
 
+      if (window.grados.length === 0) {
+        // No hay grados disponibles - mostrar mensaje de advertencia
+        selectGrado.innerHTML = '<option value="" disabled>⚠️ No hay grados disponibles</option>';
+        return false; // Indica que no hay datos
+      }
+
       // Ordenar grados por ID
       const gradosOrdenados = [...window.grados].sort((a, b) => a.id - b.id);
 
@@ -156,7 +162,9 @@ function configurarModalAgregarPersona() {
         option.textContent = textoMostrar;
         selectGrado.appendChild(option);
       });
+      return true; // Indica que hay datos disponibles
     }
+    return false;
   };
 
   // Función para cargar las armas/especialidades en el select
@@ -164,8 +172,13 @@ function configurarModalAgregarPersona() {
     const selectArmEsp = modal.querySelector("#nuevoArmEsp");
     if (selectArmEsp && window.armEsp && Array.isArray(window.armEsp)) {
       // Limpiar opciones existentes
-      selectArmEsp.innerHTML =
-        '<option value="">Seleccione un arma/especialidad</option>';
+      selectArmEsp.innerHTML = '<option value="">Seleccione un arma/especialidad</option>';
+
+      if (window.armEsp.length === 0) {
+        // No hay armas/especialidades disponibles
+        selectArmEsp.innerHTML = '<option value="" disabled>⚠️ No hay armas/especialidades disponibles</option>';
+        return false; // Indica que no hay datos
+      }
 
       // Ordenar por ID
       const armEspOrdenadas = [...window.armEsp].sort(
@@ -178,26 +191,78 @@ function configurarModalAgregarPersona() {
         option.value = arma.id_armesp; // Usar id_armesp en lugar de id
 
         // Usar los nombres de propiedades correctos
-        const abreviatura = arma.abreviatura || "";
-        const nombreCompleto = arma.armesp_completo || "";
-
-        // Formato: "Abreviatura - Nombre Completo"
-        let textoMostrar = "";
-        if (abreviatura && nombreCompleto) {
-          textoMostrar = `${abreviatura.trim()} - ${nombreCompleto.trim()}`;
-        } else if (abreviatura) {
-          textoMostrar = abreviatura.trim();
-        } else if (nombreCompleto) {
-          textoMostrar = nombreCompleto.trim();
-        } else {
-          textoMostrar = `Arma/Esp ${arma.id_armesp}`;
-        }
-
+        const textoMostrar = arma.arma_especialidad || arma.nombre || `Arma/Esp ${arma.id_armesp}`;
         option.textContent = textoMostrar;
         selectArmEsp.appendChild(option);
       });
+      return true; // Indica que hay datos disponibles
     }
+    return false;
   };
+
+  // Función para mostrar alerta de dependencias faltantes
+  const mostrarAlertaDependencias = (gradosDisponibles, armasDisponibles) => {
+    const faltantes = [];
+    if (!gradosDisponibles) faltantes.push('Grados');
+    if (!armasDisponibles) faltantes.push('Armas/Especialidades');
+
+    if (faltantes.length > 0) {
+      Swal.fire({
+        title: '⚠️ Datos Requeridos Faltantes',
+        html: `
+          <div class="text-start">
+            <p class="mb-3"><strong>Para agregar personal, primero debe registrar:</strong></p>
+            <ul class="list-unstyled mb-4">
+              ${faltantes.map(item => `
+                <li class="mb-2">
+                  <i class="bi bi-arrow-right-circle text-warning me-2"></i>
+                  <strong>${item}</strong>
+                </li>
+              `).join('')}
+            </ul>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              <small>Navegue a las secciones correspondientes del sistema para registrar estos datos.</small>
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ir a Grados',
+        cancelButtonText: 'Ir a Armas/Especialidades',
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+      }).then((result) => {
+        if (result.isConfirmed && !gradosDisponibles) {
+          window.location.href = '../Grado/index.html';
+        } else if (result.isDismissed && !armasDisponibles) {
+          window.location.href = '../ArmEsp/index.html';
+        }
+      });
+      return true; // Se mostró la alerta
+    }
+    return false; // No se mostró alerta
+  };
+
+  // Evento cuando se muestra el modal
+  modal.addEventListener("shown.bs.modal", () => {
+    console.log("Modal de agregar persona abierto, cargando datos...");
+    
+    // Verificar y cargar datos
+    const gradosDisponibles = cargarGradosEnSelect();
+    const armasDisponibles = cargarArmasEnSelect();
+    
+    // Si faltan dependencias, mostrar alerta y cerrar modal
+    if (mostrarAlertaDependencias(gradosDisponibles, armasDisponibles)) {
+      // Ocultar el modal después de un pequeño retraso
+      setTimeout(() => {
+        const bootstrapModal = bootstrap.Modal.getInstance(modal);
+        if (bootstrapModal) {
+          bootstrapModal.hide();
+        }
+      }, 500);
+    }
+  });
 
   // Aplicar formato al perder el foco en el modal de agregar
   const nombreInput = document.getElementById("nuevoNombre");
@@ -231,15 +296,14 @@ function configurarModalAgregarPersona() {
     });
   }
 
-  // Cargar los datos cuando se muestre el modal (solo para modal de agregar)
+  // Cargar los datos cuando se muestre el modal (solo para modal de agregar) - CÓDIGO ORIGINAL PRESERVADO
+  // NOTA: Este evento se mantiene para compatibilidad, pero la validación principal está en el evento shown.bs.modal
   modal.addEventListener("show.bs.modal", (e) => {
     // Solo ejecutar para el modal de agregar persona, no para el modal de detalles
     const modalTarget = e.target;
     if (modalTarget.id === "agregarPersonaModal") {
-      cargarGradosEnSelect();
-      cargarArmasEnSelect();
-
       // Limpiar y resetear los campos del formulario
+      const form = modal.querySelector("#formNuevaPersona");
       if (form) {
         form.reset();
       }

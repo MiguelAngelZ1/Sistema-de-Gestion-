@@ -398,16 +398,81 @@ function agregarCampoEspecificacion() {
 async function guardarModelo(event) {
   event.preventDefault();
 
+  // VALIDACIONES CRÍTICAS ANTES DE PROCESAR
+  const nne = document.getElementById("crear-nne").value.trim();
+  const nroSerie = document.getElementById("crear-nro-serie").value.trim();
+  const marca = document.getElementById("crear-marca").value.trim();
+  const modelo = document.getElementById("crear-modelo").value.trim();
+  const tipoEquipoId = document.getElementById("crear-tipo-equipo").value;
+  const estadoEquipoId = document.getElementById("crear-estado-equipo").value;
+  const ubicacion = document.getElementById("crear-ubicacion").value.trim();
+
+  // Validaciones obligatorias
+  const errores = [];
+
+  if (!nne) {
+    errores.push("El número NNE es obligatorio para las operaciones CRUD");
+  }
+  if (!nroSerie) {
+    errores.push("El número de serie es obligatorio para las operaciones CRUD");
+  }
+  if (!marca) {
+    errores.push("La marca del equipo es obligatoria");
+  }
+  if (!modelo) {
+    errores.push("El modelo del equipo es obligatorio");
+  }
+  if (!tipoEquipoId) {
+    errores.push("Debe seleccionar un tipo de equipo válido");
+  }
+  if (!estadoEquipoId) {
+    errores.push("Debe seleccionar un estado de equipo válido");
+  }
+  if (!ubicacion) {
+    errores.push("La ubicación del equipo es obligatoria");
+  }
+
+  // Validación de formato NNE (ejemplo: números)
+  if (nne && !/^\d+$/.test(nne)) {
+    errores.push("El NNE debe contener solo números");
+  }
+
+  // Validación de longitud mínima
+  if (nne && nne.length < 8) {
+    errores.push("El NNE debe tener al menos 8 dígitos");
+  }
+
+  if (errores.length > 0) {
+    Swal.fire({
+      title: '⚠️ Campos Obligatorios',
+      html: `
+        <div class="text-start">
+          <p class="mb-3"><strong>Los siguientes campos son obligatorios:</strong></p>
+          <ul class="list-unstyled">
+            ${errores.map(error => `<li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>${error}</li>`).join('')}
+          </ul>
+        </div>
+      `,
+      icon: 'warning',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#007bff',
+      customClass: {
+        container: 'swal-container-custom'
+      }
+    });
+    return;
+  }
+
   // 1. Recolectar Especificaciones (incluyendo marca y modelo)
   const especificaciones = [];
   // Añadir marca y modelo como las primeras especificaciones
   especificaciones.push({
     Clave: "Marca",
-    Valor: document.getElementById("crear-marca").value.trim(),
+    Valor: marca,
   });
   especificaciones.push({
     Clave: "Modelo",
-    Valor: document.getElementById("crear-modelo").value.trim(),
+    Valor: modelo,
   });
 
   document.querySelectorAll(".especificacion-fila").forEach((fila) => {
@@ -420,57 +485,63 @@ async function guardarModelo(event) {
 
   // 2. Recolectar datos de la Primera Unidad
   const primeraUnidad = {
-    NumeroSerie: document.getElementById("crear-nro-serie").value.trim(),
-    EstadoId: parseInt(
-      document.getElementById("crear-estado-equipo").value,
-      10
-    ),
-    IdPersona:
-      parseInt(document.getElementById("unidad-responsable").value, 10) || null,
+    NumeroSerie: nroSerie,
+    EstadoId: parseInt(estadoEquipoId, 10),
+    IdPersona: parseInt(document.getElementById("unidad-responsable").value, 10) || null,
   };
 
-  // 3. Recolectar datos del Modelo (ahora llamados Datos Principales y de Tipo)
-  const tipoEquipoIdValue = document.getElementById("crear-tipo-equipo").value;
-  const modelo = {
+  // 3. Recolectar datos del Modelo
+  const modeloData = {
     Ine: document.getElementById("crear-ine").value.trim(),
-    Nne: document.getElementById("crear-nne").value.trim(),
-    TipoEquipoId: tipoEquipoIdValue || "",
+    Nne: nne,
+    TipoEquipoId: tipoEquipoId,
     Observaciones: document.getElementById("crear-observaciones").value.trim(),
-    Marca: document.getElementById("crear-marca").value.trim(),
-    Modelo: document.getElementById("crear-modelo").value.trim(),
-    Ubicacion: document.getElementById("crear-ubicacion").value.trim(),
+    Marca: marca,
+    Modelo: modelo,
+    Ubicacion: ubicacion,
   };
-
-  // Validación de tipoEquipoId
-  if (!modelo.TipoEquipoId) {
-    mostrarAlerta("Debes seleccionar un tipo de equipo válido.", "error");
-    return;
-  }
-
-  // Validación de tipoEquipoId
-  if (!modelo.TipoEquipoId) {
-    mostrarAlerta("Debes seleccionar un tipo de equipo válido.", "error");
-    return;
-  }
 
   // 4. Construir el objeto de Alta Completa
   const altaCompletaData = {
-    ...modelo,
+    ...modeloData,
     Especificaciones: especificaciones,
     PrimeraUnidad: primeraUnidad,
   };
 
-  // 5. Enviar a la API
-  console.log(
-    "Datos que se van a enviar:",
-    JSON.stringify(altaCompletaData, null, 2)
-  );
+  // 5. Mostrar indicador de carga
+  Swal.fire({
+    title: 'Creando equipo...',
+    text: 'Por favor espere mientras se procesa la información',
+    icon: 'info',
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    willOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // 6. Enviar a la API
+  console.log("Datos que se van a enviar:", JSON.stringify(altaCompletaData, null, 2));
   const resultado = await crearModelo(altaCompletaData);
 
   if (resultado) {
     modalCrearModelo.hide();
-    mostrarAlerta("Equipo creado con éxito.", "success");
+    Swal.fire({
+      title: '✅ ¡Equipo Creado!',
+      text: `El equipo ${nne} ha sido registrado exitosamente`,
+      icon: 'success',
+      confirmButtonText: 'Continuar',
+      confirmButtonColor: '#28a745'
+    });
     cargarEquipos(); // Recargar la tabla para mostrar el nuevo equipo
+  } else {
+    Swal.fire({
+      title: '❌ Error al Crear',
+      text: 'No se pudo crear el equipo. Verifique los datos e intente nuevamente.',
+      icon: 'error',
+      confirmButtonText: 'Reintentar',
+      confirmButtonColor: '#dc3545'
+    });
   }
 }
 

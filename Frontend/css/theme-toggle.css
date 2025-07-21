@@ -1,0 +1,250 @@
+/* ===== SISTEMA DE TEMA CLARO/OSCURO ===== */
+
+/* Variables CSS para temas */
+:root {
+  /* Tema Claro (por defecto) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-medium: rgba(0, 0, 0, 0.15);
+  --shadow-heavy: rgba(0, 0, 0, 0.25);
+  
+  /* Colores de estado mantienen su identidad */
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --primary-color: #007bff;
+  
+  /* Navbar y elementos de branding */
+  --navbar-bg: var(--primary-color);
+  --navbar-text: #ffffff;
+  
+  /* Cards y contenedores */
+  --card-bg: var(--bg-primary);
+  --modal-bg: var(--bg-primary);
+  --input-bg: var(--bg-primary);
+  --input-border: #ced4da;
+  
+  /* Hover states */
+  --hover-bg: #f5f5f5;
+  --hover-border: var(--primary-color);
+}
+
+/* Tema Oscuro */
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #404040;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #888888;
+  --border-color: #404040;
+  --shadow-light: rgba(255, 255, 255, 0.1);
+  --shadow-medium: rgba(255, 255, 255, 0.15);
+  --shadow-heavy: rgba(255, 255, 255, 0.25);
+  
+  /* Cards y contenedores en tema oscuro */
+  --card-bg: #2d2d2d;
+  --modal-bg: #2d2d2d;
+  --input-bg: #404040;
+  --input-border: #555555;
+  
+  /* Hover states para tema oscuro */
+  --hover-bg: #404040;
+  --hover-border: var(--primary-color);
+}
+
+/* Aplicación del tema */
+body {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cards y contenedores */
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-content {
+  background-color: var(--modal-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Inputs y forms */
+.form-control, .form-select {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--input-bg);
+  border-color: var(--hover-border);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Tables */
+.table {
+  --bs-table-bg: var(--card-bg);
+  --bs-table-color: var(--text-primary);
+  --bs-table-border-color: var(--border-color);
+  --bs-table-striped-bg: var(--bg-tertiary);
+  --bs-table-hover-bg: var(--hover-bg);
+}
+
+/* Navbar - mantiene colores de marca pero con mejor contraste */
+.navbar-dark {
+  background-color: var(--navbar-bg) !important;
+}
+
+/* Lista groups */
+.list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.list-group-item:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Badges mantienen su color pero ajustan el contraste */
+.badge {
+  --bs-badge-color: #ffffff;
+}
+
+/* Borders y separadores */
+.border, .border-top, .border-bottom, .border-start, .border-end {
+  border-color: var(--border-color) !important;
+}
+
+/* Shadows ajustadas al tema */
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem var(--shadow-light) !important;
+}
+
+.shadow {
+  box-shadow: 0 0.5rem 1rem var(--shadow-medium) !important;
+}
+
+.shadow-lg {
+  box-shadow: 0 1rem 3rem var(--shadow-heavy) !important;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1050;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px var(--shadow-heavy);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .theme-toggle {
+    top: 60px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Texto en backgrounds especiales */
+.bg-light {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.bg-white {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Text colors que deben adaptarse al tema */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-dark {
+  color: var(--text-primary) !important;
+}
+
+/* Alerts mantienen su función pero mejoran el contraste */
+.alert {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(23, 162, 184, 0.2);
+  border-color: #17a2b8;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  border-color: #ffc107;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .alert-success {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-color: #28a745;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  border-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Transiciones suaves para cambio de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Mejoras para el modo oscuro en SweetAlert */
+[data-theme="dark"] .swal2-popup {
+  background-color: var(--modal-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .swal2-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .swal2-content {
+  color: var(--text-secondary) !important;
+}
