@@ -50,6 +50,24 @@
     padding: 0.5rem 1.5rem !important; /* Botones más compactos */
 }
 
+/* FIX: Prevenir que el modal backdrop se quede activo */
+.modal-backdrop {
+    transition: opacity 0.15s linear !important;
+}
+
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* Asegurar que el overlay desaparezca completamente */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out !important;
+}
+
+.modal.fade:not(.show) .modal-dialog {
+    transform: translate(0, -50px) !important;
+}
+
 /* Responsive: En pantallas pequeñas, reducir aún más el espaciado */
 @media (max-width: 576px) {
     .modal-header,
