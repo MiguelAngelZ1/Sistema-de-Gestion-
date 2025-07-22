@@ -3327,12 +3327,16 @@ function imprimirTablaEquipos() {
           
           th {
             background-color: #f8f9fa !important;
-            font-weight: bold;
-            color: #495057;
-            font-size: 10px;
-            text-align: center;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            font-weight: bold !important;
+            color: #000 !important;
+            font-size: 10px !important;
+            text-align: center !important;
+            border: 1px solid #000 !important;
+            padding: 6px 4px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            vertical-align: middle !important;
+            white-space: nowrap !important;
           }
           
           td {
@@ -3412,9 +3416,23 @@ function imprimirTablaEquipos() {
               print-color-adjust: exact !important;
             }
             
-            /* Optimizar saltos de página */
+            /* Optimizar saltos de página y asegurar headers */
             thead { 
-              display: table-header-group; 
+              display: table-header-group !important; 
+              page-break-inside: avoid !important;
+              page-break-after: avoid !important;
+            }
+            
+            thead th {
+              background-color: #f8f9fa !important;
+              border: 1px solid #000 !important;
+              font-weight: bold !important;
+              text-align: center !important;
+              padding: 6px 4px !important;
+              font-size: 10px !important;
+              color: #000 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             
             tfoot { 
@@ -3424,6 +3442,12 @@ function imprimirTablaEquipos() {
             tbody tr {
               page-break-inside: avoid;
               break-inside: avoid;
+            }
+            
+            tbody td {
+              border: 1px solid #000 !important;
+              padding: 4px !important;
+              font-size: 9px !important;
             }
             
             /* Asegurar que el header se repita en cada página */
@@ -3452,15 +3476,15 @@ function imprimirTablaEquipos() {
             <table>
               <thead>
                 <tr>
-                  <th class="col-ine">INE</th>
-                  <th class="col-nne">NNE</th>
-                  <th class="col-serie">N° Serie</th>
-                  <th class="col-marca">Marca</th>
-                  <th class="col-modelo">Modelo</th>
-                  <th class="col-tipo">Tipo</th>
-                  <th class="col-estado">Estado</th>
-                  <th class="col-responsable">Responsable</th>
-                  <th class="col-ubicacion">Ubicación</th>
+                  <th class="col-ine" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">INE</th>
+                  <th class="col-nne" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">NNE</th>
+                  <th class="col-serie" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">N° Serie</th>
+                  <th class="col-marca" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Marca</th>
+                  <th class="col-modelo" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Modelo</th>
+                  <th class="col-tipo" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Tipo</th>
+                  <th class="col-estado" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Estado</th>
+                  <th class="col-responsable" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Responsable</th>
+                  <th class="col-ubicacion" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Ubicación</th>
                 </tr>
               </thead>
               <tbody>

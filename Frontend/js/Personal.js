@@ -12,20 +12,20 @@ let listaPersonalActual = []; // Array para almacenar la lista actual de persona
 
 // Función utilitaria para manejar modales de forma segura
 function getModalInstance(modalId) {
-  if (typeof bootstrap === 'undefined') {
-    console.error('Bootstrap no está cargado');
+  if (typeof bootstrap === "undefined") {
+    console.error("Bootstrap no está cargado");
     return null;
   }
-  
+
   const modalElement = document.getElementById(modalId);
   if (!modalElement) {
     console.error(`Modal con ID '${modalId}' no encontrado`);
     return null;
   }
-  
+
   // Intentar obtener una instancia existente
   let modalInstance = bootstrap.Modal.getInstance(modalElement);
-  
+
   // Si no existe, crear una nueva instancia
   if (!modalInstance) {
     try {
@@ -35,7 +35,7 @@ function getModalInstance(modalId) {
       return null;
     }
   }
-  
+
   return modalInstance;
 }
 
@@ -1053,7 +1053,7 @@ async function mostrarDetallesPersona(persona) {
       console.error("No se pudo inicializar el modal para mostrar detalles");
       return;
     }
-    
+
     const modalElement = document.getElementById("personalModal");
 
     // Marcar que estamos en modo detalle para evitar interferencias
