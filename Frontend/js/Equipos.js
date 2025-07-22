@@ -2858,21 +2858,30 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     "#007bff"
   );
 
-  console.log("[crearContenidoPDFDetalle] Punto de control: antes de definir seccionTecnica");
+  console.log(
+    "[crearContenidoPDFDetalle] Punto de control: antes de definir seccionTecnica"
+  );
 
   // Especificaciones técnicas (solo Marca y Modelo)
-  const seccionTecnica = crearSeccionPDF('Especificaciones Técnicas', [
-    { 
-      label: 'Marca', 
-      valor: obtenerValor(equipo.marca, datosDOM.marca, 'No especificada')
-    },
-    { 
-      label: 'Modelo', 
-      valor: obtenerValor(equipo.modelo, datosDOM.modelo, 'No especificado')
-    }
-  ], '#17a2b8');
+  const seccionTecnica = crearSeccionPDF(
+    "Especificaciones Técnicas",
+    [
+      {
+        label: "Marca",
+        valor: obtenerValor(equipo.marca, datosDOM.marca, "No especificada"),
+      },
+      {
+        label: "Modelo",
+        valor: obtenerValor(equipo.modelo, datosDOM.modelo, "No especificado"),
+      },
+    ],
+    "#17a2b8"
+  );
 
-  console.log("[crearContenidoPDFDetalle] seccionTecnica creada:", seccionTecnica);
+  console.log(
+    "[crearContenidoPDFDetalle] seccionTecnica creada:",
+    seccionTecnica
+  );
 
   // Especificaciones adicionales (excluyendo Marca y Modelo)
   let especificacionesHtml = "";
@@ -2880,10 +2889,12 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   // Intentar obtener especificaciones del equipo o del DOM
   if (equipo.especificaciones && equipo.especificaciones.length > 0) {
     // Filtrar especificaciones excluyendo Marca y Modelo
-    const especificacionesFiltradas = equipo.especificaciones.filter(spec => 
-      spec.clave.toLowerCase() !== 'marca' && spec.clave.toLowerCase() !== 'modelo'
+    const especificacionesFiltradas = equipo.especificaciones.filter(
+      (spec) =>
+        spec.clave.toLowerCase() !== "marca" &&
+        spec.clave.toLowerCase() !== "modelo"
     );
-    
+
     if (especificacionesFiltradas.length > 0) {
       especificacionesHtml = especificacionesFiltradas
         .map(
@@ -2911,9 +2922,12 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
               const valor = li.textContent
                 .replace(strong.textContent, "")
                 .trim();
-              
+
               // Filtrar Marca y Modelo
-              if (clave.toLowerCase() !== 'marca' && clave.toLowerCase() !== 'modelo') {
+              if (
+                clave.toLowerCase() !== "marca" &&
+                clave.toLowerCase() !== "modelo"
+              ) {
                 return `<div style="margin-bottom: 8px;">
                 <strong style="color: #495057;">${clave}:</strong> 
                 <span style="color: #6c757d;">${valor}</span>
@@ -3000,9 +3014,15 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   );
 
   // Ensamblar todo
-  console.log("[crearContenidoPDFDetalle] Punto de control: antes de usar seccionTecnica");
-  console.log("[crearContenidoPDFDetalle] seccionTecnica disponible:", typeof seccionTecnica, seccionTecnica);
-  
+  console.log(
+    "[crearContenidoPDFDetalle] Punto de control: antes de usar seccionTecnica"
+  );
+  console.log(
+    "[crearContenidoPDFDetalle] seccionTecnica disponible:",
+    typeof seccionTecnica,
+    seccionTecnica
+  );
+
   container.appendChild(header);
   container.appendChild(seccionBasica);
   container.appendChild(seccionTecnica);
