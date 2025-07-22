@@ -14,7 +14,10 @@
   <!-- Estilos del sistema -->
   <link rel="stylesheet" href="../../styles.css">
   <link rel="stylesheet" href="../../css/equipos.css">
-  <link rel="stylesheet" href="../../css/modal-improvements.css">
+  <link rel="styleshe  <!-- html2pdf.js para exportación a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <script src="../../js/Equipos.js"></script> href="../../css/modal-improvements.css">
   
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">
@@ -74,20 +77,10 @@
                             </h1>
                         </div>
                         <div class="d-flex gap-2 mb-3">
-                            <button type="button" class="btn btn-danger btn-lg d-flex align-items-center" onclick="exportarEquiposPDFDirecto()">
+                            <button type="button" class="btn btn-danger btn-lg d-flex align-items-center" id="btnExportarPDF">
                                 <i class="bi bi-file-pdf me-2"></i>
-                                <span class="d-none d-sm-inline">PDF Directo</span>
+                                <span class="d-none d-sm-inline">Exportar PDF</span>
                                 <span class="d-sm-none">PDF</span>
-                            </button>
-                            <button type="button" class="btn btn-info btn-lg d-flex align-items-center" onclick="exportarEquipos()">
-                                <i class="bi bi-file-earmark-spreadsheet me-2"></i>
-                                <span class="d-none d-sm-inline">Exportar CSV</span>
-                                <span class="d-sm-none">CSV</span>
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-lg d-flex align-items-center" onclick="imprimirTablaEquipos()">
-                                <i class="bi bi-printer me-2"></i>
-                                <span class="d-none d-sm-inline">Imprimir</span>
-                                <span class="d-sm-none">Print</span>
                             </button>
                             <button type="button" class="btn btn-success btn-lg d-flex align-items-center" id="btnAbrirModalCrearModelo">
                                 <i class="bi bi-plus-lg me-2"></i>
@@ -98,7 +91,7 @@
                     </div>
 
                     <!-- Tabla de Equipos -->
-                    <div class="table-responsive">
+                    <div id="contenidoPDF" class="table-responsive">
                         <table class="table" id="tablaEquipos">
                             <thead class="table-dark">
                                 <tr>
@@ -417,7 +410,7 @@
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-body p-0" style="background-color: #f8f9fa;">
+      <div class="modal-body p-0" style="background-color: #f8f9fa;" id="contenidoPDFDetalle">
         <div class="container-fluid p-4">
           
           <!-- Sección 1: Información Básica -->
@@ -719,13 +712,9 @@
         <button type="button" class="btn btn-light btn-lg" data-bs-dismiss="modal">
           <i class="bi bi-x-circle me-2"></i>Cerrar
         </button>
-        <!-- Botón de exportar detalles -->
-        <button type="button" class="btn btn-info btn-lg" id="btn-exportar-detalle">
-          <i class="bi bi-file-earmark-text me-2"></i>Exportar Detalle
-        </button>
-        <!-- Botón de imprimir detalles -->
-        <button type="button" class="btn btn-secondary btn-lg" id="btn-imprimir-detalle">
-          <i class="bi bi-printer me-2"></i>Imprimir Detalle
+        <!-- Botón de exportar PDF -->
+        <button type="button" class="btn btn-outline-danger btn-lg" id="btn-exportar-pdf-detalle">
+          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
         </button>
         <!-- Botones de edición -->
         <button type="button" class="btn btn-outline-warning btn-lg campo-edit d-none" id="btn-cancelar-edicion">

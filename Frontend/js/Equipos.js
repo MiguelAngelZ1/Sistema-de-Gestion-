@@ -127,15 +127,10 @@ const formAgregarUnidad = document.getElementById("formAgregarUnidad");
 if (formAgregarUnidad)
   formAgregarUnidad.addEventListener("submit", guardarUnidad);
 
-// Event listener para el botón de exportar detalles del equipo
-const btnExportarDetalle = document.getElementById("btn-exportar-detalle");
-if (btnExportarDetalle)
-  btnExportarDetalle.addEventListener("click", exportarDetalleEquipo);
-
-// Event listener para el botón de imprimir detalles del equipo
-const btnImprimirDetalle = document.getElementById("btn-imprimir-detalle");
-if (btnImprimirDetalle)
-  btnImprimirDetalle.addEventListener("click", imprimirDetalleEquipo);
+// Event listener para el botón de exportar PDF con html2pdf.js
+const btnExportarPDF = document.getElementById("btnExportarPDF");
+if (btnExportarPDF)
+  btnExportarPDF.addEventListener("click", exportarEquiposPDF);
 
 // Evento para abrir el modal de creación de equipo.
 // document.getElementById('btnAbrirModalCrear').addEventListener('click', abrirModalCrear); // Deshabilitado temporalmente
@@ -2498,6 +2493,151 @@ async function guardarCambiosDetalles() {
   }
 }
 
+//-----------------------------------------------------------------------------------------------------
+// EXPORTACIÓN PDF
+//-----------------------------------------------------------------------------------------------------
+
+/**
+ * Exporta la tabla de equipos a PDF usando html2pdf.js
+ */
+function exportarEquiposPDF() {
+  console.log("[exportarEquiposPDF] Iniciando exportación PDF");
+  
+  // Verificar que html2pdf esté disponible
+  if (typeof html2pdf === 'undefined') {
+    console.error("[exportarEquiposPDF] html2pdf.js no está cargado");
+    mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
+    return;
+  }
+
+  // Obtener el contenedor que se va a exportar
+  const contenido = document.getElementById('contenidoPDF');
+  if (!contenido) {
+    console.error("[exportarEquiposPDF] No se encontró el elemento contenidoPDF");
+    mostrarAlerta("Error: No se encontró el contenido para exportar", "error");
+    return;
+  }
+
+  // Configuración para html2pdf
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `Equipos_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'landscape' 
+    }
+  };
+
+  // Mostrar indicador de carga
+  const loading = Swal.fire({
+    title: 'Generando PDF...',
+    html: 'Por favor espera mientras se genera el archivo.',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // Generar PDF
+  html2pdf()
+    .set(opt)
+    .from(contenido)
+    .save()
+    .then(() => {
+      console.log("[exportarEquiposPDF] PDF generado exitosamente");
+      loading.close();
+      mostrarAlerta("PDF exportado exitosamente", "success");
+    })
+    .catch((error) => {
+      console.error("[exportarEquiposPDF] Error al generar PDF:", error);
+      loading.close();
+      mostrarAlerta("Error al generar el PDF", "error");
+    });
+}
+
+/**
+ * Exporta los detalles del equipo a PDF usando html2pdf.js
+ */
+function exportarDetalleEquipoPDF() {
+  console.log("[exportarDetalleEquipoPDF] Iniciando exportación PDF del detalle");
+  
+  // Verificar que html2pdf esté disponible
+  if (typeof html2pdf === 'undefined') {
+    console.error("[exportarDetalleEquipoPDF] html2pdf.js no está cargado");
+    mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
+    return;
+  }
+
+  // Obtener el contenedor del modal que se va a exportar
+  const contenido = document.getElementById('contenidoPDFDetalle');
+  if (!contenido) {
+    console.error("[exportarDetalleEquipoPDF] No se encontró el elemento contenidoPDFDetalle");
+    mostrarAlerta("Error: No se encontró el contenido del detalle para exportar", "error");
+    return;
+  }
+
+  // Obtener información del equipo actual para el nombre del archivo
+  const nne = document.getElementById('detalle-nne')?.textContent || 'Equipo';
+  const nroSerie = document.getElementById('detalle-nro-serie')?.textContent || '';
+  const identificador = nne !== '-' ? nne : nroSerie;
+
+  // Configuración para html2pdf
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `Detalle_Equipo_${identificador}_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait' 
+    }
+  };
+
+  // Mostrar indicador de carga
+  const loading = Swal.fire({
+    title: 'Generando PDF del detalle...',
+    html: 'Por favor espera mientras se genera el archivo.',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // Generar PDF
+  html2pdf()
+    .set(opt)
+    .from(contenido)
+    .save()
+    .then(() => {
+      console.log("[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente");
+      loading.close();
+      mostrarAlerta("PDF del detalle exportado exitosamente", "success");
+    })
+    .catch((error) => {
+      console.error("[exportarDetalleEquipoPDF] Error al generar PDF del detalle:", error);
+      loading.close();
+      mostrarAlerta("Error al generar el PDF del detalle", "error");
+    });
+}
+
 // Event listener para cargar datos al cargar la página
 document.addEventListener("DOMContentLoaded", function () {
   console.log("[DOMContentLoaded] Iniciando carga de equipos...");
@@ -2546,1475 +2686,32 @@ document.addEventListener("DOMContentLoaded", function () {
       "[DOMContentLoaded] No se encontró el botón btn-agregar-especificacion-detalle"
     );
   }
+
+  // Event listener para exportar PDF
+  const btnExportarPDF = document.getElementById("btn-exportar-pdf");
+  if (btnExportarPDF) {
+    btnExportarPDF.addEventListener("click", exportarEquiposPDF);
+    console.log(
+      "[DOMContentLoaded] Event listener agregado para btn-exportar-pdf"
+    );
+  } else {
+    console.error(
+      "[DOMContentLoaded] No se encontró el botón btn-exportar-pdf"
+    );
+  }
+
+  // Event listener para exportar PDF del detalle
+  const btnExportarPDFDetalle = document.getElementById("btn-exportar-pdf-detalle");
+  if (btnExportarPDFDetalle) {
+    btnExportarPDFDetalle.addEventListener("click", exportarDetalleEquipoPDF);
+    console.log(
+      "[DOMContentLoaded] Event listener agregado para btn-exportar-pdf-detalle"
+    );
+  } else {
+    console.error(
+      "[DOMContentLoaded] No se encontró el botón btn-exportar-pdf-detalle"
+    );
+  }
 });
 
-//-----------------------------------------------------------------------------------------------------
-// FUNCIONALIDAD DE EXPORTACIÓN
-//-----------------------------------------------------------------------------------------------------
 
-/**
- * Exporta los equipos a un archivo PDF usando los datos ya cargados
- */
-function exportarEquipos() {
-  try {
-    // Mostrar indicador de carga
-    Swal.fire({
-      title: "Generando PDF...",
-      text: "Por favor espere mientras se genera el documento",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    // Verificar que tenemos datos cargados
-    if (!window.equipos || !window.unidades || !window.estados) {
-      Swal.fire({
-        title: "Sin datos",
-        text: "Los datos no están disponibles. Recargue la página e intente nuevamente.",
-        icon: "warning",
-      });
-      return;
-    }
-
-    if (window.unidades.length === 0) {
-      Swal.fire({
-        title: "Sin datos",
-        text: "No hay equipos para exportar",
-        icon: "warning",
-      });
-      return;
-    }
-
-    // Cargar jsPDF desde CDN si no está disponible
-    if (typeof window.jsPDF === "undefined") {
-      const script = document.createElement("script");
-      script.src =
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      script.onload = () => {
-        generarPDFEquipos();
-      };
-      script.onerror = () => {
-        // Si falla jsPDF, generar CSV como fallback
-        Swal.fire({
-          title: "Información",
-          text: "Se generará un archivo CSV ya que no se pudo cargar el generador de PDF",
-          icon: "info",
-        });
-        setTimeout(() => exportarEquiposCSV(), 1000);
-      };
-      document.head.appendChild(script);
-    } else {
-      generarPDFEquipos();
-    }
-  } catch (error) {
-    console.error("Error al inicializar exportación:", error);
-    // Fallback a CSV
-    exportarEquiposCSV();
-  }
-}
-
-/**
- * Genera el PDF de equipos
- */
-function generarPDFEquipos() {
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("landscape", "mm", "a4");
-
-    // Crear mapas para acceso rápido
-    const equiposMap = new Map(window.equipos.map((e) => [e.id, e]));
-    const estadosMap = new Map(window.estados.map((e) => [e.id, e.nombre]));
-
-    // Configurar fuente y tamaño
-    doc.setFont("helvetica");
-
-    // Header del documento
-    doc.setFontSize(16);
-    doc.setTextColor(40, 40, 40);
-    doc.text("SISTEMA DE GESTIÓN - INVENTARIO DE EQUIPOS", 20, 20);
-
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 28);
-    doc.text(`Total de equipos: ${window.unidades.length}`, 20, 34);
-
-    // Línea separadora
-    doc.setDrawColor(0, 123, 255);
-    doc.setLineWidth(0.5);
-    doc.line(20, 38, 277, 38);
-
-    // Headers de la tabla
-    const headers = [
-      "#",
-      "INE",
-      "NNE",
-      "Nro. Serie",
-      "Marca",
-      "Modelo",
-      "Tipo",
-      "Estado",
-    ];
-    const startY = 50;
-    const rowHeight = 8;
-    const colWidths = [12, 35, 35, 35, 25, 25, 35, 35];
-    let currentX = 20;
-
-    // Dibujar headers
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    doc.setFillColor(0, 123, 255);
-
-    headers.forEach((header, index) => {
-      doc.rect(currentX, startY - 6, colWidths[index], 8, "F");
-      doc.text(header, currentX + 2, startY - 1);
-      currentX += colWidths[index];
-    });
-
-    // Preparar datos para la tabla
-    let currentY = startY + 2;
-    doc.setTextColor(40, 40, 40);
-    doc.setFontSize(8);
-
-    window.unidades.forEach((unidad, idx) => {
-      const equipo = equiposMap.get(unidad.equipoId) || {};
-      const estadoNombre = estadosMap.get(unidad.estadoId) || "Sin estado";
-
-      // Verificar si necesitamos una nueva página
-      if (currentY > 180) {
-        doc.addPage();
-        currentY = 20;
-
-        // Redibujar headers en nueva página
-        currentX = 20;
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.setFillColor(0, 123, 255);
-
-        headers.forEach((header, index) => {
-          doc.rect(currentX, currentY - 6, colWidths[index], 8, "F");
-          doc.text(header, currentX + 2, currentY - 1);
-          currentX += colWidths[index];
-        });
-
-        currentY += 2;
-        doc.setTextColor(40, 40, 40);
-        doc.setFontSize(8);
-      }
-
-      // Alternar color de fondo de filas
-      if (idx % 2 === 0) {
-        doc.setFillColor(248, 249, 250);
-        currentX = 20;
-        colWidths.forEach((width) => {
-          doc.rect(currentX, currentY - 2, width, rowHeight, "F");
-          currentX += width;
-        });
-      }
-
-      // Datos de la fila
-      const rowData = [
-        String(idx + 1),
-        (equipo.ine || "N/A").substring(0, 18),
-        (equipo.nne || "N/A").substring(0, 18),
-        (unidad.nroSerie || "N/A").substring(0, 18),
-        (equipo.marca || "N/A").substring(0, 12),
-        (equipo.modelo || "N/A").substring(0, 12),
-        (equipo.tipoNombre || "N/A").substring(0, 18),
-        estadoNombre.substring(0, 18),
-      ];
-
-      currentX = 20;
-      rowData.forEach((data, colIndex) => {
-        doc.text(data, currentX + 2, currentY + 4);
-        currentX += colWidths[colIndex];
-      });
-
-      currentY += rowHeight;
-    });
-
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text(
-        `© 2025 Sistema de Control y Gestión - Página ${i} de ${pageCount}`,
-        20,
-        200
-      );
-      doc.text(`Generado el ${fechaActual} a las ${horaActual}`, 200, 200);
-    }
-
-    // Guardar el PDF
-    const fecha = new Date().toISOString().split("T")[0];
-    const nombreArchivo = `equipos_${fecha}.pdf`;
-    doc.save(nombreArchivo);
-
-    Swal.fire({
-      title: "¡PDF generado exitosamente!",
-      text: `Se ha descargado el archivo: ${nombreArchivo}`,
-      icon: "success",
-      timer: 3000,
-    });
-  } catch (error) {
-    console.error("Error al generar PDF:", error);
-    Swal.fire({
-      title: "Error al generar PDF",
-      text: "Se generará un archivo CSV como alternativa",
-      icon: "warning",
-    });
-    setTimeout(() => exportarEquiposCSV(), 1000);
-  }
-}
-
-/**
- * Exporta equipos en formato CSV como fallback
- */
-function exportarEquiposCSV() {
-  try {
-    // Crear mapas para acceso rápido
-    const equiposMap = new Map(window.equipos.map((e) => [e.id, e]));
-    const estadosMap = new Map(window.estados.map((e) => [e.id, e.nombre]));
-
-    // Preparar datos para exportar
-    const datosParaExportar = [];
-
-    window.unidades.forEach((unidad, idx) => {
-      const equipo = equiposMap.get(unidad.equipoId) || {};
-      const estadoNombre = estadosMap.get(unidad.estadoId) || "Sin estado";
-
-      datosParaExportar.push({
-        "Nro Orden": idx + 1,
-        INE: equipo.ine || "N/A",
-        NNE: equipo.nne || "N/A",
-        "Número de Serie": unidad.nroSerie || "N/A",
-        Marca: equipo.marca || "N/A",
-        Modelo: equipo.modelo || "N/A",
-        "Tipo de Equipo": equipo.tipoNombre || "N/A",
-        Estado: estadoNombre,
-        Ubicación: unidad.ubicacion || "N/A",
-        "Personal Asignado": unidad.personalAsignado || "Sin asignar",
-        Observaciones: unidad.observaciones || "Sin observaciones",
-      });
-    });
-
-    // Crear archivo CSV
-    const csvContent = generarCSV(datosParaExportar);
-
-    // Descargar archivo
-    const fecha = new Date().toISOString().split("T")[0];
-    const nombreArchivo = `equipos_${fecha}.csv`;
-    descargarArchivo(csvContent, nombreArchivo, "text/csv");
-
-    Swal.fire({
-      title: "¡Exportación exitosa!",
-      text: `Se ha descargado el archivo CSV: ${nombreArchivo}`,
-      icon: "success",
-      timer: 3000,
-    });
-  } catch (error) {
-    console.error("Error al exportar CSV:", error);
-    Swal.fire({
-      title: "Error",
-      text: "No se pudo exportar la información. Inténtelo nuevamente.",
-      icon: "error",
-    });
-  }
-}
-
-/**
- * Genera contenido CSV a partir de un array de objetos
- */
-function generarCSV(datos) {
-  if (!datos || datos.length === 0) return "";
-
-  // Obtener headers
-  const headers = Object.keys(datos[0]);
-
-  // Función para escapar valores CSV
-  const escaparCSV = (valor) => {
-    if (valor === null || valor === undefined) return "";
-    const str = String(valor);
-    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  // Generar contenido CSV
-  let csv = headers.map(escaparCSV).join(",") + "\n";
-
-  datos.forEach((fila) => {
-    const valores = headers.map((header) => escaparCSV(fila[header]));
-    csv += valores.join(",") + "\n";
-  });
-
-  return csv;
-}
-
-/**
- * Descarga un archivo con el contenido especificado
- */
-function descargarArchivo(contenido, nombreArchivo, tipoMime) {
-  const blob = new Blob([contenido], { type: tipoMime });
-  const url = window.URL.createObjectURL(blob);
-
-  const enlaceDescarga = document.createElement("a");
-  enlaceDescarga.href = url;
-  enlaceDescarga.download = nombreArchivo;
-  enlaceDescarga.style.display = "none";
-
-  document.body.appendChild(enlaceDescarga);
-  enlaceDescarga.click();
-  document.body.removeChild(enlaceDescarga);
-
-  window.URL.revokeObjectURL(url);
-}
-
-/**
- * Exporta los detalles de un equipo específico a PDF
- */
-function exportarDetalleEquipo() {
-  try {
-    // Mostrar indicador de carga
-    Swal.fire({
-      title: "Generando PDF...",
-      text: "Por favor espere mientras se genera el documento",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    // Cargar jsPDF desde CDN si no está disponible
-    if (typeof window.jsPDF === "undefined") {
-      const script = document.createElement("script");
-      script.src =
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      script.onload = () => {
-        generarPDFDetalle();
-      };
-      script.onerror = () => {
-        // Si falla jsPDF, generar CSV como fallback
-        Swal.fire({
-          title: "Información",
-          text: "Se generará un archivo CSV ya que no se pudo cargar el generador de PDF",
-          icon: "info",
-        });
-        setTimeout(() => exportarDetalleCSV(), 1000);
-      };
-      document.head.appendChild(script);
-    } else {
-      generarPDFDetalle();
-    }
-  } catch (error) {
-    console.error("Error al inicializar exportación de detalle:", error);
-    // Fallback a CSV
-    exportarDetalleCSV();
-  }
-}
-
-/**
- * Genera el PDF del detalle del equipo
- */
-function generarPDFDetalle() {
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("portrait", "mm", "a4");
-
-    // Obtener los datos actuales mostrados en el modal
-    const detalle = {
-      ine: document.getElementById("detalle-ine").textContent || "N/A",
-      nne: document.getElementById("detalle-nne").textContent || "N/A",
-      numeroSerie:
-        document.getElementById("detalle-nro-serie").textContent || "N/A",
-      marca: document.getElementById("detalle-marca").textContent || "N/A",
-      modelo: document.getElementById("detalle-modelo").textContent || "N/A",
-      tipoEquipo: document.getElementById("detalle-tipo").textContent || "N/A",
-      estadoEquipo:
-        document.getElementById("detalle-estado").textContent || "N/A",
-      responsable:
-        document.getElementById("detalle-responsable").textContent ||
-        "Sin asignar",
-      ubicacion:
-        document.getElementById("detalle-ubicacion").textContent || "N/A",
-      observaciones:
-        document.getElementById("detalle-observaciones").textContent ||
-        "Sin observaciones",
-    };
-
-    // Obtener especificaciones técnicas si existen
-    let especificaciones = [];
-    const especificacionesContainer = document.getElementById(
-      "detalle-especificaciones"
-    );
-    if (especificacionesContainer) {
-      const badges = especificacionesContainer.querySelectorAll(".badge");
-      badges.forEach((badge) => {
-        especificaciones.push(badge.textContent.trim());
-      });
-    }
-
-    // Configurar fuente y tamaño
-    doc.setFont("helvetica");
-
-    // Header del documento
-    doc.setFontSize(18);
-    doc.setTextColor(0, 123, 255);
-    doc.text("DETALLE COMPLETO DE EQUIPO", 20, 25);
-
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 32);
-    doc.text("Sistema de Control y Gestión de Equipos", 20, 38);
-
-    // Equipo ID destacado
-    doc.setFontSize(12);
-    doc.setTextColor(40, 40, 40);
-    doc.setFillColor(248, 249, 250);
-    doc.rect(20, 42, 170, 8, "F");
-    doc.text(`Equipo: ${detalle.nne}`, 25, 48);
-
-    // Línea separadora
-    doc.setDrawColor(0, 123, 255);
-    doc.setLineWidth(0.5);
-    doc.line(20, 55, 190, 55);
-
-    let currentY = 65;
-
-    // Función para agregar una sección
-    const agregarSeccion = (titulo, campos, emoji = "") => {
-      // Header de sección
-      doc.setFillColor(0, 123, 255);
-      doc.rect(20, currentY - 5, 170, 8, "F");
-
-      doc.setFontSize(11);
-      doc.setTextColor(255, 255, 255);
-      doc.text(`${emoji} ${titulo}`, 25, currentY);
-
-      currentY += 10;
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(9);
-
-      // Campos de la sección
-      campos.forEach((campo) => {
-        if (currentY > 270) {
-          doc.addPage();
-          currentY = 20;
-        }
-
-        // Fondo alternado para campos
-        doc.setFillColor(248, 249, 250);
-        doc.rect(20, currentY - 2, 170, 8, "F");
-
-        doc.setTextColor(60, 60, 60);
-        doc.text(`${campo.label}:`, 25, currentY + 3);
-
-        doc.setTextColor(20, 20, 20);
-        const valor =
-          campo.valor.length > 80
-            ? campo.valor.substring(0, 77) + "..."
-            : campo.valor;
-        doc.text(valor, 70, currentY + 3);
-
-        currentY += 10;
-      });
-
-      currentY += 5; // Espacio entre secciones
-    };
-
-    // Sección 1: Información de Identificación
-    agregarSeccion(
-      "Información de Identificación",
-      [
-        { label: "Código INE", valor: detalle.ine },
-        { label: "Número NNE", valor: detalle.nne },
-        { label: "Número de Serie", valor: detalle.numeroSerie },
-      ],
-      "📋"
-    );
-
-    // Sección 2: Especificaciones Técnicas
-    agregarSeccion(
-      "Especificaciones Técnicas",
-      [
-        { label: "Marca", valor: detalle.marca },
-        { label: "Modelo", valor: detalle.modelo },
-        { label: "Tipo de Equipo", valor: detalle.tipoEquipo },
-        { label: "Estado Actual", valor: detalle.estadoEquipo },
-      ],
-      "⚙️"
-    );
-
-    // Sección 3: Asignación y Ubicación
-    agregarSeccion(
-      "Asignación y Ubicación",
-      [
-        { label: "Ubicación Física", valor: detalle.ubicacion },
-        { label: "Personal Responsable", valor: detalle.responsable },
-      ],
-      "📍"
-    );
-
-    // Sección 4: Observaciones
-    agregarSeccion(
-      "Observaciones y Notas",
-      [{ label: "Observaciones Generales", valor: detalle.observaciones }],
-      "📝"
-    );
-
-    // Sección 5: Especificaciones Adicionales (si existen)
-    if (especificaciones.length > 0) {
-      agregarSeccion(
-        "Especificaciones Técnicas Adicionales",
-        [{ label: "Especificaciones", valor: especificaciones.join(" • ") }],
-        "🔧"
-      );
-    }
-
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text("© 2025 Sistema de Control y Gestión", 20, 285);
-      doc.text(`Página ${i} de ${pageCount}`, 160, 285);
-      doc.text(`Generado: ${fechaActual} ${horaActual}`, 20, 290);
-    }
-
-    // Guardar el PDF
-    const nne = detalle.nne.replace(/[^a-zA-Z0-9]/g, "_");
-    const fecha = new Date().toISOString().split("T")[0];
-    const nombreArchivo = `equipo_${nne}_${fecha}.pdf`;
-    doc.save(nombreArchivo);
-
-    Swal.fire({
-      title: "¡PDF generado exitosamente!",
-      text: `Se ha descargado el archivo: ${nombreArchivo}`,
-      icon: "success",
-      timer: 3000,
-    });
-  } catch (error) {
-    console.error("Error al generar PDF de detalle:", error);
-    Swal.fire({
-      title: "Error al generar PDF",
-      text: "Se generará un archivo CSV como alternativa",
-      icon: "warning",
-    });
-    setTimeout(() => exportarDetalleCSV(), 1000);
-  }
-}
-
-/**
- * Exporta el detalle del equipo en formato CSV como fallback
- */
-function exportarDetalleCSV() {
-  try {
-    // Obtener los datos actuales mostrados en el modal
-    const detalle = {
-      INE: document.getElementById("detalle-ine").textContent || "N/A",
-      NNE: document.getElementById("detalle-nne").textContent || "N/A",
-      "Número de Serie":
-        document.getElementById("detalle-nro-serie").textContent || "N/A",
-      Marca: document.getElementById("detalle-marca").textContent || "N/A",
-      Modelo: document.getElementById("detalle-modelo").textContent || "N/A",
-      "Tipo de Equipo":
-        document.getElementById("detalle-tipo").textContent || "N/A",
-      Estado: document.getElementById("detalle-estado").textContent || "N/A",
-      "Personal Responsable":
-        document.getElementById("detalle-responsable").textContent ||
-        "Sin asignar",
-      Ubicación:
-        document.getElementById("detalle-ubicacion").textContent || "N/A",
-      Observaciones:
-        document.getElementById("detalle-observaciones").textContent ||
-        "Sin observaciones",
-    };
-
-    // Agregar especificaciones técnicas si existen
-    const especificacionesContainer = document.getElementById(
-      "detalle-especificaciones"
-    );
-    if (especificacionesContainer) {
-      const badges = especificacionesContainer.querySelectorAll(".badge");
-      let especificaciones = [];
-      badges.forEach((badge) => {
-        especificaciones.push(badge.textContent.trim());
-      });
-      detalle["Especificaciones Técnicas"] =
-        especificaciones.length > 0
-          ? especificaciones.join("; ")
-          : "Sin especificaciones";
-    }
-
-    // Crear archivo CSV con los detalles
-    const csvContent = generarCSV([detalle]);
-
-    // Generar nombre del archivo con NNE y fecha
-    const nne = detalle.NNE.replace(/[^a-zA-Z0-9]/g, "_");
-    const fecha = new Date().toISOString().split("T")[0];
-    const nombreArchivo = `equipo_${nne}_${fecha}.csv`;
-
-    // Descargar archivo
-    descargarArchivo(csvContent, nombreArchivo, "text/csv");
-
-    Swal.fire({
-      title: "¡Exportación exitosa!",
-      text: `Se ha descargado el archivo CSV: ${nombreArchivo}`,
-      icon: "success",
-      timer: 3000,
-    });
-  } catch (error) {
-    console.error("Error al exportar detalle del equipo:", error);
-    Swal.fire({
-      title: "Error",
-      text: "No se pudo exportar la información del equipo. Inténtelo nuevamente.",
-      icon: "error",
-    });
-  }
-}
-
-/**
- * Imprime la tabla principal de equipos con diseño adaptativo optimizado
- */
-function imprimirTablaEquipos() {
-  try {
-    if (!window.equipos || window.equipos.length === 0) {
-      Swal.fire({
-        title: "No hay datos",
-        text: "No hay equipos para imprimir. Cargue los datos primero.",
-        icon: "warning",
-      });
-      return;
-    }
-
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    // Crear contenido HTML para imprimir directamente
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Inventario de Equipos</title>
-        <style>
-          @page { margin: 1cm; }
-          body { font-family: Arial; font-size: 12px; }
-          .header { text-align: center; margin-bottom: 20px; }
-          .header h1 { color: #0066cc; margin-bottom: 10px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th { 
-            background-color: #0066cc !important; 
-            color: white !important; 
-            padding: 8px 4px !important; 
-            border: 2px solid #000 !important; 
-            text-align: center !important; 
-            font-weight: bold !important;
-            font-size: 11px !important;
-          }
-          td { 
-            padding: 4px; 
-            border: 1px solid #000; 
-            font-size: 10px; 
-            text-align: center;
-          }
-          tr:nth-child(even) { background-color: #f5f5f5; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>📋 INVENTARIO DE EQUIPOS</h1>
-          <p><strong>Fecha:</strong> ${fechaActual} | <strong>Hora:</strong> ${horaActual} | <strong>Total:</strong> ${window.equipos.length} equipos</p>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">INE</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">NNE</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">N° Serie</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Marca</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Modelo</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Tipo</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Estado</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Responsable</th>
-              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Ubicación</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${window.equipos.map(equipo => `
-              <tr>
-                <td>${equipo.ine || 'N/A'}</td>
-                <td><strong>${equipo.nne || 'N/A'}</strong></td>
-                <td>${equipo.numeroSerie || 'N/A'}</td>
-                <td>${equipo.marca || 'N/A'}</td>
-                <td>${equipo.modelo || 'N/A'}</td>
-                <td>${equipo.tipoEquipo || 'N/A'}</td>
-                <td>${equipo.estadoEquipo || 'N/A'}</td>
-                <td>${equipo.responsable || 'Sin asignar'}</td>
-                <td>${equipo.ubicacion || 'N/A'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <script>
-          window.onload = function() {
-            window.print();
-          };
-        </script>
-      </body>
-      </html>
-    `;
-
-    // Crear ventana nueva y escribir contenido
-    const ventanaImpresion = window.open('', '_blank');
-    if (!ventanaImpresion) {
-      Swal.fire({
-        title: "Error de Impresión",
-        text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
-        icon: "error",
-      });
-      return;
-    }
-
-    ventanaImpresion.document.write(htmlContent);
-    ventanaImpresion.document.close();
-
-    // Mostrar confirmación de éxito
-    Swal.fire({
-      title: "✅ Ventana de impresión abierta",
-      text: "La tabla con encabezados azules se abrió para imprimir",
-      icon: "success",
-      timer: 2500,
-      showConfirmButton: false,
-    });
-  } catch (error) {
-    console.error("Error al preparar impresión de tabla:", error);
-    Swal.fire({
-      title: "Error de Impresión",
-      text: "No se pudo preparar la impresión. Verifique que su navegador permita ventanas emergentes.",
-      icon: "error",
-    });
-  }
-}
-
-/**
- * Imprime el detalle del equipo seleccionado con diseño adaptativo optimizado
- */
-function imprimirDetalleEquipo() {
-  try {
-    // Función auxiliar para obtener texto de elementos, considerando modo edición
-    function obtenerTextoElemento(id, fallback = "N/A") {
-      const elemento = document.getElementById(id);
-      if (!elemento) return fallback;
-
-      // Si el elemento tiene textContent visible, usar eso
-      if (elemento.textContent && elemento.textContent.trim()) {
-        const texto = elemento.textContent.trim();
-        return texto === "---" || texto === "-" ? fallback : texto;
-      }
-
-      return fallback;
-    }
-
-    // Obtener los datos actuales mostrados en el modal
-    const detalle = {
-      ine: obtenerTextoElemento("detalle-ine"),
-      nne: obtenerTextoElemento("detalle-nne"),
-      numeroSerie: obtenerTextoElemento("detalle-nro-serie"),
-      marca: obtenerTextoElemento("detalle-marca"),
-      modelo: obtenerTextoElemento("detalle-modelo"),
-      tipoEquipo: obtenerTextoElemento("detalle-tipo"),
-      estadoEquipo: obtenerTextoElemento("detalle-estado"),
-      responsable: obtenerTextoElemento("detalle-responsable", "Sin asignar"),
-      ubicacion: obtenerTextoElemento("detalle-ubicacion"),
-      observaciones: obtenerTextoElemento(
-        "detalle-observaciones",
-        "Sin observaciones"
-      ),
-    };
-
-    // Obtener especificaciones técnicas si existen
-    let especificaciones = [];
-    const especificacionesContainer = document.getElementById(
-      "detalle-especificaciones"
-    );
-    if (especificacionesContainer) {
-      // Buscar elementos li dentro del contenedor
-      const liElements = especificacionesContainer.querySelectorAll("li");
-      liElements.forEach((li) => {
-        const text = li.textContent.trim();
-        // Extraer texto omitiendo el punto inicial si existe
-        const cleanText = text.replace(/^•\s*/, "").trim();
-        if (
-          cleanText &&
-          cleanText !== "No hay especificaciones técnicas para este modelo."
-        ) {
-          especificaciones.push(cleanText);
-        }
-      });
-    }
-
-    // Crear ventana de impresión con parámetros optimizados
-    const ventanaImpresion = window.open(
-      "",
-      "_blank",
-      "width=800,height=1000,scrollbars=yes,resizable=yes"
-    );
-
-    if (!ventanaImpresion) {
-      Swal.fire({
-        title: "Error de Impresión",
-        text: "No se pudo abrir la ventana de impresión. Verifique que su navegador permita ventanas emergentes.",
-        icon: "error",
-      });
-      return;
-    }
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    if (!ventanaImpresion) {
-      throw new Error("No se pudo abrir la ventana de impresión");
-    }
-
-    ventanaImpresion.document.write(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-          <title>Detalle del Equipo - ${detalle.nne}</title>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-              /* Reset y configuración base */
-              * {
-                  box-sizing: border-box;
-                  margin: 0;
-                  padding: 0;
-              }
-              
-              /* Configuración para diferentes tamaños de papel */
-              @page {
-                  margin: 1.5cm;
-                  size: auto;
-              }
-              
-              body { 
-                  font-family: 'Segoe UI', Arial, sans-serif;
-                  font-size: 12pt;
-                  line-height: 1.5;
-                  color: #333;
-                  background: white;
-                  max-width: 100%;
-              }
-              
-              /* Adaptaciones para diferentes tamaños de papel */
-              @media print and (width: 21cm) and (height: 29.7cm) {
-                  body { font-size: 11pt; line-height: 1.4; }
-                  .seccion { margin-bottom: 15px; }
-                  .campo { padding: 8px 12px; }
-              }
-              
-              @media print and (width: 8.5in) and (height: 11in) {
-                  body { font-size: 11pt; line-height: 1.4; }
-                  .header h1 { font-size: 18pt; }
-                  .seccion { margin-bottom: 12px; }
-              }
-              
-              @media print and (width: 8.5in) and (height: 14in) {
-                  body { font-size: 12pt; line-height: 1.5; }
-                  .seccion { margin-bottom: 18px; }
-              }
-              
-              /* Adaptación para papel más pequeño */
-              @media print and (max-width: 18cm) {
-                  body { font-size: 10pt; }
-                  .header h1 { font-size: 16pt; }
-                  .seccion-titulo { padding: 8px 12px; }
-                  .campo { padding: 6px 10px; }
-              }
-              
-              .container {
-                  max-width: 100%;
-                  margin: 0 auto;
-                  padding: 0;
-              }
-              
-              .header { 
-                  text-align: center; 
-                  margin-bottom: 25px; 
-                  border-bottom: 3px solid #007bff;
-                  padding-bottom: 15px;
-                  page-break-inside: avoid;
-              }
-              
-              .header h1 { 
-                  color: #007bff; 
-                  font-size: 22pt;
-                  font-weight: bold;
-                  margin-bottom: 8px;
-              }
-              
-              .header-info { 
-                  font-size: 11pt; 
-                  color: #666; 
-                  margin: 3px 0;
-                  display: flex;
-                  justify-content: space-between;
-                  flex-wrap: wrap;
-              }
-              
-              .equipo-id {
-                  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                  padding: 10px 20px;
-                  border-radius: 8px;
-                  display: inline-block;
-                  font-weight: bold;
-                  color: #495057;
-                  margin: 10px 0;
-                  border: 2px solid #007bff;
-                  font-size: 14pt;
-              }
-              
-              .seccion {
-                  margin-bottom: 20px;
-                  border: 1px solid #dee2e6;
-                  border-radius: 8px;
-                  overflow: hidden;
-                  page-break-inside: avoid;
-                  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              }
-              
-              .seccion-titulo {
-                  background: linear-gradient(135deg, #007bff, #0056b3);
-                  color: white;
-                  padding: 12px 15px;
-                  font-weight: bold;
-                  font-size: 13pt;
-                  display: flex;
-                  align-items: center;
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-              }
-              
-              .seccion-titulo .emoji {
-                  margin-right: 8px;
-                  font-size: 16pt;
-              }
-              
-              .campo {
-                  padding: 12px 15px;
-                  border-bottom: 1px solid #f1f3f4;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: flex-start;
-                  word-wrap: break-word;
-              }
-              
-              .campo:last-child {
-                  border-bottom: none;
-              }
-              
-              .campo:nth-child(even) {
-                  background-color: #f8f9fa;
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-              }
-              
-              .campo-label {
-                  font-weight: bold;
-                  color: #495057;
-                  min-width: 140px;
-                  margin-right: 15px;
-              }
-              
-              .campo-valor {
-                  flex: 1;
-                  color: #212529;
-                  word-wrap: break-word;
-                  overflow-wrap: break-word;
-              }
-              
-              /* Estados con colores específicos */
-              .estado-operativo { 
-                  color: #28a745 !important; 
-                  font-weight: bold;
-                  -webkit-print-color-adjust: exact;
-              }
-              .estado-mantenimiento { 
-                  color: #ffc107 !important; 
-                  font-weight: bold;
-                  -webkit-print-color-adjust: exact;
-              }
-              .estado-reparacion { 
-                  color: #dc3545 !important; 
-                  font-weight: bold;
-                  -webkit-print-color-adjust: exact;
-              }
-              .estado-baja { 
-                  color: #6c757d !important; 
-                  font-weight: bold;
-                  -webkit-print-color-adjust: exact;
-              }
-              
-              .especificaciones-list {
-                  list-style: none;
-                  padding: 0;
-              }
-              
-              .especificaciones-list li {
-                  background: #e7f1ff;
-                  margin: 5px 0;
-                  padding: 8px 12px;
-                  border-radius: 4px;
-                  border-left: 4px solid #007bff;
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-              }
-              
-              .footer { 
-                  margin-top: 30px; 
-                  text-align: center; 
-                  font-size: 9pt; 
-                  color: #666;
-                  border-top: 2px solid #dee2e6;
-                  padding-top: 15px;
-                  page-break-inside: avoid;
-              }
-              
-              .footer strong {
-                  color: #007bff;
-              }
-              
-              /* Configuraciones específicas para impresión */
-              @media print {
-                  body { 
-                      margin: 0; 
-                      -webkit-print-color-adjust: exact;
-                      print-color-adjust: exact;
-                  }
-                  
-                  .no-print { 
-                      display: none !important; 
-                  }
-                  
-                  /* Asegurar que los colores se impriman */
-                  * { 
-                      -webkit-print-color-adjust: exact !important; 
-                      print-color-adjust: exact !important;
-                  }
-                  
-                  /* Control de saltos de página */
-                  .seccion {
-                      page-break-inside: avoid;
-                      break-inside: avoid;
-                  }
-                  
-                  .header, .footer {
-                      page-break-inside: avoid;
-                  }
-                  
-                  /* Optimizar márgenes para impresión */
-                  @page {
-                      margin: 1.5cm 1cm;
-                  }
-              }
-              
-              /* Responsive para modo vista previa */
-              @media screen and (max-width: 600px) {
-                  body { font-size: 14pt; }
-                  .header h1 { font-size: 24pt; }
-                  .campo { flex-direction: column; }
-                  .campo-label { min-width: auto; margin-bottom: 5px; }
-              }
-          </style>
-      </head>
-      <body>
-          <div class="container">
-              <div class="header">
-                  <h1>🔧 DETALLE COMPLETO DE EQUIPO</h1>
-                  <div class="header-info">
-                      <span>📅 Fecha: ${fechaActual}</span>
-                      <span>🕐 Hora: ${horaActual}</span>
-                  </div>
-                  <div class="equipo-id">Equipo: ${detalle.nne}</div>
-              </div>
-              
-              <!-- Sección: Información de Identificación -->
-              <div class="seccion">
-                  <div class="seccion-titulo">
-                      <span class="emoji">📋</span>
-                      Información de Identificación
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Código INE:</div>
-                      <div class="campo-valor">${detalle.ine}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Número NNE:</div>
-                      <div class="campo-valor">${detalle.nne}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Número de Serie:</div>
-                      <div class="campo-valor">${detalle.numeroSerie}</div>
-                  </div>
-              </div>
-              
-              <!-- Sección: Especificaciones Técnicas -->
-              <div class="seccion">
-                  <div class="seccion-titulo">
-                      <span class="emoji">⚙️</span>
-                      Especificaciones Técnicas
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Marca:</div>
-                      <div class="campo-valor">${detalle.marca}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Modelo:</div>
-                      <div class="campo-valor">${detalle.modelo}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Tipo de Equipo:</div>
-                      <div class="campo-valor">${detalle.tipoEquipo}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Estado Actual:</div>
-                      <div class="campo-valor ${
-                        detalle.estadoEquipo
-                          ? "estado-" +
-                            detalle.estadoEquipo
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                          : ""
-                      }">${detalle.estadoEquipo}</div>
-                  </div>
-              </div>
-              
-              <!-- Sección: Asignación y Ubicación -->
-              <div class="seccion">
-                  <div class="seccion-titulo">
-                      <span class="emoji">📍</span>
-                      Asignación y Ubicación
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Ubicación Física:</div>
-                      <div class="campo-valor">${detalle.ubicacion}</div>
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Personal Responsable:</div>
-                      <div class="campo-valor">${detalle.responsable}</div>
-                  </div>
-              </div>
-              
-              <!-- Sección: Observaciones -->
-              <div class="seccion">
-                  <div class="seccion-titulo">
-                      <span class="emoji">📝</span>
-                      Observaciones y Notas
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Observaciones:</div>
-                      <div class="campo-valor">${detalle.observaciones}</div>
-                  </div>
-              </div>
-              
-              ${
-                especificaciones.length > 0
-                  ? `
-              <!-- Sección: Especificaciones Adicionales -->
-              <div class="seccion">
-                  <div class="seccion-titulo">
-                      <span class="emoji">🔧</span>
-                      Especificaciones Técnicas Adicionales
-                  </div>
-                  <div class="campo">
-                      <div class="campo-label">Especificaciones:</div>
-                      <div class="campo-valor">
-                          <ul class="especificaciones-list">
-                              ${especificaciones
-                                .map((esp) => `<li>${esp}</li>`)
-                                .join("")}
-                          </ul>
-                      </div>
-                  </div>
-              </div>
-              `
-                  : ""
-              }
-              
-              <div class="footer">
-                  <p><strong>© 2025 Sistema de Control y Gestión de Equipos</strong></p>
-                  <p>Detalle completo generado automáticamente</p>
-                  <p>Documento generado el ${fechaActual} a las ${horaActual}</p>
-              </div>
-          </div>
-          
-          <script>
-              // Configurar impresión automática más amigable
-              window.onload = function() {
-                  // Confirmar antes de imprimir
-                  const userWantsToPrint = confirm("¿Desea imprimir el detalle de este equipo? El documento se adaptará automáticamente al tamaño de papel.");
-                  
-                  if (userWantsToPrint) {
-                      setTimeout(() => {
-                          window.print();
-                      }, 500);
-                  }
-              }
-              
-              // Manejar el evento de después de imprimir
-              window.onafterprint = function() {
-                  const shouldClose = confirm("Impresión completada. ¿Desea cerrar esta ventana?");
-                  if (shouldClose) {
-                      window.close();
-                  }
-              }
-              
-              // Detectar cancelación
-              window.onbeforeunload = function() {
-                  return "¿Está seguro que desea salir sin imprimir?";
-              }
-          </script>
-      </body>
-      </html>
-    `);
-
-    ventanaImpresion.document.close();
-
-    // Mostrar confirmación de éxito
-    Swal.fire({
-      title: "✅ Detalle listo para imprimir",
-      text: "La ventana con el detalle completo del equipo se ha abierto correctamente.",
-      icon: "success",
-      timer: 2500,
-      showConfirmButton: false,
-    });
-  } catch (error) {
-    console.error("Error al imprimir detalle del equipo:", error);
-    Swal.fire({
-      title: "Error de Impresión",
-      text: "No se pudo preparar la impresión del detalle. Verifique su configuración de navegador.",
-      icon: "error",
-    });
-  }
-}
-
-console.log("[DOMContentLoaded] Inicialización completada");
-
-/**
- * Exporta equipos directamente a PDF usando jsPDF con datos de la tabla visible
- */
-function exportarEquiposPDFDirecto() {
-  try {
-    // Mostrar indicador de carga
-    Swal.fire({
-      title: "Generando PDF...",
-      text: "Por favor espere mientras se genera el documento",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    // Obtener datos directamente de la tabla HTML visible
-    const tabla = document.getElementById('tablaEquipos');
-    if (!tabla) {
-      throw new Error("No se encontró la tabla de equipos");
-    }
-
-    const filas = tabla.querySelectorAll('tbody tr');
-    if (filas.length === 0) {
-      Swal.fire({
-        title: "Sin datos",
-        text: "No hay equipos para exportar",
-        icon: "warning",
-      });
-      return;
-    }
-
-    // Cargar jsPDF si no está disponible
-    if (typeof window.jsPDF === "undefined") {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      script.onload = () => {
-        generarPDFDesdeTabla();
-      };
-      script.onerror = () => {
-        Swal.fire({
-          title: "Error",
-          text: "No se pudo cargar el generador de PDF",
-          icon: "error",
-        });
-      };
-      document.head.appendChild(script);
-    } else {
-      generarPDFDesdeTabla();
-    }
-
-  } catch (error) {
-    console.error("Error al inicializar exportación:", error);
-    Swal.fire({
-      title: "Error",
-      text: "Ocurrió un error al generar el PDF",
-      icon: "error",
-    });
-  }
-}
-
-/**
- * Genera el PDF desde los datos de la tabla HTML
- */
-function generarPDFDesdeTabla() {
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("landscape", "mm", "a4");
-
-    // Configurar fuente
-    doc.setFont("helvetica");
-
-    // Header del documento
-    doc.setFontSize(16);
-    doc.setTextColor(40, 40, 40);
-    doc.text("SISTEMA DE GESTIÓN - INVENTARIO DE EQUIPOS", 20, 20);
-
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 28);
-
-    // Obtener datos de la tabla
-    const tabla = document.getElementById('tablaEquipos');
-    const filas = tabla.querySelectorAll('tbody tr');
-    
-    doc.text(`Total de equipos: ${filas.length}`, 20, 34);
-
-    // Línea separadora
-    doc.setDrawColor(0, 123, 255);
-    doc.setLineWidth(0.5);
-    doc.line(20, 38, 277, 38);
-
-    // Headers de la tabla
-    const headers = ["#", "INE", "NNE", "Nro. Serie", "Marca", "Modelo", "Tipo", "Estado"];
-    const startY = 50;
-    const rowHeight = 8;
-    const colWidths = [12, 35, 35, 35, 25, 25, 35, 35];
-    let currentX = 20;
-
-    // Dibujar headers con fondo azul
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    doc.setFillColor(0, 123, 255);
-
-    headers.forEach((header, index) => {
-      doc.rect(currentX, startY - 6, colWidths[index], 8, "F");
-      doc.text(header, currentX + 2, startY - 1);
-      currentX += colWidths[index];
-    });
-
-    // Preparar datos para la tabla
-    let currentY = startY + 2;
-    doc.setTextColor(40, 40, 40);
-    doc.setFontSize(8);
-
-    // Procesar cada fila de la tabla
-    filas.forEach((fila, idx) => {
-      // Verificar si necesitamos una nueva página
-      if (currentY > 180) {
-        doc.addPage();
-        currentY = 20;
-
-        // Redibujar headers en nueva página
-        currentX = 20;
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.setFillColor(0, 123, 255);
-
-        headers.forEach((header, index) => {
-          doc.rect(currentX, currentY - 6, colWidths[index], 8, "F");
-          doc.text(header, currentX + 2, currentY - 1);
-          currentX += colWidths[index];
-        });
-
-        currentY += 2;
-        doc.setTextColor(40, 40, 40);
-        doc.setFontSize(8);
-      }
-
-      // Alternar color de fondo de filas
-      if (idx % 2 === 0) {
-        doc.setFillColor(248, 249, 250);
-        currentX = 20;
-        colWidths.forEach((width) => {
-          doc.rect(currentX, currentY - 2, width, rowHeight, "F");
-          currentX += width;
-        });
-      }
-
-      // Extraer datos de las celdas de la fila
-      const celdas = fila.querySelectorAll('td');
-      const rowData = [
-        String(idx + 1), // Número de fila
-        (celdas[1] ? celdas[1].textContent.trim() : "N/A").substring(0, 18), // INE
-        (celdas[2] ? celdas[2].textContent.trim() : "N/A").substring(0, 18), // NNE
-        (celdas[3] ? celdas[3].textContent.trim() : "N/A").substring(0, 18), // Serie
-        (celdas[4] ? celdas[4].textContent.trim() : "N/A").substring(0, 12), // Marca
-        (celdas[5] ? celdas[5].textContent.trim() : "N/A").substring(0, 12), // Modelo
-        (celdas[6] ? celdas[6].textContent.trim() : "N/A").substring(0, 18), // Tipo
-        (celdas[7] ? celdas[7].textContent.trim() : "N/A").substring(0, 18), // Estado
-      ];
-
-      currentX = 20;
-      rowData.forEach((data, colIndex) => {
-        doc.text(data, currentX + 2, currentY + 4);
-        currentX += colWidths[colIndex];
-      });
-
-      currentY += rowHeight;
-    });
-
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text(
-        `© 2025 Sistema de Control y Gestión - Página ${i} de ${pageCount}`,
-        20,
-        200
-      );
-      doc.text(`Generado el ${fechaActual} a las ${horaActual}`, 200, 200);
-    }
-
-    // Descargar el archivo
-    const nombreArchivo = `equipos_${fechaActual.replace(/\//g, '-')}.pdf`;
-    doc.save(nombreArchivo);
-
-    // Cerrar el indicador de carga y mostrar confirmación
-    Swal.fire({
-      title: "¡PDF generado correctamente!",
-      text: `El archivo ${nombreArchivo} se ha descargado con todos los encabezados visibles`,
-      icon: "success",
-      timer: 3000,
-      showConfirmButton: false,
-    });
-
-  } catch (error) {
-    console.error("Error al generar PDF:", error);
-    Swal.fire({
-      title: "Error",
-      text: "No se pudo generar el archivo PDF",
-      icon: "error",
-    });
-  }
-}
