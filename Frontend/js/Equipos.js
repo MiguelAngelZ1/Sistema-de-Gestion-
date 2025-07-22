@@ -2891,7 +2891,10 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   container.appendChild(seccionBasica);
   container.appendChild(seccionTecnica);
   container.appendChild(especificacionesDiv);
-  container.appendChild(seccionAsignacion);
+    container.appendChild(seccionAsignacion);
+  
+    return container;
+  }
 
 
 /**
@@ -3086,4 +3089,3 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 });
-}
