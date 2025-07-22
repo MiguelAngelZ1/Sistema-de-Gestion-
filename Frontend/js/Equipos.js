@@ -3533,6 +3533,20 @@ function imprimirTablaEquipos() {
         <script>
           // Configurar impresión automática más suave
           window.onload = function() {
+            // Forzar estilos de encabezados mediante JavaScript
+            const headers = document.querySelectorAll('thead th');
+            headers.forEach(header => {
+              header.style.backgroundColor = '#f8f9fa';
+              header.style.border = '1px solid #000';
+              header.style.fontWeight = 'bold';
+              header.style.textAlign = 'center';
+              header.style.padding = '6px 4px';
+              header.style.fontSize = '10px';
+              header.style.color = '#000';
+              header.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
+              header.style.setProperty('print-color-adjust', 'exact', 'important');
+            });
+            
             // Mostrar alerta antes de imprimir
             const userWantsToPrint = confirm("¿Está listo para imprimir? El documento se adaptará automáticamente al tamaño de papel de su impresora.");
             
