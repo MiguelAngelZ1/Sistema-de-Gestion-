@@ -30,32 +30,6 @@ let modalAgregarUnidad;
 let equipoIdActual = null;
 let equipoNneActual = null;
 
-// Se ejecuta cuando el contenido del DOM ha sido completamente cargado.
-// Es el punto de entrada de la aplicación.
-document.addEventListener("DOMContentLoaded", () => {
-  // Inicializa los modales de Bootstrap.
-  // modalEquipo = new bootstrap.Modal(document.getElementById('modalEquipo')); // Modal obsoleto
-  modalDetalles = new bootstrap.Modal(
-    document.getElementById("modalDetallesEquipo")
-  );
-  window.modalDetalles = modalDetalles; // <-- Asegura que sea global y accesible
-  // modalInventario = new bootstrap.Modal(document.getElementById('modalInventario')); // Modal obsoleto
-  modalCrearModelo = new bootstrap.Modal(
-    document.getElementById("modalCrearModelo")
-  );
-  modalAgregarUnidad = new bootstrap.Modal(
-    document.getElementById("modalAgregarUnidad")
-  );
-
-  // Asigna los eventos a los elementos del DOM.
-  asignarEventListeners();
-
-  // Carga inicial de los datos.
-  cargarEquipos();
-  cargarEstadosParaModal(); // Cargar los estados para el modal de unidades.
-  cargarTiposEquipo(); // Cargar los tipos para el modal de creación de modelos.
-});
-
 //-----------------------------------------------------------------------------------------------------
 // FUNCION AUXILIAR PARA RECARGAR EQUIPO DESDE LA API
 //-----------------------------------------------------------------------------------------------------
@@ -2651,8 +2625,7 @@ function exportarDetalleEquipoPDF() {
 // Event listener para cargar datos al cargar la página
 document.addEventListener("DOMContentLoaded", function () {
   console.log("[DOMContentLoaded] Iniciando carga de equipos...");
-  cargarEquipos();
-
+  
   // Inicializar modales
   window.bootstrap = window.bootstrap || {};
   window.bootstrap.Modal = bootstrap.Modal;
@@ -2661,6 +2634,39 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalDetallesElement = document.getElementById("modalDetallesEquipo");
   if (modalDetallesElement) {
     window.modalDetalles = new bootstrap.Modal(modalDetallesElement);
+  }
+
+  // Inicializar otros modales
+  const modalCrearModeloElement = document.getElementById("modalCrearModelo");
+  if (modalCrearModeloElement) {
+    window.modalCrearModelo = new bootstrap.Modal(modalCrearModeloElement);
+  }
+
+  const modalAgregarUnidadElement = document.getElementById("modalAgregarUnidad");
+  if (modalAgregarUnidadElement) {
+    window.modalAgregarUnidad = new bootstrap.Modal(modalAgregarUnidadElement);
+  }
+
+  const modalInventarioElement = document.getElementById("modalInventario");
+  if (modalInventarioElement) {
+    window.modalInventario = new bootstrap.Modal(modalInventarioElement);
+  }
+
+  // Cargar datos iniciales
+  cargarEquipos();
+  
+  // Asignar eventos si las funciones existen
+  if (typeof asignarEventListeners === 'function') {
+    asignarEventListeners();
+  }
+  
+  // Cargar datos para modales si las funciones existen
+  if (typeof cargarEstadosParaModal === 'function') {
+    cargarEstadosParaModal();
+  }
+  
+  if (typeof cargarTiposEquipo === 'function') {
+    cargarTiposEquipo();
   }
 
   // Event listeners para los botones del modal de detalles
@@ -2720,6 +2726,23 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     console.error(
       "[DOMContentLoaded] No se encontró el botón btn-exportar-pdf-detalle"
+    );
+  }
+
+  // Event listener para abrir modal crear modelo
+  const btnAbrirModalCrearModelo = document.getElementById("btn-abrir-modal-crear-modelo");
+  if (btnAbrirModalCrearModelo) {
+    btnAbrirModalCrearModelo.addEventListener("click", function() {
+      if (window.modalCrearModelo) {
+        window.modalCrearModelo.show();
+      }
+    });
+    console.log(
+      "[DOMContentLoaded] Event listener agregado para btn-abrir-modal-crear-modelo"
+    );
+  } else {
+    console.error(
+      "[DOMContentLoaded] No se encontró el botón btn-abrir-modal-crear-modelo"
     );
   }
 });
