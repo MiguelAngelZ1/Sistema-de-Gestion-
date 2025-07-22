@@ -4,13 +4,17 @@
 //-----------------------------------------------------------------------------------------------------
 
 // Verificar que CONFIG esté disponible
-if (typeof CONFIG === 'undefined') {
-  console.error('CONFIG no está definido. Asegúrate de cargar config.js antes que Equipos.js');
+if (typeof CONFIG === "undefined") {
+  console.error(
+    "CONFIG no está definido. Asegúrate de cargar config.js antes que Equipos.js"
+  );
 }
 
 // Función helper para obtener la URL base de la API
 function getApiBaseUrl() {
-  return typeof CONFIG !== 'undefined' ? CONFIG.API_BASE_URL : 'https://sistema-control-gestion-backend.onrender.com/api';
+  return typeof CONFIG !== "undefined"
+    ? CONFIG.API_BASE_URL
+    : "https://sistema-control-gestion-backend.onrender.com/api";
 }
 
 // URL base de la API - Usar configuración centralizada
@@ -20,12 +24,12 @@ const API_URL_ESTADOS = getApiBaseUrl() + "/estadoequipo";
 const API_URL_TIPO_EQUIPO = getApiBaseUrl() + "/tipoequipo";
 
 // Función de diagnóstico para testear las APIs
-window.testAPIs = async function() {
+window.testAPIs = async function () {
   console.log("=== DIAGNÓSTICO DE APIs ===");
   console.log("API Base URL:", getApiBaseUrl());
   console.log("API_URL:", API_URL);
   console.log("API_URL_ESTADOS:", API_URL_ESTADOS);
-  
+
   try {
     console.log("1. Probando API de equipos...");
     const equiposRes = await fetch(API_URL);
@@ -47,7 +51,7 @@ window.testAPIs = async function() {
     const estados = await estadosRes.json();
     console.log("- Estados obtenidos:", estados?.length || 0);
     console.log("- Primer estado:", estados?.[0]);
-    
+
     return { equipos, unidades, estados };
   } catch (error) {
     console.error("Error en diagnóstico:", error);
@@ -74,9 +78,7 @@ async function recargarEquipoActual(nne, nroSerie) {
   if (nne) {
     url = `${getApiBaseUrl()}/equipos/nne/${nne}`;
   } else if (nroSerie) {
-    url = `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(
-      nroSerie
-    )}`;
+    url = `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`;
   }
   if (url) {
     const resp = await fetch(url);
@@ -1637,9 +1639,7 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     } else if (nroSerie) {
       // 1b. Obtener datos del equipo por nroSerie
       response = await fetch(
-        `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(
-          nroSerie
-        )}`
+        `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`
       );
     } else {
       throw new Error(
@@ -2522,54 +2522,59 @@ async function guardarCambiosDetalles() {
  */
 function exportarEquiposPDF() {
   console.log("[exportarEquiposPDF] Iniciando exportación PDF");
-  
+
   // Verificar que html2pdf esté disponible
-  if (typeof html2pdf === 'undefined') {
+  if (typeof html2pdf === "undefined") {
     console.error("[exportarEquiposPDF] html2pdf.js no está cargado");
     mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
     return;
   }
 
   // Obtener el contenedor que se va a exportar
-  const contenido = document.getElementById('contenidoPDF');
+  const contenido = document.getElementById("contenidoPDF");
   if (!contenido) {
-    console.error("[exportarEquiposPDF] No se encontró el elemento contenidoPDF");
+    console.error(
+      "[exportarEquiposPDF] No se encontró el elemento contenidoPDF"
+    );
     mostrarAlerta("Error: No se encontró el contenido para exportar", "error");
     return;
   }
 
   // Crear una copia del contenido para modificar sin afectar la vista
   const contenidoCopia = contenido.cloneNode(true);
-  
+
   // Ocultar la columna de acciones en la copia
-  const headerAcciones = contenidoCopia.querySelector('th:last-child');
-  if (headerAcciones) headerAcciones.style.display = 'none';
-  
-  const cellsAcciones = contenidoCopia.querySelectorAll('td:last-child');
-  cellsAcciones.forEach(cell => cell.style.display = 'none');
+  const headerAcciones = contenidoCopia.querySelector("th:last-child");
+  if (headerAcciones) headerAcciones.style.display = "none";
+
+  const cellsAcciones = contenidoCopia.querySelectorAll("td:last-child");
+  cellsAcciones.forEach((cell) => (cell.style.display = "none"));
 
   // Agregar título y fecha al PDF
-  const wrapper = document.createElement('div');
-  wrapper.style.padding = '20px';
-  
-  const titulo = document.createElement('h2');
-  titulo.textContent = 'Listado de Equipos';
-  titulo.style.textAlign = 'center';
-  titulo.style.marginBottom = '10px';
-  titulo.style.color = '#333';
-  
-  const fecha = document.createElement('p');
-  fecha.textContent = `Fecha de generación: ${new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })}`;
-  fecha.style.textAlign = 'center';
-  fecha.style.marginBottom = '20px';
-  fecha.style.color = '#666';
-  
+  const wrapper = document.createElement("div");
+  wrapper.style.padding = "20px";
+
+  const titulo = document.createElement("h2");
+  titulo.textContent = "Listado de Equipos";
+  titulo.style.textAlign = "center";
+  titulo.style.marginBottom = "10px";
+  titulo.style.color = "#333";
+
+  const fecha = document.createElement("p");
+  fecha.textContent = `Fecha de generación: ${new Date().toLocaleDateString(
+    "es-ES",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  )}`;
+  fecha.style.textAlign = "center";
+  fecha.style.marginBottom = "20px";
+  fecha.style.color = "#666";
+
   wrapper.appendChild(titulo);
   wrapper.appendChild(fecha);
   wrapper.appendChild(contenidoCopia);
@@ -2577,31 +2582,33 @@ function exportarEquiposPDF() {
   // Configuración para html2pdf
   const opt = {
     margin: [10, 10, 10, 10],
-    filename: `Equipos_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
+    filename: `Equipos_${new Date()
+      .toLocaleDateString("es-ES")
+      .replace(/\//g, "-")}.pdf`,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      logging: false
+      logging: false,
     },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'landscape' 
-    }
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "landscape",
+    },
   };
 
   // Mostrar indicador de carga
   const loading = Swal.fire({
-    title: 'Generando PDF...',
-    html: 'Por favor espera mientras se genera el archivo.',
+    title: "Generando PDF...",
+    html: "Por favor espera mientras se genera el archivo.",
     allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
     didOpen: () => {
       Swal.showLoading();
-    }
+    },
   });
 
   // Generar PDF
@@ -2625,10 +2632,12 @@ function exportarEquiposPDF() {
  * Exporta los detalles del equipo a PDF usando html2pdf.js
  */
 function exportarDetalleEquipoPDF() {
-  console.log("[exportarDetalleEquipoPDF] Iniciando exportación PDF del detalle");
-  
+  console.log(
+    "[exportarDetalleEquipoPDF] Iniciando exportación PDF del detalle"
+  );
+
   // Verificar que html2pdf esté disponible
-  if (typeof html2pdf === 'undefined') {
+  if (typeof html2pdf === "undefined") {
     console.error("[exportarDetalleEquipoPDF] html2pdf.js no está cargado");
     mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
     return;
@@ -2643,29 +2652,44 @@ function exportarDetalleEquipoPDF() {
 
   // Obtener información para el nombre del archivo
   const equipo = window.__equipoDetallesActual;
-  const nne = equipo.nne || document.getElementById('detalle-nne')?.textContent?.trim() || '';
-  const nroSerie = equipo.nroSerie || document.getElementById('detalle-nro-serie')?.textContent?.trim() || '';
-  const identificador = (nne && nne !== '-' && nne !== '---') ? nne : nroSerie || 'Detalle';
+  const nne =
+    equipo.nne ||
+    document.getElementById("detalle-nne")?.textContent?.trim() ||
+    "";
+  const nroSerie =
+    equipo.nroSerie ||
+    document.getElementById("detalle-nro-serie")?.textContent?.trim() ||
+    "";
+  const identificador =
+    nne && nne !== "-" && nne !== "---" ? nne : nroSerie || "Detalle";
 
   // Obtener datos del DOM para completar la información
   const datosDOM = {
-    ine: document.getElementById('detalle-ine')?.textContent?.trim() || '',
-    nne: document.getElementById('detalle-nne')?.textContent?.trim() || '',
-    nroSerie: document.getElementById('detalle-nro-serie')?.textContent?.trim() || '',
-    marca: document.getElementById('detalle-marca')?.textContent?.trim() || '',
-    modelo: document.getElementById('detalle-modelo')?.textContent?.trim() || '',
-    tipoEquipo: document.getElementById('detalle-tipo-equipo')?.textContent?.trim() || '',
-    estado: document.getElementById('detalle-estado')?.textContent?.trim() || '',
-    responsable: document.getElementById('detalle-responsable')?.textContent?.trim() || '',
-    ubicacion: document.getElementById('detalle-ubicacion')?.textContent?.trim() || '',
-    observaciones: document.getElementById('detalle-observaciones')?.textContent?.trim() || ''
+    ine: document.getElementById("detalle-ine")?.textContent?.trim() || "",
+    nne: document.getElementById("detalle-nne")?.textContent?.trim() || "",
+    nroSerie:
+      document.getElementById("detalle-nro-serie")?.textContent?.trim() || "",
+    marca: document.getElementById("detalle-marca")?.textContent?.trim() || "",
+    modelo:
+      document.getElementById("detalle-modelo")?.textContent?.trim() || "",
+    tipoEquipo:
+      document.getElementById("detalle-tipo-equipo")?.textContent?.trim() || "",
+    estado:
+      document.getElementById("detalle-estado")?.textContent?.trim() || "",
+    responsable:
+      document.getElementById("detalle-responsable")?.textContent?.trim() || "",
+    ubicacion:
+      document.getElementById("detalle-ubicacion")?.textContent?.trim() || "",
+    observaciones:
+      document.getElementById("detalle-observaciones")?.textContent?.trim() ||
+      "",
   };
 
   console.log("[exportarDetalleEquipoPDF] Datos del DOM obtenidos:", datosDOM);
 
   // Crear contenido optimizado para PDF
   const contenidoPDF = crearContenidoPDFDetalle(equipo, datosDOM);
-  
+
   if (!contenidoPDF) {
     console.error("[exportarDetalleEquipoPDF] Error al crear el contenido PDF");
     mostrarAlerta("Error al generar el contenido del PDF", "error");
@@ -2675,32 +2699,34 @@ function exportarDetalleEquipoPDF() {
   // Configuración para html2pdf
   const opt = {
     margin: [15, 15, 15, 15],
-    filename: `Detalle_Equipo_${identificador}_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { 
+    filename: `Detalle_Equipo_${identificador}_${new Date()
+      .toLocaleDateString("es-ES")
+      .replace(/\//g, "-")}.pdf`,
+    image: { type: "jpeg", quality: 0.95 },
+    html2canvas: {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       logging: false,
-      backgroundColor: '#ffffff'
+      backgroundColor: "#ffffff",
     },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'portrait' 
-    }
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait",
+    },
   };
 
   // Mostrar indicador de carga
   const loading = Swal.fire({
-    title: 'Generando PDF del detalle...',
-    html: 'Por favor espera mientras se genera el archivo.',
+    title: "Generando PDF del detalle...",
+    html: "Por favor espera mientras se genera el archivo.",
     allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
     didOpen: () => {
       Swal.showLoading();
-    }
+    },
   });
 
   // Generar PDF
@@ -2709,12 +2735,17 @@ function exportarDetalleEquipoPDF() {
     .from(contenidoPDF)
     .save()
     .then(() => {
-      console.log("[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente");
+      console.log(
+        "[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente"
+      );
       loading.close();
       mostrarAlerta("PDF del detalle exportado exitosamente", "success");
     })
     .catch((error) => {
-      console.error("[exportarDetalleEquipoPDF] Error al generar PDF del detalle:", error);
+      console.error(
+        "[exportarDetalleEquipoPDF] Error al generar PDF del detalle:",
+        error
+      );
       loading.close();
       mostrarAlerta("Error al generar el PDF del detalle", "error");
     });
@@ -2726,8 +2757,8 @@ function exportarDetalleEquipoPDF() {
 function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   console.log("[crearContenidoPDFDetalle] Datos del equipo:", equipo);
   console.log("[crearContenidoPDFDetalle] Datos del DOM:", datosDOM);
-  
-  const container = document.createElement('div');
+
+  const container = document.createElement("div");
   container.style.cssText = `
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 20px;
@@ -2737,7 +2768,7 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   `;
 
   // Header del documento
-  const header = document.createElement('div');
+  const header = document.createElement("div");
   header.style.cssText = `
     text-align: center;
     margin-bottom: 30px;
@@ -2745,8 +2776,8 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     padding-bottom: 15px;
   `;
 
-  const titulo = document.createElement('h1');
-  titulo.textContent = 'Detalle del Equipo';
+  const titulo = document.createElement("h1");
+  titulo.textContent = "Detalle del Equipo";
   titulo.style.cssText = `
     color: #007bff;
     margin: 0 0 5px 0;
@@ -2754,14 +2785,17 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     font-weight: bold;
   `;
 
-  const subtitulo = document.createElement('p');
-  subtitulo.textContent = `Generado el ${new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })}`;
+  const subtitulo = document.createElement("p");
+  subtitulo.textContent = `Generado el ${new Date().toLocaleDateString(
+    "es-ES",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  )}`;
   subtitulo.style.cssText = `
     color: #666;
     margin: 0;
@@ -2772,99 +2806,108 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   header.appendChild(subtitulo);
 
   // Función helper para obtener valor con fallback
-  const obtenerValor = (valorEquipo, valorDOM, defecto = 'No especificado') => {
-    return valorDOM && valorDOM !== '-' && valorDOM !== '---' && valorDOM.trim() !== '' 
-      ? valorDOM 
+  const obtenerValor = (valorEquipo, valorDOM, defecto = "No especificado") => {
+    return valorDOM &&
+      valorDOM !== "-" &&
+      valorDOM !== "---" &&
+      valorDOM.trim() !== ""
+      ? valorDOM
       : valorEquipo || defecto;
   };
 
   // Información básica
-  const seccionBasica = crearSeccionPDF('Información Básica de Identificación', [
-    { 
-      label: 'Código INE', 
-      valor: obtenerValor(equipo.ine, datosDOM.ine, 'No asignado')
-    },
-    { 
-      label: 'Número NNE', 
-      valor: obtenerValor(equipo.nne, datosDOM.nne, 'No asignado')
-    },
-    { 
-      label: 'Número de Serie', 
-      valor: obtenerValor(
-        equipo.unidades?.[0]?.nroSerie || equipo.unidades?.[0]?.nro_serie || equipo.nroSerie, 
-        datosDOM.nroSerie, 
-        'No asignado'
-      )
-    },
-    { 
-      label: 'Estado', 
-      valor: obtenerValor(
-        equipo.unidades?.[0]?.estado?.nombre || equipo.unidades?.[0]?.estado_nombre, 
-        datosDOM.estado, 
-        'No definido'
-      )
-    },
-    { 
-      label: 'Tipo de Equipo', 
-      valor: obtenerValor(
-        equipo.tipoNombre || equipo.tipo, 
-        datosDOM.tipoEquipo, 
-        'No especificado'
-      )
-    }
-  ], '#007bff');
-
-  // Especificaciones técnicas
-  const seccionTecnica = crearSeccionPDF('Especificaciones Técnicas', [
-    { 
-      label: 'Marca', 
-      valor: obtenerValor(equipo.marca, datosDOM.marca, 'No especificada')
-    },
-    { 
-      label: 'Modelo', 
-      valor: obtenerValor(equipo.modelo, datosDOM.modelo, 'No especificado')
-    }
-  ], '#17a2b8');
+  const seccionBasica = crearSeccionPDF(
+    "Información Básica de Identificación",
+    [
+      {
+        label: "INE",
+        valor: obtenerValor(equipo.ine, datosDOM.ine, "No asignado"),
+      },
+      {
+        label: "NNE",
+        valor: obtenerValor(equipo.nne, datosDOM.nne, "No asignado"),
+      },
+      {
+        label: "NRO Serie",
+        valor: obtenerValor(
+          equipo.unidades?.[0]?.nroSerie ||
+            equipo.unidades?.[0]?.nro_serie ||
+            equipo.nroSerie,
+          datosDOM.nroSerie,
+          "No asignado"
+        ),
+      },
+      {
+        label: "Estado",
+        valor: obtenerValor(
+          equipo.unidades?.[0]?.estado?.nombre ||
+            equipo.unidades?.[0]?.estado_nombre,
+          datosDOM.estado,
+          "No definido"
+        ),
+      },
+      {
+        label: "Tipo de Equipo",
+        valor: obtenerValor(
+          equipo.tipoNombre || equipo.tipo,
+          datosDOM.tipoEquipo,
+          "No especificado"
+        ),
+      },
+    ],
+    "#007bff"
+  );
 
   // Especificaciones adicionales
-  let especificacionesHtml = '';
-  
+  let especificacionesHtml = "";
+
   // Intentar obtener especificaciones del equipo o del DOM
   if (equipo.especificaciones && equipo.especificaciones.length > 0) {
-    especificacionesHtml = equipo.especificaciones.map(spec => 
-      `<div style="margin-bottom: 8px;">
+    especificacionesHtml = equipo.especificaciones
+      .map(
+        (spec) =>
+          `<div style="margin-bottom: 8px;">
         <strong style="color: #495057;">${spec.clave}:</strong> 
         <span style="color: #6c757d;">${spec.valor}</span>
       </div>`
-    ).join('');
+      )
+      .join("");
   } else {
     // Intentar obtener especificaciones del DOM si no están en el objeto equipo
-    const especificacionesUL = document.getElementById('detalle-especificaciones');
+    const especificacionesUL = document.getElementById(
+      "detalle-especificaciones"
+    );
     if (especificacionesUL) {
-      const liElements = especificacionesUL.querySelectorAll('li');
+      const liElements = especificacionesUL.querySelectorAll("li");
       if (liElements.length > 0) {
-        especificacionesHtml = Array.from(liElements).map(li => {
-          const strong = li.querySelector('strong');
-          if (strong) {
-            const clave = strong.textContent.replace(':', '').trim();
-            const valor = li.textContent.replace(strong.textContent, '').trim();
-            return `<div style="margin-bottom: 8px;">
+        especificacionesHtml = Array.from(liElements)
+          .map((li) => {
+            const strong = li.querySelector("strong");
+            if (strong) {
+              const clave = strong.textContent.replace(":", "").trim();
+              const valor = li.textContent
+                .replace(strong.textContent, "")
+                .trim();
+              return `<div style="margin-bottom: 8px;">
               <strong style="color: #495057;">${clave}:</strong> 
               <span style="color: #6c757d;">${valor}</span>
             </div>`;
-          }
-          return '';
-        }).filter(item => item !== '').join('');
+            }
+            return "";
+          })
+          .filter((item) => item !== "")
+          .join("");
       }
     }
-    
+
     // Si aún no hay especificaciones, mostrar mensaje por defecto
     if (!especificacionesHtml) {
-      especificacionesHtml = '<p style="color: #999; font-style: italic;">No hay especificaciones técnicas adicionales registradas.</p>';
+      especificacionesHtml =
+        '<p style="color: #999; font-style: italic;">No hay especificaciones técnicas adicionales registradas.</p>';
     }
   }
 
-  const especificacionesDiv = document.createElement('div');
+  const especificacionesDiv = document.createElement("div");
   especificacionesDiv.style.cssText = `
     background: #f8f9fa;
     border-left: 4px solid #17a2b8;
@@ -2879,36 +2922,55 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   // Asignación y ubicación
   const personaId = equipo.unidades?.[0]?.personaId;
   const persona = equipo.unidades?.[0]?.persona;
-  let responsable = 'Sin asignar';
+  let responsable = "Sin asignar";
 
   // Intentar obtener responsable del objeto equipo
   if (personaId && persona && (persona.nombre || persona.apellido)) {
-    const grado = persona.nombreGrado || '';
-    const arma = persona.nombreArmEsp || '';
-    const nombre = persona.nombre || '';
-    const apellido = persona.apellido || '';
-    responsable = `${grado} ${arma} ${nombre} ${apellido}`.replace(/\s+/g, ' ').trim();
+    const grado = persona.nombreGrado || "";
+    const arma = persona.nombreArmEsp || "";
+    const nombre = persona.nombre || "";
+    const apellido = persona.apellido || "";
+    responsable = `${grado} ${arma} ${nombre} ${apellido}`
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   // Usar datos del DOM si están disponibles (prioridad al DOM)
-  if (datosDOM.responsable && datosDOM.responsable !== '-' && datosDOM.responsable !== '---' && datosDOM.responsable.trim() !== '') {
+  if (
+    datosDOM.responsable &&
+    datosDOM.responsable !== "-" &&
+    datosDOM.responsable !== "---" &&
+    datosDOM.responsable.trim() !== ""
+  ) {
     responsable = datosDOM.responsable;
   }
 
-  const seccionAsignacion = crearSeccionPDF('Asignación y Ubicación', [
-    { 
-      label: 'Responsable', 
-      valor: responsable
-    },
-    { 
-      label: 'Ubicación', 
-      valor: obtenerValor(equipo.ubicacion, datosDOM.ubicacion, 'No especificada')
-    },
-    { 
-      label: 'Observaciones', 
-      valor: obtenerValor(equipo.observaciones, datosDOM.observaciones, 'Sin observaciones')
-    }
-  ], '#28a745');
+  const seccionAsignacion = crearSeccionPDF(
+    "Asignación y Ubicación",
+    [
+      {
+        label: "Responsable",
+        valor: responsable,
+      },
+      {
+        label: "Ubicación",
+        valor: obtenerValor(
+          equipo.ubicacion,
+          datosDOM.ubicacion,
+          "No especificada"
+        ),
+      },
+      {
+        label: "Observaciones",
+        valor: obtenerValor(
+          equipo.observaciones,
+          datosDOM.observaciones,
+          "Sin observaciones"
+        ),
+      },
+    ],
+    "#28a745"
+  );
 
   // Ensamblar todo
   container.appendChild(header);
@@ -2916,16 +2978,15 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   container.appendChild(seccionTecnica);
   container.appendChild(especificacionesDiv);
   container.appendChild(seccionAsignacion);
-  
+
   return container;
 }
-
 
 /**
  * Crea una sección estilizada para el PDF
  */
 function crearSeccionPDF(titulo, campos, color) {
-  const seccion = document.createElement('div');
+  const seccion = document.createElement("div");
   seccion.style.cssText = `
     margin-bottom: 25px;
     background: white;
@@ -2934,7 +2995,7 @@ function crearSeccionPDF(titulo, campos, color) {
     overflow: hidden;
   `;
 
-  const header = document.createElement('div');
+  const header = document.createElement("div");
   header.style.cssText = `
     background: ${color};
     color: white;
@@ -2944,22 +3005,23 @@ function crearSeccionPDF(titulo, campos, color) {
   `;
   header.textContent = titulo;
 
-  const body = document.createElement('div');
+  const body = document.createElement("div");
   body.style.cssText = `
     padding: 15px;
   `;
 
-  const tabla = document.createElement('table');
+  const tabla = document.createElement("table");
   tabla.style.cssText = `
     width: 100%;
     border-collapse: collapse;
   `;
 
   campos.forEach((campo, index) => {
-    const fila = document.createElement('tr');
-    fila.style.cssText = index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;';
+    const fila = document.createElement("tr");
+    fila.style.cssText =
+      index % 2 === 0 ? "background: #f8f9fa;" : "background: white;";
 
-    const celdaLabel = document.createElement('td');
+    const celdaLabel = document.createElement("td");
     celdaLabel.style.cssText = `
       padding: 10px 12px;
       font-weight: bold;
@@ -2969,7 +3031,7 @@ function crearSeccionPDF(titulo, campos, color) {
     `;
     celdaLabel.textContent = campo.label;
 
-    const celdaValor = document.createElement('td');
+    const celdaValor = document.createElement("td");
     celdaValor.style.cssText = `
       padding: 10px 12px;
       color: #6c757d;
@@ -2994,41 +3056,60 @@ function crearSeccionPDF(titulo, campos, color) {
  */
 function diagnosticarPDFDetalle() {
   console.log("=== DIAGNÓSTICO PDF DETALLE ===");
-  console.log("1. html2pdf disponible:", typeof html2pdf !== 'undefined');
+  console.log("1. html2pdf disponible:", typeof html2pdf !== "undefined");
   console.log("2. Equipo actual:", window.__equipoDetallesActual);
-  
+
   // Verificar elementos del DOM
   const elementos = [
-    'detalle-ine', 'detalle-nne', 'detalle-nro-serie', 'detalle-marca',
-    'detalle-modelo', 'detalle-tipo-equipo', 'detalle-estado',
-    'detalle-responsable', 'detalle-ubicacion', 'detalle-observaciones',
-    'detalle-especificaciones', 'contenidoPDFDetalle'
+    "detalle-ine",
+    "detalle-nne",
+    "detalle-nro-serie",
+    "detalle-marca",
+    "detalle-modelo",
+    "detalle-tipo-equipo",
+    "detalle-estado",
+    "detalle-responsable",
+    "detalle-ubicacion",
+    "detalle-observaciones",
+    "detalle-especificaciones",
+    "contenidoPDFDetalle",
   ];
-  
-  elementos.forEach(id => {
+
+  elementos.forEach((id) => {
     const elemento = document.getElementById(id);
-    console.log(`3. Elemento ${id}:`, elemento ? 'EXISTE' : 'NO EXISTE', 
-                elemento ? elemento.textContent?.trim() : '');
+    console.log(
+      `3. Elemento ${id}:`,
+      elemento ? "EXISTE" : "NO EXISTE",
+      elemento ? elemento.textContent?.trim() : ""
+    );
   });
-  
+
   if (window.__equipoDetallesActual) {
     try {
       const datosDOM = {
-        ine: document.getElementById('detalle-ine')?.textContent?.trim() || '',
-        nne: document.getElementById('detalle-nne')?.textContent?.trim() || '',
-        nroSerie: document.getElementById('detalle-nro-serie')?.textContent?.trim() || '',
-        marca: document.getElementById('detalle-marca')?.textContent?.trim() || '',
-        modelo: document.getElementById('detalle-modelo')?.textContent?.trim() || ''
+        ine: document.getElementById("detalle-ine")?.textContent?.trim() || "",
+        nne: document.getElementById("detalle-nne")?.textContent?.trim() || "",
+        nroSerie:
+          document.getElementById("detalle-nro-serie")?.textContent?.trim() ||
+          "",
+        marca:
+          document.getElementById("detalle-marca")?.textContent?.trim() || "",
+        modelo:
+          document.getElementById("detalle-modelo")?.textContent?.trim() || "",
       };
-      
-      const contenidoPDF = crearContenidoPDFDetalle(window.__equipoDetallesActual, datosDOM);
-      console.log("4. Contenido PDF generado:", contenidoPDF ? 'SÍ' : 'NO');
-      
+
+      const contenidoPDF = crearContenidoPDFDetalle(
+        window.__equipoDetallesActual,
+        datosDOM
+      );
+      console.log("4. Contenido PDF generado:", contenidoPDF ? "SÍ" : "NO");
+
       if (contenidoPDF) {
         // Mostrar temporalmente el contenido
-        contenidoPDF.style.cssText += 'position: fixed; top: 10px; left: 10px; z-index: 9999; background: white; border: 2px solid red; max-width: 400px; max-height: 400px; overflow: auto;';
+        contenidoPDF.style.cssText +=
+          "position: fixed; top: 10px; left: 10px; z-index: 9999; background: white; border: 2px solid red; max-width: 400px; max-height: 400px; overflow: auto;";
         document.body.appendChild(contenidoPDF);
-        
+
         setTimeout(() => {
           contenidoPDF.remove();
         }, 5000);
@@ -3037,14 +3118,14 @@ function diagnosticarPDFDetalle() {
       console.error("Error generando contenido:", error);
     }
   }
-  
+
   console.log("=== FIN DIAGNÓSTICO ===");
 }
 
 // Event listener para cargar datos al cargar la página
 document.addEventListener("DOMContentLoaded", function () {
   console.log("[DOMContentLoaded] Iniciando carga de equipos...");
-  
+
   // Inicializar modales
   window.bootstrap = window.bootstrap || {};
   window.bootstrap.Modal = bootstrap.Modal;
@@ -3061,7 +3142,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.modalCrearModelo = new bootstrap.Modal(modalCrearModeloElement);
   }
 
-  const modalAgregarUnidadElement = document.getElementById("modalAgregarUnidad");
+  const modalAgregarUnidadElement =
+    document.getElementById("modalAgregarUnidad");
   if (modalAgregarUnidadElement) {
     window.modalAgregarUnidad = new bootstrap.Modal(modalAgregarUnidadElement);
   }
@@ -3073,18 +3155,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Cargar datos iniciales
   cargarEquipos();
-  
+
   // Asignar eventos si las funciones existen
-  if (typeof asignarEventListeners === 'function') {
+  if (typeof asignarEventListeners === "function") {
     asignarEventListeners();
   }
-  
+
   // Cargar datos para modales si las funciones existen
-  if (typeof cargarEstadosParaModal === 'function') {
+  if (typeof cargarEstadosParaModal === "function") {
     cargarEstadosParaModal();
   }
-  
-  if (typeof cargarTiposEquipo === 'function') {
+
+  if (typeof cargarTiposEquipo === "function") {
     cargarTiposEquipo();
   }
 
@@ -3136,7 +3218,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Event listener para exportar PDF del detalle
-  const btnExportarPDFDetalle = document.getElementById("btn-exportar-pdf-detalle");
+  const btnExportarPDFDetalle = document.getElementById(
+    "btn-exportar-pdf-detalle"
+  );
   if (btnExportarPDFDetalle) {
     btnExportarPDFDetalle.addEventListener("click", exportarDetalleEquipoPDF);
     console.log(
@@ -3149,9 +3233,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Event listener para abrir modal crear modelo
-  const btnAbrirModalCrearModelo = document.getElementById("btn-abrir-modal-crear-modelo");
+  const btnAbrirModalCrearModelo = document.getElementById(
+    "btn-abrir-modal-crear-modelo"
+  );
   if (btnAbrirModalCrearModelo) {
-    btnAbrirModalCrearModelo.addEventListener("click", function() {
+    btnAbrirModalCrearModelo.addEventListener("click", function () {
       if (window.modalCrearModelo) {
         window.modalCrearModelo.show();
       }
