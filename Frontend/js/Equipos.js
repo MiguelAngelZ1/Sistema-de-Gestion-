@@ -4097,3 +4097,213 @@ function imprimirDetalleEquipo() {
 }
 
 console.log("[DOMContentLoaded] Inicialización completada");
+
+/**
+ * Exporta equipos directamente a PDF usando jsPDF con datos de la tabla visible
+ */
+function exportarEquiposPDFDirecto() {
+  try {
+    // Mostrar indicador de carga
+    Swal.fire({
+      title: "Generando PDF...",
+      text: "Por favor espere mientras se genera el documento",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Obtener datos directamente de la tabla HTML visible
+    const tabla = document.getElementById('tablaEquipos');
+    if (!tabla) {
+      throw new Error("No se encontró la tabla de equipos");
+    }
+
+    const filas = tabla.querySelectorAll('tbody tr');
+    if (filas.length === 0) {
+      Swal.fire({
+        title: "Sin datos",
+        text: "No hay equipos para exportar",
+        icon: "warning",
+      });
+      return;
+    }
+
+    // Cargar jsPDF si no está disponible
+    if (typeof window.jsPDF === "undefined") {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+      script.onload = () => {
+        generarPDFDesdeTabla();
+      };
+      script.onerror = () => {
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo cargar el generador de PDF",
+          icon: "error",
+        });
+      };
+      document.head.appendChild(script);
+    } else {
+      generarPDFDesdeTabla();
+    }
+
+  } catch (error) {
+    console.error("Error al inicializar exportación:", error);
+    Swal.fire({
+      title: "Error",
+      text: "Ocurrió un error al generar el PDF",
+      icon: "error",
+    });
+  }
+}
+
+/**
+ * Genera el PDF desde los datos de la tabla HTML
+ */
+function generarPDFDesdeTabla() {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("landscape", "mm", "a4");
+
+    // Configurar fuente
+    doc.setFont("helvetica");
+
+    // Header del documento
+    doc.setFontSize(16);
+    doc.setTextColor(40, 40, 40);
+    doc.text("SISTEMA DE GESTIÓN - INVENTARIO DE EQUIPOS", 20, 20);
+
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Fecha: ${fechaActual} | Hora: ${horaActual}`, 20, 28);
+
+    // Obtener datos de la tabla
+    const tabla = document.getElementById('tablaEquipos');
+    const filas = tabla.querySelectorAll('tbody tr');
+    
+    doc.text(`Total de equipos: ${filas.length}`, 20, 34);
+
+    // Línea separadora
+    doc.setDrawColor(0, 123, 255);
+    doc.setLineWidth(0.5);
+    doc.line(20, 38, 277, 38);
+
+    // Headers de la tabla
+    const headers = ["#", "INE", "NNE", "Nro. Serie", "Marca", "Modelo", "Tipo", "Estado"];
+    const startY = 50;
+    const rowHeight = 8;
+    const colWidths = [12, 35, 35, 35, 25, 25, 35, 35];
+    let currentX = 20;
+
+    // Dibujar headers con fondo azul
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(0, 123, 255);
+
+    headers.forEach((header, index) => {
+      doc.rect(currentX, startY - 6, colWidths[index], 8, "F");
+      doc.text(header, currentX + 2, startY - 1);
+      currentX += colWidths[index];
+    });
+
+    // Preparar datos para la tabla
+    let currentY = startY + 2;
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(8);
+
+    // Procesar cada fila de la tabla
+    filas.forEach((fila, idx) => {
+      // Verificar si necesitamos una nueva página
+      if (currentY > 180) {
+        doc.addPage();
+        currentY = 20;
+
+        // Redibujar headers en nueva página
+        currentX = 20;
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.setFillColor(0, 123, 255);
+
+        headers.forEach((header, index) => {
+          doc.rect(currentX, currentY - 6, colWidths[index], 8, "F");
+          doc.text(header, currentX + 2, currentY - 1);
+          currentX += colWidths[index];
+        });
+
+        currentY += 2;
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(8);
+      }
+
+      // Alternar color de fondo de filas
+      if (idx % 2 === 0) {
+        doc.setFillColor(248, 249, 250);
+        currentX = 20;
+        colWidths.forEach((width) => {
+          doc.rect(currentX, currentY - 2, width, rowHeight, "F");
+          currentX += width;
+        });
+      }
+
+      // Extraer datos de las celdas de la fila
+      const celdas = fila.querySelectorAll('td');
+      const rowData = [
+        String(idx + 1), // Número de fila
+        (celdas[1] ? celdas[1].textContent.trim() : "N/A").substring(0, 18), // INE
+        (celdas[2] ? celdas[2].textContent.trim() : "N/A").substring(0, 18), // NNE
+        (celdas[3] ? celdas[3].textContent.trim() : "N/A").substring(0, 18), // Serie
+        (celdas[4] ? celdas[4].textContent.trim() : "N/A").substring(0, 12), // Marca
+        (celdas[5] ? celdas[5].textContent.trim() : "N/A").substring(0, 12), // Modelo
+        (celdas[6] ? celdas[6].textContent.trim() : "N/A").substring(0, 18), // Tipo
+        (celdas[7] ? celdas[7].textContent.trim() : "N/A").substring(0, 18), // Estado
+      ];
+
+      currentX = 20;
+      rowData.forEach((data, colIndex) => {
+        doc.text(data, currentX + 2, currentY + 4);
+        currentX += colWidths[colIndex];
+      });
+
+      currentY += rowHeight;
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(
+        `© 2025 Sistema de Control y Gestión - Página ${i} de ${pageCount}`,
+        20,
+        200
+      );
+      doc.text(`Generado el ${fechaActual} a las ${horaActual}`, 200, 200);
+    }
+
+    // Descargar el archivo
+    const nombreArchivo = `equipos_${fechaActual.replace(/\//g, '-')}.pdf`;
+    doc.save(nombreArchivo);
+
+    // Cerrar el indicador de carga y mostrar confirmación
+    Swal.fire({
+      title: "¡PDF generado correctamente!",
+      text: `El archivo ${nombreArchivo} se ha descargado con todos los encabezados visibles`,
+      icon: "success",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    Swal.fire({
+      title: "Error",
+      text: "No se pudo generar el archivo PDF",
+      icon: "error",
+    });
+  }
+}

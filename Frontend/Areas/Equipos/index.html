@@ -74,9 +74,14 @@
                             </h1>
                         </div>
                         <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-danger btn-lg d-flex align-items-center" onclick="exportarEquiposPDFDirecto()">
+                                <i class="bi bi-file-pdf me-2"></i>
+                                <span class="d-none d-sm-inline">PDF Directo</span>
+                                <span class="d-sm-none">PDF</span>
+                            </button>
                             <button type="button" class="btn btn-info btn-lg d-flex align-items-center" onclick="exportarEquipos()">
                                 <i class="bi bi-file-earmark-spreadsheet me-2"></i>
-                                <span class="d-none d-sm-inline">Exportar</span>
+                                <span class="d-none d-sm-inline">Exportar CSV</span>
                                 <span class="d-sm-none">CSV</span>
                             </button>
                             <button type="button" class="btn btn-secondary btn-lg d-flex align-items-center" onclick="imprimirTablaEquipos()">
