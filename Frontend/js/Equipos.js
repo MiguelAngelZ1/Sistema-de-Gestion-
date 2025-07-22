@@ -2858,20 +2858,39 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     "#007bff"
   );
 
-  // Especificaciones adicionales
+  // Especificaciones técnicas (solo Marca y Modelo)
+  const seccionTecnica = crearSeccionPDF('Especificaciones Técnicas', [
+    { 
+      label: 'Marca', 
+      valor: obtenerValor(equipo.marca, datosDOM.marca, 'No especificada')
+    },
+    { 
+      label: 'Modelo', 
+      valor: obtenerValor(equipo.modelo, datosDOM.modelo, 'No especificado')
+    }
+  ], '#17a2b8');
+
+  // Especificaciones adicionales (excluyendo Marca y Modelo)
   let especificacionesHtml = "";
 
   // Intentar obtener especificaciones del equipo o del DOM
   if (equipo.especificaciones && equipo.especificaciones.length > 0) {
-    especificacionesHtml = equipo.especificaciones
-      .map(
-        (spec) =>
-          `<div style="margin-bottom: 8px;">
-        <strong style="color: #495057;">${spec.clave}:</strong> 
-        <span style="color: #6c757d;">${spec.valor}</span>
-      </div>`
-      )
-      .join("");
+    // Filtrar especificaciones excluyendo Marca y Modelo
+    const especificacionesFiltradas = equipo.especificaciones.filter(spec => 
+      spec.clave.toLowerCase() !== 'marca' && spec.clave.toLowerCase() !== 'modelo'
+    );
+    
+    if (especificacionesFiltradas.length > 0) {
+      especificacionesHtml = especificacionesFiltradas
+        .map(
+          (spec) =>
+            `<div style="margin-bottom: 8px;">
+          <strong style="color: #495057;">${spec.clave}:</strong> 
+          <span style="color: #6c757d;">${spec.valor}</span>
+        </div>`
+        )
+        .join("");
+    }
   } else {
     // Intentar obtener especificaciones del DOM si no están en el objeto equipo
     const especificacionesUL = document.getElementById(
@@ -2888,10 +2907,14 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
               const valor = li.textContent
                 .replace(strong.textContent, "")
                 .trim();
-              return `<div style="margin-bottom: 8px;">
-              <strong style="color: #495057;">${clave}:</strong> 
-              <span style="color: #6c757d;">${valor}</span>
-            </div>`;
+              
+              // Filtrar Marca y Modelo
+              if (clave.toLowerCase() !== 'marca' && clave.toLowerCase() !== 'modelo') {
+                return `<div style="margin-bottom: 8px;">
+                <strong style="color: #495057;">${clave}:</strong> 
+                <span style="color: #6c757d;">${valor}</span>
+              </div>`;
+              }
             }
             return "";
           })
@@ -2899,12 +2922,12 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
           .join("");
       }
     }
+  }
 
-    // Si aún no hay especificaciones, mostrar mensaje por defecto
-    if (!especificacionesHtml) {
-      especificacionesHtml =
-        '<p style="color: #999; font-style: italic;">No hay especificaciones técnicas adicionales registradas.</p>';
-    }
+  // Si no hay especificaciones adicionales, mostrar mensaje por defecto
+  if (!especificacionesHtml) {
+    especificacionesHtml =
+      '<p style="color: #999; font-style: italic;">No hay especificaciones adicionales registradas.</p>';
   }
 
   const especificacionesDiv = document.createElement("div");
