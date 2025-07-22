@@ -3,11 +3,21 @@
 // CONFIGURACION E INICIALIZACION
 //-----------------------------------------------------------------------------------------------------
 
+// Verificar que CONFIG esté disponible
+if (typeof CONFIG === 'undefined') {
+  console.error('CONFIG no está definido. Asegúrate de cargar config.js antes que Equipos.js');
+}
+
+// Función helper para obtener la URL base de la API
+function getApiBaseUrl() {
+  return typeof CONFIG !== 'undefined' ? CONFIG.API_BASE_URL : 'https://sistema-control-gestion-backend.onrender.com/api';
+}
+
 // URL base de la API - Usar configuración centralizada
-const API_URL = CONFIG.API_BASE_URL + "/equipos";
-const API_URL_PERSONA = CONFIG.API_BASE_URL + "/personal";
-const API_URL_ESTADOS = CONFIG.API_BASE_URL + "/estadoequipo";
-const API_URL_TIPO_EQUIPO = CONFIG.API_BASE_URL + "/tipoequipo";
+const API_URL = getApiBaseUrl() + "/equipos";
+const API_URL_PERSONA = getApiBaseUrl() + "/personal";
+const API_URL_ESTADOS = getApiBaseUrl() + "/estadoequipo";
+const API_URL_TIPO_EQUIPO = getApiBaseUrl() + "/tipoequipo";
 
 // Almacena una instancia del modal de Bootstrap para poder manipularlo desde el código.
 let modalEquipo; // Obsoleto, pero se mantiene por si se reutiliza
@@ -52,9 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
 async function recargarEquipoActual(nne, nroSerie) {
   let url = "";
   if (nne) {
-    url = `${CONFIG.API_BASE_URL}/equipos/nne/${nne}`;
+    url = `${getApiBaseUrl()}/equipos/nne/${nne}`;
   } else if (nroSerie) {
-    url = `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
+    url = `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(
       nroSerie
     )}`;
   }
@@ -1234,7 +1244,7 @@ async function actualizarEquipoPorNroSerie(nroSerie, equipoData) {
     console.log("[actualizarEquipoPorNroSerie] nroSerie:", nroSerie);
     console.log("[actualizarEquipoPorNroSerie] equipoData:", equipoData);
     const response = await fetch(
-      `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`,
+      `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -1263,7 +1273,7 @@ async function actualizarEquipo(nne, equipoData) {
     console.log("[actualizarEquipo] nne:", nne);
     console.log("[actualizarEquipo] equipoData:", equipoData);
     const response = await fetch(
-      `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(nne)}`,
+      `${getApiBaseUrl()}/equipos/nne/${encodeURIComponent(nne)}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -1449,7 +1459,7 @@ async function cargarEquipos() {
     // 1. Obtener todos los datos necesarios de la API
     const [equipos, unidades, estados] = await Promise.all([
       fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
-      fetch(CONFIG.API_BASE_URL + "/unidadesequipo").then((res) =>
+      fetch(getApiBaseUrl() + "/unidadesequipo").then((res) =>
         res.ok ? res.json() : Promise.reject(res)
       ),
       fetch(API_URL_ESTADOS).then((res) =>
@@ -1613,11 +1623,11 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     let response, equipo;
     if (nne && nne !== "-") {
       // 1. Obtener datos del equipo por NNE
-      response = await fetch(`${CONFIG.API_BASE_URL}/equipos/nne/${nne}`);
+      response = await fetch(`${getApiBaseUrl()}/equipos/nne/${nne}`);
     } else if (nroSerie) {
       // 1b. Obtener datos del equipo por nroSerie
       response = await fetch(
-        `${CONFIG.API_BASE_URL}/equipos/nroSerie/${encodeURIComponent(
+        `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(
           nroSerie
         )}`
       );
@@ -2164,7 +2174,7 @@ function restaurarEspecificacionesSoloLectura() {
 async function cargarTiposParaEdicion() {
   try {
     console.log("[cargarTiposParaEdicion] Cargando tipos de equipo...");
-    const response = await fetch(`${CONFIG.API_BASE_URL}/tipoequipo`);
+    const response = await fetch(`${getApiBaseUrl()}/tipoequipo`);
     if (response.ok) {
       const data = await response.json();
       const tipos = data.value || data; // Manejar tanto formato con 'value' como array directo
