@@ -2858,6 +2858,8 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     "#007bff"
   );
 
+  console.log("[crearContenidoPDFDetalle] Punto de control: antes de definir seccionTecnica");
+
   // Especificaciones técnicas (solo Marca y Modelo)
   const seccionTecnica = crearSeccionPDF('Especificaciones Técnicas', [
     { 
@@ -2869,6 +2871,8 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
       valor: obtenerValor(equipo.modelo, datosDOM.modelo, 'No especificado')
     }
   ], '#17a2b8');
+
+  console.log("[crearContenidoPDFDetalle] seccionTecnica creada:", seccionTecnica);
 
   // Especificaciones adicionales (excluyendo Marca y Modelo)
   let especificacionesHtml = "";
@@ -2996,6 +3000,9 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   );
 
   // Ensamblar todo
+  console.log("[crearContenidoPDFDetalle] Punto de control: antes de usar seccionTecnica");
+  console.log("[crearContenidoPDFDetalle] seccionTecnica disponible:", typeof seccionTecnica, seccionTecnica);
+  
   container.appendChild(header);
   container.appendChild(seccionBasica);
   container.appendChild(seccionTecnica);
