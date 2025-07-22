@@ -19,6 +19,42 @@ const API_URL_PERSONA = getApiBaseUrl() + "/personal";
 const API_URL_ESTADOS = getApiBaseUrl() + "/estadoequipo";
 const API_URL_TIPO_EQUIPO = getApiBaseUrl() + "/tipoequipo";
 
+// Función de diagnóstico para testear las APIs
+window.testAPIs = async function() {
+  console.log("=== DIAGNÓSTICO DE APIs ===");
+  console.log("API Base URL:", getApiBaseUrl());
+  console.log("API_URL:", API_URL);
+  console.log("API_URL_ESTADOS:", API_URL_ESTADOS);
+  
+  try {
+    console.log("1. Probando API de equipos...");
+    const equiposRes = await fetch(API_URL);
+    console.log("- Status equipos:", equiposRes.status);
+    const equipos = await equiposRes.json();
+    console.log("- Equipos obtenidos:", equipos?.length || 0);
+    console.log("- Primer equipo:", equipos?.[0]);
+
+    console.log("2. Probando API de unidades...");
+    const unidadesRes = await fetch(getApiBaseUrl() + "/unidadesequipo");
+    console.log("- Status unidades:", unidadesRes.status);
+    const unidades = await unidadesRes.json();
+    console.log("- Unidades obtenidas:", unidades?.length || 0);
+    console.log("- Primera unidad:", unidades?.[0]);
+
+    console.log("3. Probando API de estados...");
+    const estadosRes = await fetch(API_URL_ESTADOS);
+    console.log("- Status estados:", estadosRes.status);
+    const estados = await estadosRes.json();
+    console.log("- Estados obtenidos:", estados?.length || 0);
+    console.log("- Primer estado:", estados?.[0]);
+    
+    return { equipos, unidades, estados };
+  } catch (error) {
+    console.error("Error en diagnóstico:", error);
+    return { error };
+  }
+};
+
 // Almacena una instancia del modal de Bootstrap para poder manipularlo desde el código.
 let modalEquipo; // Obsoleto, pero se mantiene por si se reutiliza
 let modalDetalles;
