@@ -1,0 +1,204 @@
+/* =================================================
+   ESTILOS ESPECÍFICOS PARA EXPORTACIÓN PDF
+   ================================================= */
+
+/* Estilos para tablas en PDF */
+.pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+}
+
+.pdf-table th {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #0056b3;
+}
+
+.pdf-table td {
+    padding: 10px 8px;
+    border: 1px solid #dee2e6;
+    vertical-align: top;
+}
+
+.pdf-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.pdf-table tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+/* Header para PDFs */
+.pdf-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #007bff;
+}
+
+.pdf-title {
+    color: #007bff;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+}
+
+.pdf-subtitle {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Secciones de información en PDF */
+.pdf-section {
+    margin-bottom: 25px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    page-break-inside: avoid;
+}
+
+.pdf-section-header {
+    background: #007bff;
+    color: white;
+    padding: 12px 15px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.pdf-section-header.info { background: #17a2b8; }
+.pdf-section-header.success { background: #28a745; }
+.pdf-section-header.warning { background: #ffc107; color: #212529; }
+.pdf-section-header.danger { background: #dc3545; }
+
+.pdf-section-body {
+    padding: 15px;
+}
+
+/* Tabla de información en secciones */
+.pdf-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pdf-info-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.pdf-info-table td {
+    padding: 10px 12px;
+    vertical-align: top;
+    border: none;
+}
+
+.pdf-info-table td:first-child {
+    font-weight: bold;
+    color: #495057;
+    width: 40%;
+}
+
+.pdf-info-table td:last-child {
+    color: #6c757d;
+}
+
+/* Especificaciones técnicas */
+.pdf-specs {
+    background: #f8f9fa;
+    border-left: 4px solid #17a2b8;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.pdf-specs h4 {
+    color: #17a2b8;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.pdf-spec-item {
+    margin-bottom: 8px;
+}
+
+.pdf-spec-key {
+    font-weight: bold;
+    color: #495057;
+}
+
+.pdf-spec-value {
+    color: #6c757d;
+}
+
+/* Estados en PDFs */
+.pdf-estado {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.pdf-estado.en-servicio {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.pdf-estado.fuera-servicio {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.pdf-estado.mantenimiento {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Utilidades para PDF */
+.pdf-text-center { text-align: center; }
+.pdf-text-left { text-align: left; }
+.pdf-text-right { text-align: right; }
+
+.pdf-mb-small { margin-bottom: 10px; }
+.pdf-mb-medium { margin-bottom: 20px; }
+.pdf-mb-large { margin-bottom: 30px; }
+
+.pdf-font-small { font-size: 12px; }
+.pdf-font-medium { font-size: 14px; }
+.pdf-font-large { font-size: 16px; }
+
+/* Evitar saltos de página en elementos importantes */
+.pdf-no-break {
+    page-break-inside: avoid;
+}
+
+/* Footer para PDFs */
+.pdf-footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Responsive adjustments para html2pdf */
+@media print {
+    .pdf-hide-on-print {
+        display: none !important;
+    }
+    
+    .pdf-section {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    .pdf-header {
+        border-bottom: 2px solid #333;
+    }
+}
