@@ -1886,13 +1886,77 @@ function imprimirTablaPersonal() {
       return;
     }
 
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open(
-      "",
-      "_blank",
-      "width=1200,height=800,scrollbars=yes,resizable=yes"
-    );
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
 
+    // Crear contenido HTML simplificado para imprimir
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Personal</title>
+        <style>
+          @page { margin: 1cm; }
+          body { font-family: Arial; font-size: 12px; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .header h1 { color: #0066cc; margin-bottom: 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { 
+            background-color: #0066cc !important; 
+            color: white !important; 
+            padding: 8px 4px !important; 
+            border: 2px solid #000 !important; 
+            text-align: center !important; 
+            font-weight: bold !important;
+            font-size: 11px !important;
+          }
+          td { 
+            padding: 4px; 
+            border: 1px solid #000; 
+            font-size: 10px; 
+            text-align: center;
+          }
+          tr:nth-child(even) { background-color: #f5f5f5; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>👥 LISTADO DE PERSONAL</h1>
+          <p><strong>Fecha:</strong> ${fechaActual} | <strong>Hora:</strong> ${horaActual} | <strong>Total:</strong> ${listaPersonalActual.length} personas</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Grado</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Apellido</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Nombre</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">DNI</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Arma/Especialidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${listaPersonalActual.map(persona => `
+              <tr>
+                <td>${persona.nombreGrado || 'N/A'}</td>
+                <td><strong>${persona.apellido || 'N/A'}</strong></td>
+                <td>${persona.nombre || 'N/A'}</td>
+                <td>${persona.dni || 'N/A'}</td>
+                <td>${persona.nombreArmEsp || 'N/A'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    // Crear ventana nueva y escribir contenido
+    const ventanaImpresion = window.open('', '_blank');
     if (!ventanaImpresion) {
       Swal.fire({
         title: "Error de Impresión",
@@ -1902,216 +1966,13 @@ function imprimirTablaPersonal() {
       return;
     }
 
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    // HTML para impresión
-    ventanaImpresion.document.write(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Personal - ${fechaActual}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          
-          body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            font-size: 11px; 
-            color: #333;
-            background: white;
-            padding: 0;
-          }
-          
-          @page {
-            margin: 1cm;
-            size: auto;
-          }
-          
-          .container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 0;
-          }
-          
-          .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            page-break-inside: avoid;
-          }
-          
-          .header h1 {
-            color: #007bff;
-            font-size: 18px;
-            margin-bottom: 5px;
-            font-weight: bold;
-          }
-          
-          .header .info {
-            font-size: 10px;
-            color: #666;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-top: 5px;
-          }
-          
-          .table-container {
-            overflow: hidden;
-            width: 100%;
-          }
-          
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: inherit;
-            page-break-inside: auto;
-          }
-          
-          th, td {
-            border: 1px solid #ddd;
-            padding: 6px 4px;
-            text-align: left;
-            vertical-align: top;
-          }
-          
-          th {
-            background-color: #f8f9fa !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            font-size: 10px !important;
-            text-align: center !important;
-            border: 1px solid #000 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            white-space: nowrap !important;
-          }
-          
-          td {
-            font-size: 9px;
-          }
-          
-          tbody tr:nth-child(even) {
-            background-color: #f9f9f9 !important;
-            -webkit-print-color-adjust: exact !important;
-          }
-          
-          /* Configuraciones específicas para impresión */
-          @media print {
-            * { 
-              -webkit-print-color-adjust: exact !important; 
-              print-color-adjust: exact !important;
-            }
-            
-            thead { 
-              display: table-header-group !important; 
-              page-break-inside: avoid !important;
-            }
-            
-            thead th {
-              background-color: #f8f9fa !important;
-              border: 1px solid #000 !important;
-              font-weight: bold !important;
-              text-align: center !important;
-              padding: 6px 4px !important;
-              color: #000 !important;
-            }
-            
-            tbody tr {
-              page-break-inside: avoid;
-            }
-            
-            tbody td {
-              border: 1px solid #000 !important;
-              padding: 4px !important;
-              font-size: 9px !important;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>👥 LISTADO DE PERSONAL</h1>
-            <div class="info">
-              <span>📅 Fecha: ${fechaActual}</span>
-              <span>🕐 Hora: ${horaActual}</span>
-              <span>📊 Total: ${listaPersonalActual.length} personas</span>
-            </div>
-          </div>
-          
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Grado</th>
-                  <th style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Apellido</th>
-                  <th style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Nombre</th>
-                  <th style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">DNI</th>
-                  <th style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Arma/Especialidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${listaPersonalActual
-                  .map((persona, index) => `
-                    <tr>
-                      <td>${persona.nombreGrado || "N/A"}</td>
-                      <td><strong>${persona.apellido || "N/A"}</strong></td>
-                      <td>${persona.nombre || "N/A"}</td>
-                      <td>${persona.dni || "N/A"}</td>
-                      <td>${persona.nombreArmEsp || "N/A"}</td>
-                    </tr>
-                  `)
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <script>
-          window.onload = function() {
-            // Forzar estilos de encabezados mediante JavaScript
-            const headers = document.querySelectorAll('thead th');
-            headers.forEach(header => {
-              header.style.backgroundColor = '#f8f9fa';
-              header.style.border = '1px solid #000';
-              header.style.fontWeight = 'bold';
-              header.style.textAlign = 'center';
-              header.style.padding = '6px 4px';
-              header.style.fontSize = '10px';
-              header.style.color = '#000';
-              header.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
-              header.style.setProperty('print-color-adjust', 'exact', 'important');
-            });
-            
-            const userWantsToPrint = confirm("¿Está listo para imprimir?");
-            if (userWantsToPrint) {
-              setTimeout(() => {
-                window.print();
-              }, 500);
-            }
-          }
-          
-          window.onafterprint = function() {
-            const shouldClose = confirm("Impresión completada. ¿Desea cerrar esta ventana?");
-            if (shouldClose) {
-              window.close();
-            }
-          }
-        </script>
-      </body>
-      </html>
-    `);
-
+    ventanaImpresion.document.write(htmlContent);
     ventanaImpresion.document.close();
 
     // Mostrar confirmación de éxito
     Swal.fire({
       title: "✅ Ventana de impresión abierta",
-      text: "La ventana de impresión se ha abierto correctamente",
+      text: "La tabla con encabezados azules se abrió para imprimir",
       icon: "success",
       timer: 2500,
       showConfirmButton: false,

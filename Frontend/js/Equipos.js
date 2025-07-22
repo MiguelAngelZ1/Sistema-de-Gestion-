@@ -3197,13 +3197,85 @@ function imprimirTablaEquipos() {
       return;
     }
 
-    // Crear ventana de impresión con parámetros más específicos
-    const ventanaImpresion = window.open(
-      "",
-      "_blank",
-      "width=1200,height=800,scrollbars=yes,resizable=yes"
-    );
+    const fechaActual = new Date().toLocaleDateString("es-ES");
+    const horaActual = new Date().toLocaleTimeString("es-ES");
 
+    // Crear contenido HTML para imprimir directamente
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Inventario de Equipos</title>
+        <style>
+          @page { margin: 1cm; }
+          body { font-family: Arial; font-size: 12px; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .header h1 { color: #0066cc; margin-bottom: 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { 
+            background-color: #0066cc !important; 
+            color: white !important; 
+            padding: 8px 4px !important; 
+            border: 2px solid #000 !important; 
+            text-align: center !important; 
+            font-weight: bold !important;
+            font-size: 11px !important;
+          }
+          td { 
+            padding: 4px; 
+            border: 1px solid #000; 
+            font-size: 10px; 
+            text-align: center;
+          }
+          tr:nth-child(even) { background-color: #f5f5f5; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📋 INVENTARIO DE EQUIPOS</h1>
+          <p><strong>Fecha:</strong> ${fechaActual} | <strong>Hora:</strong> ${horaActual} | <strong>Total:</strong> ${window.equipos.length} equipos</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">INE</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">NNE</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">N° Serie</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Marca</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Modelo</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Tipo</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Estado</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Responsable</th>
+              <th style="background-color: #0066cc !important; color: white !important; border: 2px solid #000 !important;">Ubicación</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${window.equipos.map(equipo => `
+              <tr>
+                <td>${equipo.ine || 'N/A'}</td>
+                <td><strong>${equipo.nne || 'N/A'}</strong></td>
+                <td>${equipo.numeroSerie || 'N/A'}</td>
+                <td>${equipo.marca || 'N/A'}</td>
+                <td>${equipo.modelo || 'N/A'}</td>
+                <td>${equipo.tipoEquipo || 'N/A'}</td>
+                <td>${equipo.estadoEquipo || 'N/A'}</td>
+                <td>${equipo.responsable || 'Sin asignar'}</td>
+                <td>${equipo.ubicacion || 'N/A'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    // Crear ventana nueva y escribir contenido
+    const ventanaImpresion = window.open('', '_blank');
     if (!ventanaImpresion) {
       Swal.fire({
         title: "Error de Impresión",
@@ -3213,374 +3285,13 @@ function imprimirTablaEquipos() {
       return;
     }
 
-    const fechaActual = new Date().toLocaleDateString("es-ES");
-    const horaActual = new Date().toLocaleTimeString("es-ES");
-
-    // HTML para impresión optimizada para diferentes tamaños de papel
-    ventanaImpresion.document.write(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Inventario de Equipos - ${fechaActual}</title>
-        <style>
-          /* Reset y configuración base */
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          
-          body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            font-size: 11px; 
-            line-height: 1.3;
-            color: #333;
-            background: white;
-            padding: 0;
-          }
-          
-          /* Configuración para diferentes tamaños de papel */
-          @page {
-            margin: 1cm;
-            size: auto;
-          }
-          
-          /* Adaptación específica para papel A4 (21cm x 29.7cm) */
-          @media print and (width: 21cm) and (height: 29.7cm) {
-            body { font-size: 9px; }
-            .container { max-width: 19cm; }
-            th, td { padding: 3px; }
-          }
-          
-          /* Adaptación específica para papel Carta/Letter (8.5in x 11in) */
-          @media print and (width: 8.5in) and (height: 11in) {
-            body { font-size: 10px; }
-            .container { max-width: 7.5in; }
-            th, td { padding: 3px; }
-          }
-          
-          /* Adaptación específica para papel Legal (8.5in x 14in) */
-          @media print and (width: 8.5in) and (height: 14in) {
-            body { font-size: 10px; }
-            .container { max-width: 7.5in; }
-            th, td { padding: 4px; }
-          }
-          
-          /* Adaptación para papel más pequeño */
-          @media print and (max-width: 18cm) {
-            body { font-size: 8px; }
-            .header h1 { font-size: 14px; }
-            th, td { padding: 2px; }
-          }
-          
-          .container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 0;
-          }
-          
-          /* Header */
-          .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            page-break-inside: avoid;
-          }
-          
-          .header h1 {
-            color: #007bff;
-            font-size: 18px;
-            margin-bottom: 5px;
-            font-weight: bold;
-          }
-          
-          .header .info {
-            font-size: 10px;
-            color: #666;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-top: 5px;
-          }
-          
-          /* Tabla responsive */
-          .table-container {
-            overflow: hidden;
-            width: 100%;
-          }
-          
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: inherit;
-            page-break-inside: auto;
-          }
-          
-          th, td {
-            border: 1px solid #ddd;
-            padding: 4px;
-            text-align: left;
-            vertical-align: top;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            max-width: 0;
-          }
-          
-          th {
-            background-color: #f8f9fa !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            font-size: 10px !important;
-            text-align: center !important;
-            border: 1px solid #000 !important;
-            padding: 6px 4px !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            vertical-align: middle !important;
-            white-space: nowrap !important;
-          }
-          
-          td {
-            font-size: 9px;
-          }
-          
-          /* Distribución de columnas optimizada */
-          .col-ine { width: 8%; }
-          .col-nne { width: 10%; }
-          .col-serie { width: 12%; }
-          .col-marca { width: 10%; }
-          .col-modelo { width: 12%; }
-          .col-tipo { width: 12%; }
-          .col-estado { width: 10%; }
-          .col-responsable { width: 14%; }
-          .col-ubicacion { width: 12%; }
-          
-          /* Estados con colores */
-          .estado-operativo { 
-            color: #28a745 !important; 
-            font-weight: bold; 
-            -webkit-print-color-adjust: exact;
-          }
-          .estado-mantenimiento { 
-            color: #ffc107 !important; 
-            font-weight: bold; 
-            -webkit-print-color-adjust: exact;
-          }
-          .estado-reparacion { 
-            color: #dc3545 !important; 
-            font-weight: bold; 
-            -webkit-print-color-adjust: exact;
-          }
-          .estado-baja { 
-            color: #6c757d !important; 
-            font-weight: bold; 
-            -webkit-print-color-adjust: exact;
-          }
-          
-          /* Control de salto de página */
-          .page-break {
-            page-break-before: always;
-          }
-          
-          .no-break {
-            page-break-inside: avoid;
-          }
-          
-          /* Filas zebra para mejor legibilidad */
-          tbody tr:nth-child(even) {
-            background-color: #f9f9f9 !important;
-            -webkit-print-color-adjust: exact;
-          }
-          
-          /* Footer */
-          .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 8px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding: 5px;
-            background: white;
-            page-break-inside: avoid;
-          }
-          
-          /* Configuraciones específicas para impresión */
-          @media print {
-            .no-print { display: none !important; }
-            
-            /* Asegurar que los colores se impriman */
-            * { 
-              -webkit-print-color-adjust: exact !important; 
-              print-color-adjust: exact !important;
-            }
-            
-            /* Optimizar saltos de página y asegurar headers */
-            thead { 
-              display: table-header-group !important; 
-              page-break-inside: avoid !important;
-              page-break-after: avoid !important;
-            }
-            
-            thead th {
-              background-color: #f8f9fa !important;
-              border: 1px solid #000 !important;
-              font-weight: bold !important;
-              text-align: center !important;
-              padding: 6px 4px !important;
-              font-size: 10px !important;
-              color: #000 !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            
-            tfoot { 
-              display: table-footer-group; 
-            }
-            
-            tbody tr {
-              page-break-inside: avoid;
-              break-inside: avoid;
-            }
-            
-            tbody td {
-              border: 1px solid #000 !important;
-              padding: 4px !important;
-              font-size: 9px !important;
-            }
-            
-            /* Asegurar que el header se repita en cada página */
-            @page {
-              @top-center {
-                content: "Inventario de Equipos - ${fechaActual}";
-                font-size: 10px;
-                color: #666;
-              }
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>📋 INVENTARIO COMPLETO DE EQUIPOS</h1>
-            <div class="info">
-              <span>📅 Fecha: ${fechaActual}</span>
-              <span>🕐 Hora: ${horaActual}</span>
-              <span>📊 Total: ${window.equipos.length} equipos</span>
-            </div>
-          </div>
-          
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th class="col-ine" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">INE</th>
-                  <th class="col-nne" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">NNE</th>
-                  <th class="col-serie" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">N° Serie</th>
-                  <th class="col-marca" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Marca</th>
-                  <th class="col-modelo" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Modelo</th>
-                  <th class="col-tipo" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Tipo</th>
-                  <th class="col-estado" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Estado</th>
-                  <th class="col-responsable" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Responsable</th>
-                  <th class="col-ubicacion" style="background-color: #f8f9fa !important; border: 1px solid #000 !important; font-weight: bold !important; text-align: center !important; padding: 6px 4px !important;">Ubicación</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${window.equipos
-                  .map((equipo, index) => {
-                    const claseEstado = equipo.estadoEquipo
-                      ? `estado-${equipo.estadoEquipo
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}`
-                      : "";
-
-                    return `
-                    <tr class="${
-                      index > 0 && index % 30 === 0 ? "page-break" : ""
-                    }">
-                      <td class="col-ine">${equipo.ine || "N/A"}</td>
-                      <td class="col-nne"><strong>${
-                        equipo.nne || "N/A"
-                      }</strong></td>
-                      <td class="col-serie">${equipo.numeroSerie || "N/A"}</td>
-                      <td class="col-marca">${equipo.marca || "N/A"}</td>
-                      <td class="col-modelo">${equipo.modelo || "N/A"}</td>
-                      <td class="col-tipo">${equipo.tipoEquipo || "N/A"}</td>
-                      <td class="col-estado ${claseEstado}">${
-                      equipo.estadoEquipo || "N/A"
-                    }</td>
-                      <td class="col-responsable">${
-                        equipo.responsable || "Sin asignar"
-                      }</td>
-                      <td class="col-ubicacion">${
-                        equipo.ubicacion || "N/A"
-                      }</td>
-                    </tr>
-                  `;
-                  })
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <div class="footer">
-          © 2025 Sistema de Control y Gestión de Equipos | Página <span class="pageNumber"></span>
-        </div>
-        
-        <script>
-          // Configurar impresión automática más suave
-          window.onload = function() {
-            // Forzar estilos de encabezados mediante JavaScript
-            const headers = document.querySelectorAll('thead th');
-            headers.forEach(header => {
-              header.style.backgroundColor = '#f8f9fa';
-              header.style.border = '1px solid #000';
-              header.style.fontWeight = 'bold';
-              header.style.textAlign = 'center';
-              header.style.padding = '6px 4px';
-              header.style.fontSize = '10px';
-              header.style.color = '#000';
-              header.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
-              header.style.setProperty('print-color-adjust', 'exact', 'important');
-            });
-            
-            // Mostrar alerta antes de imprimir
-            const userWantsToPrint = confirm("¿Está listo para imprimir? El documento se adaptará automáticamente al tamaño de papel de su impresora.");
-            
-            if (userWantsToPrint) {
-              // Pequeña pausa para asegurar que todo se haya renderizado
-              setTimeout(() => {
-                window.print();
-              }, 500);
-            }
-          }
-          
-          // Manejar el evento de después de imprimir
-          window.onafterprint = function() {
-            const shouldClose = confirm("Impresión completada. ¿Desea cerrar esta ventana?");
-            if (shouldClose) {
-              window.close();
-            }
-          }
-          
-          // Detectar cancelación de impresión
-          window.onbeforeunload = function() {
-            return "¿Está seguro que desea salir sin imprimir?";
-          }
-        </script>
-      </body>
-      </html>
-    `);
-
+    ventanaImpresion.document.write(htmlContent);
     ventanaImpresion.document.close();
 
     // Mostrar confirmación de éxito
     Swal.fire({
       title: "✅ Ventana de impresión abierta",
-      text: "La ventana de impresión se ha abierto correctamente. El documento se adaptará automáticamente a su papel.",
+      text: "La tabla con encabezados azules se abrió para imprimir",
       icon: "success",
       timer: 2500,
       showConfirmButton: false,
