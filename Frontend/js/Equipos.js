@@ -2598,33 +2598,53 @@ function exportarDetalleEquipoPDF() {
     return;
   }
 
-  // Obtener información del equipo actual
-  const equipo = window.__equipoDetallesActual;
-  if (!equipo) {
-    mostrarAlerta("Error: No hay información del equipo para exportar", "error");
+  // Obtener el contenido del modal directamente
+  const modalContent = document.getElementById('contenidoPDFDetalle');
+  if (!modalContent) {
+    console.error("[exportarDetalleEquipoPDF] No se encontró el contenedor del modal");
+    mostrarAlerta("Error: No se puede obtener el contenido del modal", "error");
     return;
   }
 
-  // Crear contenido HTML estructurado para el PDF
-  const contenidoPDF = crearContenidoPDFDetalle(equipo);
+  // Obtener información para el nombre del archivo
+  const nne = document.getElementById('detalle-nne')?.textContent?.trim() || 'Equipo';
+  const nroSerie = document.getElementById('detalle-nro-serie')?.textContent?.trim() || '';
+  const identificador = (nne && nne !== '-' && nne !== '---') ? nne : nroSerie || 'Detalle';
 
-  // Obtener información del equipo actual para el nombre del archivo
-  const nne = document.getElementById('detalle-nne')?.textContent || 'Equipo';
-  const nroSerie = document.getElementById('detalle-nro-serie')?.textContent || '';
-  const identificador = nne !== '-' ? nne : nroSerie;
+  // Crear un elemento temporal con el contenido del modal clonado
+  const contenidoTemp = modalContent.cloneNode(true);
+  
+  // Aplicar estilos para PDF
+  contenidoTemp.style.cssText = `
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+    color: #333;
+    padding: 20px;
+    line-height: 1.4;
+  `;
+
+  // Ocultar botones y elementos no necesarios en el PDF
+  const elementosOcultar = contenidoTemp.querySelectorAll('.btn, button, .modal-footer');
+  elementosOcultar.forEach(elemento => {
+    elemento.style.display = 'none';
+  });
+
+  // Agregar el contenido temporal al DOM (oculto)
+  contenidoTemp.style.position = 'absolute';
+  contenidoTemp.style.left = '-9999px';
+  document.body.appendChild(contenidoTemp);
 
   // Configuración para html2pdf
   const opt = {
     margin: [15, 15, 15, 15],
     filename: `Detalle_Equipo_${identificador}_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
+    image: { type: 'jpeg', quality: 0.95 },
     html2canvas: { 
       scale: 2,
       useCORS: true,
       allowTaint: true,
       logging: false,
-      height: window.innerHeight,
-      width: window.innerWidth
+      backgroundColor: '#ffffff'
     },
     jsPDF: { 
       unit: 'mm', 
@@ -2648,28 +2668,31 @@ function exportarDetalleEquipoPDF() {
   // Generar PDF
   html2pdf()
     .set(opt)
-    .from(contenidoPDF)
+    .from(contenidoTemp)
     .save()
     .then(() => {
       console.log("[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente");
       loading.close();
       mostrarAlerta("PDF del detalle exportado exitosamente", "success");
       // Limpiar el elemento temporal
-      contenidoPDF.remove();
+      contenidoTemp.remove();
     })
     .catch((error) => {
       console.error("[exportarDetalleEquipoPDF] Error al generar PDF del detalle:", error);
       loading.close();
       mostrarAlerta("Error al generar el PDF del detalle", "error");
-      // Limpiar el elemento temporal en caso de error
-      contenidoPDF.remove();
+      // Limpiar el elemento temporal
+      contenidoTemp.remove();
     });
 }
 
 /**
  * Crea el contenido HTML optimizado para PDF del detalle del equipo
  */
-function crearContenidoPDFDetalle(equipo) {
+function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
+  console.log("[crearContenidoPDFDetalle] Datos del equipo:", equipo);
+  console.log("[crearContenidoPDFDetalle] Datos del DOM:", datosDOM);
+  
   const container = document.createElement('div');
   container.style.cssText = `
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -2714,19 +2737,59 @@ function crearContenidoPDFDetalle(equipo) {
   header.appendChild(titulo);
   header.appendChild(subtitulo);
 
+  // Función helper para obtener valor con fallback
+  const obtenerValor = (valorEquipo, valorDOM, defecto = 'No especificado') => {
+    return valorDOM && valorDOM !== '-' && valorDOM !== '---' && valorDOM.trim() !== '' 
+      ? valorDOM 
+      : valorEquipo || defecto;
+  };
+
   // Información básica
   const seccionBasica = crearSeccionPDF('Información Básica de Identificación', [
-    { label: 'Código INE', valor: equipo.ine || 'No asignado' },
-    { label: 'Número NNE', valor: equipo.nne || 'No asignado' },
-    { label: 'Número de Serie', valor: equipo.unidades?.[0]?.nroSerie || equipo.unidades?.[0]?.nro_serie || 'No asignado' },
-    { label: 'Estado', valor: equipo.unidades?.[0]?.estado?.nombre || equipo.unidades?.[0]?.estado_nombre || 'No definido' },
-    { label: 'Tipo de Equipo', valor: equipo.tipoNombre || equipo.tipo || 'No especificado' }
+    { 
+      label: 'Código INE', 
+      valor: obtenerValor(equipo.ine, datosDOM.ine, 'No asignado')
+    },
+    { 
+      label: 'Número NNE', 
+      valor: obtenerValor(equipo.nne, datosDOM.nne, 'No asignado')
+    },
+    { 
+      label: 'Número de Serie', 
+      valor: obtenerValor(
+        equipo.unidades?.[0]?.nroSerie || equipo.unidades?.[0]?.nro_serie || equipo.nroSerie, 
+        datosDOM.nroSerie, 
+        'No asignado'
+      )
+    },
+    { 
+      label: 'Estado', 
+      valor: obtenerValor(
+        equipo.unidades?.[0]?.estado?.nombre || equipo.unidades?.[0]?.estado_nombre, 
+        datosDOM.estado, 
+        'No definido'
+      )
+    },
+    { 
+      label: 'Tipo de Equipo', 
+      valor: obtenerValor(
+        equipo.tipoNombre || equipo.tipo, 
+        datosDOM.tipoEquipo, 
+        'No especificado'
+      )
+    }
   ], '#007bff');
 
   // Especificaciones técnicas
   const seccionTecnica = crearSeccionPDF('Especificaciones Técnicas', [
-    { label: 'Marca', valor: equipo.marca || 'No especificada' },
-    { label: 'Modelo', valor: equipo.modelo || 'No especificado' }
+    { 
+      label: 'Marca', 
+      valor: obtenerValor(equipo.marca, datosDOM.marca, 'No especificada')
+    },
+    { 
+      label: 'Modelo', 
+      valor: obtenerValor(equipo.modelo, datosDOM.modelo, 'No especificado')
+    }
   ], '#17a2b8');
 
   // Especificaciones adicionales
@@ -2767,10 +2830,24 @@ function crearContenidoPDFDetalle(equipo) {
     responsable = `${grado} ${arma} ${nombre} ${apellido}`.replace(/\s+/g, ' ').trim();
   }
 
+  // Usar datos del DOM si están disponibles para responsable
+  if (datosDOM.responsable && datosDOM.responsable !== '-' && datosDOM.responsable !== '---' && datosDOM.responsable.trim() !== '') {
+    responsable = datosDOM.responsable;
+  }
+
   const seccionAsignacion = crearSeccionPDF('Asignación y Ubicación', [
-    { label: 'Responsable', valor: responsable },
-    { label: 'Ubicación', valor: equipo.ubicacion || 'No especificada' },
-    { label: 'Observaciones', valor: equipo.observaciones || 'Sin observaciones' }
+    { 
+      label: 'Responsable', 
+      valor: responsable
+    },
+    { 
+      label: 'Ubicación', 
+      valor: obtenerValor(equipo.ubicacion, datosDOM.ubicacion, 'No especificada')
+    },
+    { 
+      label: 'Observaciones', 
+      valor: obtenerValor(equipo.observaciones, datosDOM.observaciones, 'Sin observaciones')
+    }
   ], '#28a745');
 
   // Ensamblar todo
@@ -2780,13 +2857,6 @@ function crearContenidoPDFDetalle(equipo) {
   container.appendChild(especificacionesDiv);
   container.appendChild(seccionAsignacion);
 
-  // Agregar al DOM temporalmente (oculto)
-  container.style.position = 'absolute';
-  container.style.left = '-9999px';
-  document.body.appendChild(container);
-
-  return container;
-}
 
 /**
  * Crea una sección estilizada para el PDF
@@ -2980,5 +3050,4 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 });
-
-
+}
