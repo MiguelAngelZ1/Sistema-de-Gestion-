@@ -2634,41 +2634,43 @@ function exportarDetalleEquipoPDF() {
     return;
   }
 
-  // Obtener el contenido del modal directamente
-  const modalContent = document.getElementById('contenidoPDFDetalle');
-  if (!modalContent) {
-    console.error("[exportarDetalleEquipoPDF] No se encontró el contenedor del modal");
-    mostrarAlerta("Error: No se puede obtener el contenido del modal", "error");
+  // Verificar que tenemos el equipo actual
+  if (!window.__equipoDetallesActual) {
+    console.error("[exportarDetalleEquipoPDF] No hay datos del equipo actual");
+    mostrarAlerta("Error: No se encontraron los datos del equipo", "error");
     return;
   }
 
   // Obtener información para el nombre del archivo
-  const nne = document.getElementById('detalle-nne')?.textContent?.trim() || 'Equipo';
-  const nroSerie = document.getElementById('detalle-nro-serie')?.textContent?.trim() || '';
+  const equipo = window.__equipoDetallesActual;
+  const nne = equipo.nne || document.getElementById('detalle-nne')?.textContent?.trim() || '';
+  const nroSerie = equipo.nroSerie || document.getElementById('detalle-nro-serie')?.textContent?.trim() || '';
   const identificador = (nne && nne !== '-' && nne !== '---') ? nne : nroSerie || 'Detalle';
 
-  // Crear un elemento temporal con el contenido del modal clonado
-  const contenidoTemp = modalContent.cloneNode(true);
+  // Obtener datos del DOM para completar la información
+  const datosDOM = {
+    ine: document.getElementById('detalle-ine')?.textContent?.trim() || '',
+    nne: document.getElementById('detalle-nne')?.textContent?.trim() || '',
+    nroSerie: document.getElementById('detalle-nro-serie')?.textContent?.trim() || '',
+    marca: document.getElementById('detalle-marca')?.textContent?.trim() || '',
+    modelo: document.getElementById('detalle-modelo')?.textContent?.trim() || '',
+    tipoEquipo: document.getElementById('detalle-tipo-equipo')?.textContent?.trim() || '',
+    estado: document.getElementById('detalle-estado')?.textContent?.trim() || '',
+    responsable: document.getElementById('detalle-responsable')?.textContent?.trim() || '',
+    ubicacion: document.getElementById('detalle-ubicacion')?.textContent?.trim() || '',
+    observaciones: document.getElementById('detalle-observaciones')?.textContent?.trim() || ''
+  };
+
+  console.log("[exportarDetalleEquipoPDF] Datos del DOM obtenidos:", datosDOM);
+
+  // Crear contenido optimizado para PDF
+  const contenidoPDF = crearContenidoPDFDetalle(equipo, datosDOM);
   
-  // Aplicar estilos para PDF
-  contenidoTemp.style.cssText = `
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: white;
-    color: #333;
-    padding: 20px;
-    line-height: 1.4;
-  `;
-
-  // Ocultar botones y elementos no necesarios en el PDF
-  const elementosOcultar = contenidoTemp.querySelectorAll('.btn, button, .modal-footer');
-  elementosOcultar.forEach(elemento => {
-    elemento.style.display = 'none';
-  });
-
-  // Agregar el contenido temporal al DOM (oculto)
-  contenidoTemp.style.position = 'absolute';
-  contenidoTemp.style.left = '-9999px';
-  document.body.appendChild(contenidoTemp);
+  if (!contenidoPDF) {
+    console.error("[exportarDetalleEquipoPDF] Error al crear el contenido PDF");
+    mostrarAlerta("Error al generar el contenido del PDF", "error");
+    return;
+  }
 
   // Configuración para html2pdf
   const opt = {
@@ -2704,21 +2706,17 @@ function exportarDetalleEquipoPDF() {
   // Generar PDF
   html2pdf()
     .set(opt)
-    .from(contenidoTemp)
+    .from(contenidoPDF)
     .save()
     .then(() => {
       console.log("[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente");
       loading.close();
       mostrarAlerta("PDF del detalle exportado exitosamente", "success");
-      // Limpiar el elemento temporal
-      contenidoTemp.remove();
     })
     .catch((error) => {
       console.error("[exportarDetalleEquipoPDF] Error al generar PDF del detalle:", error);
       loading.close();
       mostrarAlerta("Error al generar el PDF del detalle", "error");
-      // Limpiar el elemento temporal
-      contenidoTemp.remove();
     });
 }
 
@@ -2830,6 +2828,8 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
 
   // Especificaciones adicionales
   let especificacionesHtml = '';
+  
+  // Intentar obtener especificaciones del equipo o del DOM
   if (equipo.especificaciones && equipo.especificaciones.length > 0) {
     especificacionesHtml = equipo.especificaciones.map(spec => 
       `<div style="margin-bottom: 8px;">
@@ -2838,7 +2838,30 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
       </div>`
     ).join('');
   } else {
-    especificacionesHtml = '<p style="color: #999; font-style: italic;">No hay especificaciones técnicas adicionales registradas.</p>';
+    // Intentar obtener especificaciones del DOM si no están en el objeto equipo
+    const especificacionesUL = document.getElementById('detalle-especificaciones');
+    if (especificacionesUL) {
+      const liElements = especificacionesUL.querySelectorAll('li');
+      if (liElements.length > 0) {
+        especificacionesHtml = Array.from(liElements).map(li => {
+          const strong = li.querySelector('strong');
+          if (strong) {
+            const clave = strong.textContent.replace(':', '').trim();
+            const valor = li.textContent.replace(strong.textContent, '').trim();
+            return `<div style="margin-bottom: 8px;">
+              <strong style="color: #495057;">${clave}:</strong> 
+              <span style="color: #6c757d;">${valor}</span>
+            </div>`;
+          }
+          return '';
+        }).filter(item => item !== '').join('');
+      }
+    }
+    
+    // Si aún no hay especificaciones, mostrar mensaje por defecto
+    if (!especificacionesHtml) {
+      especificacionesHtml = '<p style="color: #999; font-style: italic;">No hay especificaciones técnicas adicionales registradas.</p>';
+    }
   }
 
   const especificacionesDiv = document.createElement('div');
@@ -2858,6 +2881,7 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   const persona = equipo.unidades?.[0]?.persona;
   let responsable = 'Sin asignar';
 
+  // Intentar obtener responsable del objeto equipo
   if (personaId && persona && (persona.nombre || persona.apellido)) {
     const grado = persona.nombreGrado || '';
     const arma = persona.nombreArmEsp || '';
@@ -2866,7 +2890,7 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
     responsable = `${grado} ${arma} ${nombre} ${apellido}`.replace(/\s+/g, ' ').trim();
   }
 
-  // Usar datos del DOM si están disponibles para responsable
+  // Usar datos del DOM si están disponibles (prioridad al DOM)
   if (datosDOM.responsable && datosDOM.responsable !== '-' && datosDOM.responsable !== '---' && datosDOM.responsable.trim() !== '') {
     responsable = datosDOM.responsable;
   }
@@ -2891,10 +2915,10 @@ function crearContenidoPDFDetalle(equipo, datosDOM = {}) {
   container.appendChild(seccionBasica);
   container.appendChild(seccionTecnica);
   container.appendChild(especificacionesDiv);
-    container.appendChild(seccionAsignacion);
+  container.appendChild(seccionAsignacion);
   
-    return container;
-  }
+  return container;
+}
 
 
 /**
@@ -2963,6 +2987,58 @@ function crearSeccionPDF(titulo, campos, color) {
   seccion.appendChild(body);
 
   return seccion;
+}
+
+/**
+ * Función de diagnóstico para verificar el PDF del detalle
+ */
+function diagnosticarPDFDetalle() {
+  console.log("=== DIAGNÓSTICO PDF DETALLE ===");
+  console.log("1. html2pdf disponible:", typeof html2pdf !== 'undefined');
+  console.log("2. Equipo actual:", window.__equipoDetallesActual);
+  
+  // Verificar elementos del DOM
+  const elementos = [
+    'detalle-ine', 'detalle-nne', 'detalle-nro-serie', 'detalle-marca',
+    'detalle-modelo', 'detalle-tipo-equipo', 'detalle-estado',
+    'detalle-responsable', 'detalle-ubicacion', 'detalle-observaciones',
+    'detalle-especificaciones', 'contenidoPDFDetalle'
+  ];
+  
+  elementos.forEach(id => {
+    const elemento = document.getElementById(id);
+    console.log(`3. Elemento ${id}:`, elemento ? 'EXISTE' : 'NO EXISTE', 
+                elemento ? elemento.textContent?.trim() : '');
+  });
+  
+  if (window.__equipoDetallesActual) {
+    try {
+      const datosDOM = {
+        ine: document.getElementById('detalle-ine')?.textContent?.trim() || '',
+        nne: document.getElementById('detalle-nne')?.textContent?.trim() || '',
+        nroSerie: document.getElementById('detalle-nro-serie')?.textContent?.trim() || '',
+        marca: document.getElementById('detalle-marca')?.textContent?.trim() || '',
+        modelo: document.getElementById('detalle-modelo')?.textContent?.trim() || ''
+      };
+      
+      const contenidoPDF = crearContenidoPDFDetalle(window.__equipoDetallesActual, datosDOM);
+      console.log("4. Contenido PDF generado:", contenidoPDF ? 'SÍ' : 'NO');
+      
+      if (contenidoPDF) {
+        // Mostrar temporalmente el contenido
+        contenidoPDF.style.cssText += 'position: fixed; top: 10px; left: 10px; z-index: 9999; background: white; border: 2px solid red; max-width: 400px; max-height: 400px; overflow: auto;';
+        document.body.appendChild(contenidoPDF);
+        
+        setTimeout(() => {
+          contenidoPDF.remove();
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("Error generando contenido:", error);
+    }
+  }
+  
+  console.log("=== FIN DIAGNÓSTICO ===");
 }
 
 // Event listener para cargar datos al cargar la página
