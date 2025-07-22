@@ -10,6 +10,35 @@ let modoEdicion = false;
 let datosOriginales = null;
 let listaPersonalActual = []; // Array para almacenar la lista actual de personal para validaciones
 
+// Función utilitaria para manejar modales de forma segura
+function getModalInstance(modalId) {
+  if (typeof bootstrap === 'undefined') {
+    console.error('Bootstrap no está cargado');
+    return null;
+  }
+  
+  const modalElement = document.getElementById(modalId);
+  if (!modalElement) {
+    console.error(`Modal con ID '${modalId}' no encontrado`);
+    return null;
+  }
+  
+  // Intentar obtener una instancia existente
+  let modalInstance = bootstrap.Modal.getInstance(modalElement);
+  
+  // Si no existe, crear una nueva instancia
+  if (!modalInstance) {
+    try {
+      modalInstance = new bootstrap.Modal(modalElement);
+    } catch (error) {
+      console.error(`Error al crear instancia del modal '${modalId}':`, error);
+      return null;
+    }
+  }
+  
+  return modalInstance;
+}
+
 // Función para formatear nombre (primera letra mayúscula, resto minúsculas)
 function formatearNombre(texto) {
   if (!texto) return "";
@@ -264,7 +293,7 @@ function configurarModalAgregarPersona() {
     if (mostrarAlertaDependencias(gradosDisponibles, armasDisponibles)) {
       // Ocultar el modal después de un pequeño retraso
       setTimeout(() => {
-        const bootstrapModal = bootstrap.Modal.getInstance(modal);
+        const bootstrapModal = getModalInstance("agregarPersonaModal");
         if (bootstrapModal) {
           bootstrapModal.hide();
         }
@@ -406,7 +435,7 @@ function configurarModalAgregarPersona() {
         );
 
         // Cerrar el modal y actualizar la tabla
-        const modalInstance = bootstrap.Modal.getInstance(modal);
+        const modalInstance = getModalInstance("agregarPersonaModal");
         if (modalInstance) modalInstance.hide();
 
         // Limpiar el formulario
@@ -573,24 +602,22 @@ async function cargarArmEsp() {
 // Configurar eventos del formulario del modal
 function configurarEventosModal() {
   const form = document.getElementById("formPersonal");
-  const modal = new bootstrap.Modal(document.getElementById("personalModal"));
+  const modal = getModalInstance("personalModal");
   const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
   let datosOriginales = null;
+
+  if (!modal) {
+    console.error("No se pudo inicializar el modal personalModal");
+    return;
+  }
 
   // Configurar botón de cancelar edición
   if (btnCancelarEdicion) {
     btnCancelarEdicion.addEventListener("click", () => {
       // Cerrar el modal directamente sin restaurar datos
-      const modalInstance = bootstrap.Modal.getInstance(
-        document.getElementById("personalModal")
-      );
+      const modalInstance = getModalInstance("personalModal");
       if (modalInstance) {
         modalInstance.hide();
-      } else {
-        // Si no hay instancia, usar la API de Bootstrap
-        const modalElement = document.getElementById("personalModal");
-        const bsModal = new bootstrap.Modal(modalElement);
-        bsModal.hide();
       }
 
       // Limpiar el formulario
@@ -707,13 +734,9 @@ function configurarEventosModal() {
         );
 
         // Cerrar el modal
-        const modalElement = document.getElementById("personalModal");
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        const modalInstance = getModalInstance("personalModal");
         if (modalInstance) {
           modalInstance.hide();
-        } else {
-          const bsModal = new bootstrap.Modal(modalElement);
-          bsModal.hide();
         }
 
         // Limpiar y actualizar la tabla
@@ -1025,8 +1048,13 @@ async function mostrarDetallesPersona(persona) {
     console.log("Mostrando detalles de la persona:", persona);
 
     // Obtener referencia al modal
+    const modal = getModalInstance("personalModal");
+    if (!modal) {
+      console.error("No se pudo inicializar el modal para mostrar detalles");
+      return;
+    }
+    
     const modalElement = document.getElementById("personalModal");
-    const modal = new bootstrap.Modal(modalElement);
 
     // Marcar que estamos en modo detalle para evitar interferencias
     modalElement.dataset.modoDetalle = "true";
@@ -1326,9 +1354,14 @@ async function mostrarDetallesPersona(persona) {
 // Función para mostrar los datos en el modal
 function mostrarDatosEnModal(persona, editar = false) {
   console.log("Datos de la persona en mostrarDatosEnModal:", persona);
-  const modal = new bootstrap.Modal(document.getElementById("personalModal"));
+  const modal = getModalInstance("personalModal");
   const form = document.getElementById("formPersonal");
   const titulo = document.getElementById("modalTitulo");
+
+  if (!modal) {
+    console.error("No se pudo inicializar el modal personalModal");
+    return;
+  }
 
   // Función para cargar los datos completos de la persona
   const cargarDatosCompletos = async (personaId) => {
