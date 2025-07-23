@@ -175,6 +175,9 @@ class ArmEspService {
 
       if (!response.ok) {
         console.error("Error en la respuesta:", responseData);
+        console.error("Status code:", response.status);
+        console.error("Response data completa:", responseData);
+        
         const errorMessage =
           responseData.message ||
           responseData.error ||
@@ -184,6 +187,11 @@ class ArmEspService {
         const error = new Error(errorMessage);
         error.status = response.status;
         error.data = responseData;
+        
+        console.error("Error creado:", error);
+        console.error("Error status:", error.status);
+        console.error("Error message:", error.message);
+        
         throw error;
       }
 
@@ -489,23 +497,13 @@ class ArmEspUI {
     if (!armEspAEliminar || isNaN(parseInt(armEspAEliminar))) {
       console.error("ID de elemento a eliminar no válido:", armEspAEliminar);
 
-      // Mostrar notificación de error
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener("mouseenter", Swal.stopTimer);
-          toast.addEventListener("mouseleave", Swal.resumeTimer);
-        },
-      });
-
-      await Toast.fire({
+      await Swal.fire({
         icon: "error",
         title: "Error",
         text: "No se pudo identificar el registro a eliminar",
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
       });
 
       return;
@@ -544,81 +542,73 @@ class ArmEspUI {
         },
       });
 
-      try {
-        // Llamar al servicio para eliminar el registro
-        await ArmEspService.eliminar(id);
+      // Llamar al servicio para eliminar el registro
+      const resultado = await ArmEspService.eliminar(id);
 
-        // Cerrar el diálogo de carga
-        await loadingSwal.close();
+      // Cerrar el diálogo de carga
+      await loadingSwal.close();
 
-        // Cerrar el modal de confirmación si existe
-        if (confirmarEliminarModal) {
-          confirmarEliminarModal.hide();
-          this.limpiarFondoModal();
-        }
-
-        // Actualizar la lista de datos
-        await this.cargarDatos();
-
-        // Mostrar notificación de éxito
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top-end",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener("mouseenter", Swal.stopTimer);
-            toast.addEventListener("mouseleave", Swal.resumeTimer);
-          },
-        });
-
-        await Toast.fire({
-          icon: "success",
-          title: "¡Eliminado!",
-          text: "El registro ha sido eliminado correctamente",
-        });
-      } catch (error) {
-        console.error("Error al eliminar el registro:", error);
-
-        // Cerrar el diálogo de carga si hay un error
-        if (loadingSwal.isVisible()) {
-          loadingSwal.close();
-        }
-
-        // Mostrar diferentes tipos de notificación según el error
-        let iconType = "error";
-        let titleText = "Error";
-        
-        // Si es un error 400 (Bad Request), probablemente sea por personal asociado
-        if (error.status === 400) {
-          iconType = "warning";
-          titleText = "No se puede eliminar";
-        }
-
-        // Mostrar notificación de error
-        await Swal.fire({
-          icon: iconType,
-          title: titleText,
-          text: error.message || "Ocurrió un error al intentar eliminar el registro",
-          confirmButtonText: "Entendido",
-          timer: iconType === "warning" ? 5000 : 3000, // Más tiempo para warnings
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
+      // Cerrar el modal de confirmación si existe
+      if (confirmarEliminarModal) {
+        confirmarEliminarModal.hide();
+        this.limpiarFondoModal();
       }
-    } catch (error) {
-      console.error("Error en el proceso de eliminación:", error);
 
-      // Mostrar notificación de error
+      // Actualizar la lista de datos
+      await this.cargarDatos();
+
+      // Mostrar notificación de éxito
       await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Ocurrió un error inesperado al intentar eliminar el registro",
-        confirmButtonText: "Entendido",
+        icon: "success",
+        title: "¡Eliminado!",
+        text: "El registro ha sido eliminado correctamente",
         timer: 3000,
         timerProgressBar: true,
         showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar el registro:", error);
+      console.error("Error completo:", {
+        message: error.message,
+        status: error.status,
+        data: error.data,
+        stack: error.stack
+      });
+
+      // Cerrar el diálogo de carga si hay un error
+      if (Swal.isVisible()) {
+        Swal.close();
+      }
+
+      // Mostrar diferentes tipos de notificación según el error
+      let iconType = "error";
+      let titleText = "Error";
+      
+      // Si es un error 400 (Bad Request), probablemente sea por personal asociado
+      if (error.status === 400) {
+        console.log("Detectado error 400 - Personal asociado");
+        iconType = "warning";
+        titleText = "No se puede eliminar";
+      }
+
+      console.log("Mostrando notificación:", {
+        icon: iconType,
+        title: titleText,
+        message: error.message
+      });
+
+      // Mostrar notificación de error
+      await Swal.fire({
+        icon: iconType,
+        title: titleText,
+        text: error.message || "Ocurrió un error al intentar eliminar el registro",
+        confirmButtonText: "Entendido",
+        timer: iconType === "warning" ? 6000 : 4000, // Más tiempo para warnings
+        timerProgressBar: true,
+        showConfirmButton: true,
       });
     } finally {
       // Resetear el ID del elemento a eliminar
