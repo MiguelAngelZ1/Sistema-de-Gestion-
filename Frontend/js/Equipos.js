@@ -432,7 +432,11 @@ async function abrirModalCrearModelo() {
   }
   
   console.log("[abrirModalCrearModelo] Mostrando modal");
-  modalCrearModelo.show();
+  if (window.modalCrearModelo) {
+    window.modalCrearModelo.show();
+  } else {
+    console.error("[abrirModalCrearModelo] Modal no encontrado - window.modalCrearModelo is undefined");
+  }
 }
 
 /**
@@ -607,7 +611,9 @@ async function guardarModelo(event) {
   const resultado = await crearModelo(altaCompletaData);
 
   if (resultado) {
-    modalCrearModelo.hide();
+    if (window.modalCrearModelo) {
+      window.modalCrearModelo.hide();
+    }
     Swal.fire({
       title: "✅ ¡Equipo Creado!",
       text: `El equipo ${nne} ha sido registrado exitosamente`,
