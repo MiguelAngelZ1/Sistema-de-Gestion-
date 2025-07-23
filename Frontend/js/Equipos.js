@@ -356,24 +356,32 @@ async function cargarPersonalParaModal() {
   
   try {
     console.log("[cargarPersonalParaModal] Consultando API:", API_URL_PERSONA);
-    const personal = await fetch(API_URL_PERSONA).then((res) =>
-      res.ok ? res.json() : Promise.reject(res)
-    );
+    const response = await fetch(API_URL_PERSONA);
+    console.log("[cargarPersonalParaModal] Response status:", response.status);
+    console.log("[cargarPersonalParaModal] Response ok:", response.ok);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const personal = await response.json();
     console.log("[cargarPersonalParaModal] Personal obtenido:", personal);
+    console.log("[cargarPersonalParaModal] Cantidad de personal:", personal.length);
     
     select.innerHTML = '<option value="">Seleccionar responsable...</option>'; // Opción para no asignar a nadie
-    personal.forEach((p) => {
+    personal.forEach((p, index) => {
       const option = document.createElement("option");
       option.value = p.id_persona;
       option.textContent = `${p.nombreGrado || ""} ${p.nombreArmEsp || ""} ${
         p.nombre
       } ${p.apellido}`.trim();
       select.appendChild(option);
-      console.log(`[cargarPersonalParaModal] Agregada opción: ${option.textContent} (ID: ${option.value})`);
+      console.log(`[cargarPersonalParaModal] Agregada opción ${index}: ${option.textContent} (ID: ${option.value})`);
     });
     console.log("[cargarPersonalParaModal] Carga completada. Total opciones:", select.options.length);
   } catch (error) {
     console.error("[cargarPersonalParaModal] Error al cargar el personal:", error);
+    console.error("[cargarPersonalParaModal] Error details:", error.message);
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }
@@ -408,13 +416,19 @@ async function abrirModalCrearModelo() {
   agregarCampoEspecificacion();
 
   console.log("[abrirModalCrearModelo] Cargando datos de estados y personal...");
-  // Cargar datos para los desplegables ANTES de mostrar el modal
+  // Cargar datos por separado para evitar que un error en uno afecte al otro
   try {
-    await Promise.all([cargarEstadosParaModal(), cargarPersonalParaModal()]);
-    console.log("[abrirModalCrearModelo] Datos cargados correctamente");
+    await cargarEstadosParaModal();
+    console.log("[abrirModalCrearModelo] Estados cargados correctamente");
   } catch (error) {
-    console.error("[abrirModalCrearModelo] Error al cargar datos:", error);
-    // Aún así mostramos el modal, aunque los selects puedan tener errores
+    console.error("[abrirModalCrearModelo] Error al cargar estados:", error);
+  }
+  
+  try {
+    await cargarPersonalParaModal();
+    console.log("[abrirModalCrearModelo] Personal cargado correctamente");
+  } catch (error) {
+    console.error("[abrirModalCrearModelo] Error al cargar personal:", error);
   }
   
   console.log("[abrirModalCrearModelo] Mostrando modal");
