@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Función para eliminar un grado
 async function Eliminar(idGrado, button) {
   console.log(`[Eliminar] Intentando eliminar grado con ID: ${idGrado}`);
-  
+
   try {
     // Mostrar diálogo de confirmación
     const confirmacion = await Swal.fire({
@@ -27,7 +27,9 @@ async function Eliminar(idGrado, button) {
     });
 
     if (!confirmacion.isConfirmed) {
-      console.log(`[Eliminar] Usuario canceló la eliminación del grado ${idGrado}`);
+      console.log(
+        `[Eliminar] Usuario canceló la eliminación del grado ${idGrado}`
+      );
       return;
     }
 
@@ -51,17 +53,23 @@ async function Eliminar(idGrado, button) {
       },
     });
 
-    console.log(`[Eliminar] Respuesta del servidor: ${response.status} - ${response.statusText}`);
-    
+    console.log(
+      `[Eliminar] Respuesta del servidor: ${response.status} - ${response.statusText}`
+    );
+
     // Cerrar el diálogo de carga
     await loadingSwal.close();
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.log(`[Eliminar] Error del servidor:`, errorData);
-      
+
       // Si el error es por personas asociadas, mostrar un mensaje más específico
-      if (response.status === 400 && errorData.message && errorData.message.includes("persona(s) asociada(s)")) {
+      if (
+        response.status === 400 &&
+        errorData.message &&
+        errorData.message.includes("persona(s) asociada(s)")
+      ) {
         await Swal.fire({
           icon: "warning",
           title: "No se puede eliminar",
@@ -71,12 +79,14 @@ async function Eliminar(idGrado, button) {
         });
         return;
       }
-      
+
       throw new Error(errorData.message || "Error al eliminar el grado");
     }
 
     // Recargar la tabla
-    console.log(`[Eliminar] Grado ${idGrado} eliminado exitosamente, recargando tabla...`);
+    console.log(
+      `[Eliminar] Grado ${idGrado} eliminado exitosamente, recargando tabla...`
+    );
     await cargarGrados();
 
     // Mostrar notificación de éxito
@@ -187,7 +197,9 @@ function crearFilaGrado(grado) {
     grado.nombreCompleto ||
     "";
 
-  console.log(`[crearFilaGrado] Creando fila para grado ID: ${id}, Abreviatura: ${abreviatura}`);
+  console.log(
+    `[crearFilaGrado] Creando fila para grado ID: ${id}, Abreviatura: ${abreviatura}`
+  );
 
   return `
         <tr data-id="${id}">

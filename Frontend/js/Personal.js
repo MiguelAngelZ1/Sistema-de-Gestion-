@@ -1169,16 +1169,15 @@ async function mostrarDetallesPersona(persona) {
 
       // Actualizar información personal
       const detalleNombre = document.getElementById("detalleNombre");
-      const detalleApellido = document.getElementById("detalleApellido");
       const detalleDni = document.getElementById("detalleDni");
 
       if (detalleNombre) {
-        detalleNombre.textContent = formatearTexto(persona.nombre) || "-";
-        console.log("Nombre asignado:", detalleNombre.textContent);
-      }
-      if (detalleApellido) {
-        detalleApellido.textContent = formatearTexto(persona.apellido) || "-";
-        console.log("Apellido asignado:", detalleApellido.textContent);
+        // Formato: "Emilse Del Carmen TORRES" - nombre formateado + apellido en mayúsculas
+        const nombreFormateado = formatearNombre(persona.nombre) || "";
+        const apellidoFormateado = formatearApellido(persona.apellido) || "";
+        const nombreCompleto = `${nombreFormateado} ${apellidoFormateado}`.trim();
+        detalleNombre.textContent = nombreCompleto || "-";
+        console.log("Nombre completo asignado:", detalleNombre.textContent);
       }
       if (detalleDni) {
         detalleDni.textContent = persona.dni || "-";

@@ -41,7 +41,8 @@ namespace Backend.Controllers
                     using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM persona WHERE id_grado = @id", connection))
                     {
                         cmd.Parameters.AddWithValue("@id", id);
-                        var count = (long)cmd.ExecuteScalar();
+                        var result = cmd.ExecuteScalar();
+                        var count = result != null ? Convert.ToInt64(result) : 0L;
                         
                         if (count > 0)
                         {
