@@ -535,6 +535,7 @@ async function cargarGrados() {
 async function cargarArmEsp() {
   try {
     console.log("Cargando armas/especialidades...");
+    console.log("URL de API ArmEsp:", apiArmEsp);
     const response = await fetch(apiArmEsp);
     if (!response.ok) {
       throw new Error(
@@ -543,6 +544,12 @@ async function cargarArmEsp() {
     }
     const data = await response.json();
     console.log("Datos de armas/especialidades recibidos:", data);
+    
+    // Debug: mostrar estructura del primer elemento
+    if (data && data.length > 0) {
+      console.log("Estructura del primer elemento de armas/especialidades:", data[0]);
+      console.log("Propiedades disponibles:", Object.keys(data[0]));
+    }
 
     // Almacenar las armas/especialidades para uso posterior
     window.armEsp = data;
@@ -556,23 +563,38 @@ async function cargarArmEsp() {
 
       // Ordenar armas/especialidades por ID
       const armEspOrdenadas = [...data].sort(
-        (a, b) => a.id_armesp - b.id_armesp
+        (a, b) => (a.id || a.id_armesp || a.armEspId) - (b.id || b.id_armesp || b.armEspId)
       );
 
       // Agregar opciones al select
-      armEspOrdenadas.forEach((armEsp) => {
+      armEspOrdenadas.forEach((armEsp, index) => {
+        console.log(`ArmEsp[${index}]:`, armEsp);
+        
         const option = document.createElement("option");
-        option.value = armEsp.id_armesp;
+        // Intentar diferentes nombres de ID
+        option.value = armEsp.id || armEsp.id_armesp || armEsp.armEspId || armEsp.value;
 
-        // Usar la abreviatura y la descripción completa
-        // El backend devuelve: id, descripcion (que es la abreviatura) y armEspCompleto
-        const abreviatura = armEsp.abreviatura || "";
-        const nombreCompleto = armEsp.armesp_completo || "";
+        // Intentar diferentes nombres de propiedades para la abreviatura y nombre completo
+        const abreviatura = armEsp.abreviatura || armEsp.descripcion || armEsp.nombreArmEsp || armEsp.nombre || "";
+        const nombreCompleto = armEsp.armesp_completo || armEsp.nombre_completo || armEsp.nombreArmEspCompleto || armEsp.descripcion_completa || "";
+        
+        console.log(`- ID encontrado: "${option.value}"`);
+        console.log(`- Abreviatura encontrada: "${abreviatura}"`);
+        console.log(`- Nombre completo encontrado: "${nombreCompleto}"`);
 
-        // Mostrar: "Abreviatura - Nombre Completo" o solo "Nombre Completo" si no hay abreviatura
-        const textoMostrar = abreviatura
-          ? `${abreviatura.trim()} - ${nombreCompleto.trim()}`.trim()
-          : nombreCompleto;
+        // Mostrar: "Abreviatura - Nombre Completo" o solo "Abreviatura" si no hay nombre completo
+        let textoMostrar;
+        if (abreviatura && nombreCompleto && nombreCompleto.trim() !== "") {
+          textoMostrar = `${abreviatura.trim()} - ${nombreCompleto.trim()}`;
+        } else if (abreviatura) {
+          textoMostrar = abreviatura.trim();
+        } else if (nombreCompleto) {
+          textoMostrar = nombreCompleto.trim();
+        } else {
+          textoMostrar = `Arma/Esp ${option.value}`;
+        }
+          
+        console.log(`- Texto final para mostrar: "${textoMostrar}"`);
 
         option.textContent = textoMostrar;
 
