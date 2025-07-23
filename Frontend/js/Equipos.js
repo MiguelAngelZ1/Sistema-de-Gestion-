@@ -315,17 +315,19 @@ async function cargarEstadosParaModal() {
   console.log("[cargarEstadosParaModal] Iniciando carga de estados");
   const select = document.getElementById("crear-estado-equipo");
   if (!select) {
-    console.error("[cargarEstadosParaModal] No se encontró el select crear-estado-equipo");
+    console.error(
+      "[cargarEstadosParaModal] No se encontró el select crear-estado-equipo"
+    );
     return;
   }
-  
+
   try {
     console.log("[cargarEstadosParaModal] Consultando API:", API_URL_ESTADOS);
     const estados = await fetch(API_URL_ESTADOS).then((res) =>
       res.ok ? res.json() : Promise.reject(res)
     );
     console.log("[cargarEstadosParaModal] Estados obtenidos:", estados);
-    
+
     select.innerHTML =
       '<option value="" selected disabled>Seleccionar un estado...</option>';
     estados.forEach((estado) => {
@@ -333,11 +335,19 @@ async function cargarEstadosParaModal() {
       option.value = estado.id;
       option.textContent = estado.nombre;
       select.appendChild(option);
-      console.log(`[cargarEstadosParaModal] Agregado estado: ${estado.nombre} (ID: ${estado.id})`);
+      console.log(
+        `[cargarEstadosParaModal] Agregado estado: ${estado.nombre} (ID: ${estado.id})`
+      );
     });
-    console.log("[cargarEstadosParaModal] Carga completada. Total opciones:", select.options.length);
+    console.log(
+      "[cargarEstadosParaModal] Carga completada. Total opciones:",
+      select.options.length
+    );
   } catch (error) {
-    console.error("[cargarEstadosParaModal] Error al cargar los estados de equipo:", error);
+    console.error(
+      "[cargarEstadosParaModal] Error al cargar los estados de equipo:",
+      error
+    );
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }
@@ -350,24 +360,29 @@ async function cargarPersonalParaModal() {
   console.log("[cargarPersonalParaModal] Iniciando carga de personal");
   const select = document.getElementById("unidad-responsable");
   if (!select) {
-    console.error("[cargarPersonalParaModal] No se encontró el select unidad-responsable");
+    console.error(
+      "[cargarPersonalParaModal] No se encontró el select unidad-responsable"
+    );
     return;
   }
-  
+
   try {
     console.log("[cargarPersonalParaModal] Consultando API:", API_URL_PERSONA);
     const response = await fetch(API_URL_PERSONA);
     console.log("[cargarPersonalParaModal] Response status:", response.status);
     console.log("[cargarPersonalParaModal] Response ok:", response.ok);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const personal = await response.json();
     console.log("[cargarPersonalParaModal] Personal obtenido:", personal);
-    console.log("[cargarPersonalParaModal] Cantidad de personal:", personal.length);
-    
+    console.log(
+      "[cargarPersonalParaModal] Cantidad de personal:",
+      personal.length
+    );
+
     select.innerHTML = '<option value="">Seleccionar responsable...</option>'; // Opción para no asignar a nadie
     personal.forEach((p, index) => {
       const option = document.createElement("option");
@@ -376,11 +391,19 @@ async function cargarPersonalParaModal() {
         p.nombre
       } ${p.apellido}`.trim();
       select.appendChild(option);
-      console.log(`[cargarPersonalParaModal] Agregada opción ${index}: ${option.textContent} (ID: ${option.value})`);
+      console.log(
+        `[cargarPersonalParaModal] Agregada opción ${index}: ${option.textContent} (ID: ${option.value})`
+      );
     });
-    console.log("[cargarPersonalParaModal] Carga completada. Total opciones:", select.options.length);
+    console.log(
+      "[cargarPersonalParaModal] Carga completada. Total opciones:",
+      select.options.length
+    );
   } catch (error) {
-    console.error("[cargarPersonalParaModal] Error al cargar el personal:", error);
+    console.error(
+      "[cargarPersonalParaModal] Error al cargar el personal:",
+      error
+    );
     console.error("[cargarPersonalParaModal] Error details:", error.message);
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
@@ -415,7 +438,9 @@ async function abrirModalCrearModelo() {
     "";
   agregarCampoEspecificacion();
 
-  console.log("[abrirModalCrearModelo] Cargando datos de estados y personal...");
+  console.log(
+    "[abrirModalCrearModelo] Cargando datos de estados y personal..."
+  );
   // Cargar datos por separado para evitar que un error en uno afecte al otro
   try {
     await cargarEstadosParaModal();
@@ -423,19 +448,21 @@ async function abrirModalCrearModelo() {
   } catch (error) {
     console.error("[abrirModalCrearModelo] Error al cargar estados:", error);
   }
-  
+
   try {
     await cargarPersonalParaModal();
     console.log("[abrirModalCrearModelo] Personal cargado correctamente");
   } catch (error) {
     console.error("[abrirModalCrearModelo] Error al cargar personal:", error);
   }
-  
+
   console.log("[abrirModalCrearModelo] Mostrando modal");
   if (window.modalCrearModelo) {
     window.modalCrearModelo.show();
   } else {
-    console.error("[abrirModalCrearModelo] Modal no encontrado - window.modalCrearModelo is undefined");
+    console.error(
+      "[abrirModalCrearModelo] Modal no encontrado - window.modalCrearModelo is undefined"
+    );
   }
 }
 
@@ -692,10 +719,10 @@ async function abrirModalAgregarUnidad() {
   const form = document.getElementById("formAgregarUnidad");
   form.reset();
   document.getElementById("unidad-equipo-id").value = equipoIdActual;
-  
+
   // Cargar el personal disponible para el select
   await cargarPersonalParaModal();
-  
+
   modalAgregarUnidad.show();
 }
 
@@ -1714,7 +1741,12 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     equipo.nroSerie = nroSerieOriginal;
 
     window.__equipoDetallesActual = equipo;
-    console.log("[window.mostrarDetalles] Equipo cargado:", equipo.ine, "- NNE:", equipo.nne);
+    console.log(
+      "[window.mostrarDetalles] Equipo cargado:",
+      equipo.ine,
+      "- NNE:",
+      equipo.nne
+    );
 
     // 2. Poblar campos de la columna Datos Generales
     const elIne = document.getElementById("detalle-ine");
@@ -1768,42 +1800,50 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       equipo.unidades && equipo.unidades[0] && equipo.unidades[0].personaId;
     const persona =
       equipo.unidades && equipo.unidades[0] && equipo.unidades[0].persona;
-    
+
     let responsable = "Sin asignar";
 
     // Verificar si hay un responsable válido asignado
     // personaId debe ser un número válido (no null, no undefined, no 0)
     // Y la persona debe tener al menos nombre o apellido con contenido
-    if (personaId && personaId !== null && typeof personaId === 'number' && personaId > 0 && 
-        persona && (persona.nombre?.trim() || persona.apellido?.trim())) {
-      
+    if (
+      personaId &&
+      personaId !== null &&
+      typeof personaId === "number" &&
+      personaId > 0 &&
+      persona &&
+      (persona.nombre?.trim() || persona.apellido?.trim())
+    ) {
       const grado = persona.nombreGrado || "";
       const arma = persona.nombreArmEsp || "";
       const nombre = persona.nombre?.trim() || "";
       const apellido = persona.apellido?.trim() || "";
-      
+
       console.log("[window.mostrarDetalles] Responsable válido encontrado:");
       console.log("  - grado:", grado);
       console.log("  - arma:", arma);
       console.log("  - nombre:", nombre);
       console.log("  - apellido:", apellido);
-      
+
       // Construir el nombre completo
       const nombreCompleto = `${grado} ${arma} ${nombre} ${apellido}`
         .replace(/\s+/g, " ")
         .trim();
-      
+
       if (nombreCompleto) {
         responsable = nombreCompleto;
-        console.log("[window.mostrarDetalles] Responsable asignado:", responsable);
+        console.log(
+          "[window.mostrarDetalles] Responsable asignado:",
+          responsable
+        );
       }
     } else {
       console.log("[window.mostrarDetalles] Sin responsable válido:");
       console.log("  - personaId:", personaId, "(tipo:", typeof personaId, ")");
       console.log("  - personaId > 0:", personaId > 0);
       if (persona) {
-        console.log("  - nombre con contenido:", !!(persona.nombre?.trim()));
-        console.log("  - apellido con contenido:", !!(persona.apellido?.trim()));
+        console.log("  - nombre con contenido:", !!persona.nombre?.trim());
+        console.log("  - apellido con contenido:", !!persona.apellido?.trim());
       }
     }
     const elResponsable = document.getElementById("detalle-responsable");

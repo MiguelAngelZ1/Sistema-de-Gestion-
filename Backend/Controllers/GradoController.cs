@@ -34,20 +34,29 @@ namespace Backend.Controllers
                 var dbConnection = new DB_Conexion();
                 var connectionString = dbConnection.GetConnectionString();
                 
-                // Primero eliminamos las referencias en persona
+                // Primero verificamos si existen personas asociadas a este grado
                 using (var connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
-                    using (var cmd = new NpgsqlCommand("DELETE FROM persona WHERE id_grado = @id", connection))
+                    using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM persona WHERE id_grado = @id", connection))
                     {
                         cmd.Parameters.AddWithValue("@id", id);
-                        cmd.ExecuteNonQuery();
+                        var count = (long)cmd.ExecuteScalar();
+                        
+                        if (count > 0)
+                        {
+                            // Si hay personas asociadas, no permitir la eliminación
+                            return BadRequest(new { 
+                                success = false, 
+                                message = $"No se puede eliminar el grado porque hay {count} persona(s) asociada(s). Primero debe reasignar o eliminar el personal asociado." 
+                            });
+                        }
                     }
                 }
 
-                // Luego eliminamos el grado
+                // Si no hay personas asociadas, proceder con la eliminación del grado
                 _repository.Eliminar(id);
-                return Ok(new { success = true, message = "Grado y referencias eliminados correctamente" });
+                return Ok(new { success = true, message = "Grado eliminado correctamente" });
             }
             catch (Exception ex)
             {

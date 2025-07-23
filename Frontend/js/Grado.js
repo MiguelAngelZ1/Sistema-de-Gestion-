@@ -9,11 +9,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Función para eliminar un grado
 async function Eliminar(idGrado, button) {
+  console.log(`[Eliminar] Intentando eliminar grado con ID: ${idGrado}`);
+  
   try {
     // Mostrar diálogo de confirmación
     const confirmacion = await Swal.fire({
       title: "¿Está seguro que desea eliminar este grado?",
-      text: "Esta acción no se puede deshacer.",
+      html: `<p>Esta acción no se puede deshacer.</p>
+             <p><strong>Nota:</strong> Si hay personal asociado a este grado, no se podrá eliminar hasta que reasigne o elimine dicho personal.</p>`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -24,6 +27,7 @@ async function Eliminar(idGrado, button) {
     });
 
     if (!confirmacion.isConfirmed) {
+      console.log(`[Eliminar] Usuario canceló la eliminación del grado ${idGrado}`);
       return;
     }
 
@@ -38,6 +42,7 @@ async function Eliminar(idGrado, button) {
     });
 
     // Realizar la petición DELETE al backend
+    console.log(`[Eliminar] Enviando petición DELETE a: ${apiUrl}/${idGrado}`);
     const response = await fetch(`${apiUrl}/${idGrado}`, {
       method: "DELETE",
       headers: {
@@ -46,15 +51,32 @@ async function Eliminar(idGrado, button) {
       },
     });
 
+    console.log(`[Eliminar] Respuesta del servidor: ${response.status} - ${response.statusText}`);
+    
     // Cerrar el diálogo de carga
     await loadingSwal.close();
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log(`[Eliminar] Error del servidor:`, errorData);
+      
+      // Si el error es por personas asociadas, mostrar un mensaje más específico
+      if (response.status === 400 && errorData.message && errorData.message.includes("persona(s) asociada(s)")) {
+        await Swal.fire({
+          icon: "warning",
+          title: "No se puede eliminar",
+          html: `<p>${errorData.message}</p><p><strong>Sugerencia:</strong> Vaya al módulo de Personal y reasigne o elimine las personas que tienen este grado antes de eliminarlo.</p>`,
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#007bff",
+        });
+        return;
+      }
+      
       throw new Error(errorData.message || "Error al eliminar el grado");
     }
 
     // Recargar la tabla
+    console.log(`[Eliminar] Grado ${idGrado} eliminado exitosamente, recargando tabla...`);
     await cargarGrados();
 
     // Mostrar notificación de éxito
@@ -76,15 +98,15 @@ async function Eliminar(idGrado, button) {
       text: "El grado ha sido eliminado correctamente",
     });
   } catch (error) {
-    console.error("Error al eliminar el grado:", error);
+    console.error(`[Eliminar] Error al eliminar el grado ${idGrado}:`, error);
     await Swal.fire({
       icon: "error",
       title: "Error",
       text: error.message || "Ocurrió un error al intentar eliminar el grado",
       confirmButtonText: "Entendido",
-      timer: 3000,
+      timer: 5000,
       timerProgressBar: true,
-      showConfirmButton: false,
+      showConfirmButton: true,
     });
   }
 }
@@ -164,6 +186,8 @@ function crearFilaGrado(grado) {
     grado.nombre_completo ||
     grado.nombreCompleto ||
     "";
+
+  console.log(`[crearFilaGrado] Creando fila para grado ID: ${id}, Abreviatura: ${abreviatura}`);
 
   return `
         <tr data-id="${id}">
