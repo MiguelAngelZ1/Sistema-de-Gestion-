@@ -1682,6 +1682,32 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       "[window.mostrarDetalles] ======================================="
     );
 
+    // COMPARACIÓN DETALLADA ENTRE EQUIPOS
+    console.log("[window.mostrarDetalles] ===== COMPARACIÓN DETALLADA =====");
+    console.log("EQUIPO IDENTIFICACIÓN:");
+    console.log("  - ID:", equipo.id);
+    console.log("  - NNE:", equipo.nne);
+    console.log("  - INE:", equipo.ine);
+    console.log("UNIDAD PRINCIPAL:");
+    if (equipo.unidades && equipo.unidades[0]) {
+      const unidad = equipo.unidades[0];
+      console.log("  - Unidad ID:", unidad.id);
+      console.log("  - PersonaId:", unidad.personaId, "(tipo:", typeof unidad.personaId, ")");
+      console.log("  - PersonaId es null:", unidad.personaId === null);
+      console.log("  - PersonaId es undefined:", unidad.personaId === undefined);
+      console.log("  - PersonaId valor exacto:", JSON.stringify(unidad.personaId));
+      if (unidad.persona) {
+        console.log("DATOS DE PERSONA:");
+        console.log("    - id_persona:", unidad.persona.id_persona);
+        console.log("    - nombre:", `"${unidad.persona.nombre}"`, "(longitud:", unidad.persona.nombre?.length, ")");
+        console.log("    - apellido:", `"${unidad.persona.apellido}"`, "(longitud:", unidad.persona.apellido?.length, ")");
+        console.log("    - nombreGrado:", `"${unidad.persona.nombreGrado}"`);
+        console.log("    - nombreArmEsp:", `"${unidad.persona.nombreArmEsp}"`);
+        console.log("    - TODOS los campos de persona:", Object.keys(unidad.persona));
+      }
+    }
+    console.log("[window.mostrarDetalles] ===============================");
+
     // 2. Poblar campos de la columna Datos Generales
     const elIne = document.getElementById("detalle-ine");
     const inputIne = document.getElementById("input-ine");
