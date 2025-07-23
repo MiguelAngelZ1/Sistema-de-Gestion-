@@ -1659,54 +1659,7 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     equipo.nroSerie = nroSerieOriginal;
 
     window.__equipoDetallesActual = equipo;
-    console.log(
-      "[window.mostrarDetalles] ===== DATOS COMPLETOS DEL EQUIPO ====="
-    );
-    console.log("[window.mostrarDetalles] Equipo completo:", equipo);
-    console.log("[window.mostrarDetalles] equipo.unidades:", equipo.unidades);
-    if (equipo.unidades && equipo.unidades[0]) {
-      console.log(
-        "[window.mostrarDetalles] Primera unidad:",
-        equipo.unidades[0]
-      );
-      console.log(
-        "[window.mostrarDetalles] Persona en unidad:",
-        equipo.unidades[0].persona
-      );
-    }
-    console.log(
-      "[window.mostrarDetalles] equipo.especificaciones:",
-      equipo.especificaciones
-    );
-    console.log(
-      "[window.mostrarDetalles] ======================================="
-    );
-
-    // COMPARACIÓN DETALLADA ENTRE EQUIPOS
-    console.log("[window.mostrarDetalles] ===== COMPARACIÓN DETALLADA =====");
-    console.log("EQUIPO IDENTIFICACIÓN:");
-    console.log("  - ID:", equipo.id);
-    console.log("  - NNE:", equipo.nne);
-    console.log("  - INE:", equipo.ine);
-    console.log("UNIDAD PRINCIPAL:");
-    if (equipo.unidades && equipo.unidades[0]) {
-      const unidad = equipo.unidades[0];
-      console.log("  - Unidad ID:", unidad.id);
-      console.log("  - PersonaId:", unidad.personaId, "(tipo:", typeof unidad.personaId, ")");
-      console.log("  - PersonaId es null:", unidad.personaId === null);
-      console.log("  - PersonaId es undefined:", unidad.personaId === undefined);
-      console.log("  - PersonaId valor exacto:", JSON.stringify(unidad.personaId));
-      if (unidad.persona) {
-        console.log("DATOS DE PERSONA:");
-        console.log("    - id_persona:", unidad.persona.id_persona);
-        console.log("    - nombre:", `"${unidad.persona.nombre}"`, "(longitud:", unidad.persona.nombre?.length, ")");
-        console.log("    - apellido:", `"${unidad.persona.apellido}"`, "(longitud:", unidad.persona.apellido?.length, ")");
-        console.log("    - nombreGrado:", `"${unidad.persona.nombreGrado}"`);
-        console.log("    - nombreArmEsp:", `"${unidad.persona.nombreArmEsp}"`);
-        console.log("    - TODOS los campos de persona:", Object.keys(unidad.persona));
-      }
-    }
-    console.log("[window.mostrarDetalles] ===============================");
+    console.log("[window.mostrarDetalles] Equipo cargado:", equipo.ine, "- NNE:", equipo.nne);
 
     // 2. Poblar campos de la columna Datos Generales
     const elIne = document.getElementById("detalle-ine");
@@ -1760,87 +1713,46 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       equipo.unidades && equipo.unidades[0] && equipo.unidades[0].personaId;
     const persona =
       equipo.unidades && equipo.unidades[0] && equipo.unidades[0].persona;
-    console.log("[window.mostrarDetalles] ===== ANÁLISIS RESPONSABLE =====");
-    console.log("[window.mostrarDetalles] PersonaId:", personaId);
-    console.log("[window.mostrarDetalles] Objeto persona encontrado:", persona);
-    
-    // Debug adicional para entender la estructura completa
-    if (equipo.unidades && equipo.unidades[0]) {
-      console.log("[window.mostrarDetalles] DEBUG - Estructura completa de la primera unidad:");
-      console.log("[window.mostrarDetalles] DEBUG - unidades[0]:", equipo.unidades[0]);
-      console.log("[window.mostrarDetalles] DEBUG - unidades[0].personaId:", equipo.unidades[0].personaId);
-      console.log("[window.mostrarDetalles] DEBUG - unidades[0].idPersona:", equipo.unidades[0].idPersona);
-      console.log("[window.mostrarDetalles] DEBUG - unidades[0].persona:", equipo.unidades[0].persona);
-      console.log("[window.mostrarDetalles] DEBUG - Todas las propiedades de unidades[0]:", Object.keys(equipo.unidades[0]));
-    }
     
     let responsable = "Sin asignar";
 
-    // Solo procesar si hay personaId y persona con datos válidos
-    if (personaId && persona && (persona.nombre?.trim() || persona.apellido?.trim())) {
+    // Verificar si hay un responsable válido asignado
+    // personaId debe ser un número válido (no null, no undefined, no 0)
+    // Y la persona debe tener al menos nombre o apellido con contenido
+    if (personaId && personaId !== null && typeof personaId === 'number' && personaId > 0 && 
+        persona && (persona.nombre?.trim() || persona.apellido?.trim())) {
+      
       const grado = persona.nombreGrado || "";
       const arma = persona.nombreArmEsp || "";
-      const nombre = persona.nombre || "";
-      const apellido = persona.apellido || "";
-      console.log("[window.mostrarDetalles] Componentes del responsable:");
+      const nombre = persona.nombre?.trim() || "";
+      const apellido = persona.apellido?.trim() || "";
+      
+      console.log("[window.mostrarDetalles] Responsable válido encontrado:");
       console.log("  - grado:", grado);
       console.log("  - arma:", arma);
       console.log("  - nombre:", nombre);
       console.log("  - apellido:", apellido);
+      
+      // Construir el nombre completo
       const nombreCompleto = `${grado} ${arma} ${nombre} ${apellido}`
         .replace(/\s+/g, " ")
         .trim();
+      
       if (nombreCompleto) {
         responsable = nombreCompleto;
+        console.log("[window.mostrarDetalles] Responsable asignado:", responsable);
       }
     } else {
-      console.log(
-        "[window.mostrarDetalles] No hay responsable asignado (personaId es null o persona sin datos)"
-      );
-      
-      // DEBUG: Mostrar por qué no se está procesando
-      console.log("[window.mostrarDetalles] DEBUG - Razones por las que no se procesa:");
-      console.log("  - personaId:", personaId, "(válido:", !!personaId, ")");
-      console.log("  - persona:", persona, "(válido:", !!persona, ")");
+      console.log("[window.mostrarDetalles] Sin responsable válido:");
+      console.log("  - personaId:", personaId, "(tipo:", typeof personaId, ")");
+      console.log("  - personaId > 0:", personaId > 0);
       if (persona) {
-        console.log("  - persona.nombre:", `"${persona.nombre}"`, "(trimmed válido:", !!(persona.nombre?.trim()), ")");
-        console.log("  - persona.apellido:", `"${persona.apellido}"`, "(trimmed válido:", !!(persona.apellido?.trim()), ")");
-      }
-      
-      // DEBUG: Intentar buscar datos de persona por otras vías
-      if (equipo.unidades && equipo.unidades[0]) {
-        const unidad = equipo.unidades[0];
-        console.log("[window.mostrarDetalles] DEBUG - Intentando encontrar datos de persona por otras vías:");
-        
-        // Verificar si el personaId está en otra propiedad
-        const altPersonaId = unidad.idPersona || unidad.id_persona || unidad.persona_id;
-        console.log("[window.mostrarDetalles] DEBUG - IDs alternativos encontrados:", {
-          idPersona: unidad.idPersona,
-          id_persona: unidad.id_persona,
-          persona_id: unidad.persona_id
-        });
-        
-        // Verificar si los datos de persona están directamente en la unidad
-        console.log("[window.mostrarDetalles] DEBUG - Propiedades relacionadas con persona en unidad:", {
-          personaNombre: unidad.personaNombre,
-          persona_nombre: unidad.persona_nombre,
-          nombrePersona: unidad.nombrePersona,
-          nombre: unidad.nombre,
-          apellido: unidad.apellido,
-          grado: unidad.grado,
-          nombreGrado: unidad.nombreGrado,
-          armEsp: unidad.armEsp,
-          nombreArmEsp: unidad.nombreArmEsp
-        });
+        console.log("  - nombre con contenido:", !!(persona.nombre?.trim()));
+        console.log("  - apellido con contenido:", !!(persona.apellido?.trim()));
       }
     }
     const elResponsable = document.getElementById("detalle-responsable");
     if (elResponsable) elResponsable.textContent = responsable;
-    console.log(
-      "[window.mostrarDetalles] Responsable final asignado:",
-      responsable
-    );
-    console.log("[window.mostrarDetalles] ================================");
 
     const elUbicacion = document.getElementById("detalle-ubicacion");
     if (elUbicacion) elUbicacion.textContent = equipo.ubicacion || "-";
