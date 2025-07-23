@@ -1751,7 +1751,7 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     let responsable = "Sin asignar";
 
     // Solo procesar si hay personaId y persona con datos válidos
-    if (personaId && persona && (persona.nombre || persona.apellido)) {
+    if (personaId && persona && (persona.nombre?.trim() || persona.apellido?.trim())) {
       const grado = persona.nombreGrado || "";
       const arma = persona.nombreArmEsp || "";
       const nombre = persona.nombre || "";
@@ -1771,6 +1771,15 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       console.log(
         "[window.mostrarDetalles] No hay responsable asignado (personaId es null o persona sin datos)"
       );
+      
+      // DEBUG: Mostrar por qué no se está procesando
+      console.log("[window.mostrarDetalles] DEBUG - Razones por las que no se procesa:");
+      console.log("  - personaId:", personaId, "(válido:", !!personaId, ")");
+      console.log("  - persona:", persona, "(válido:", !!persona, ")");
+      if (persona) {
+        console.log("  - persona.nombre:", `"${persona.nombre}"`, "(trimmed válido:", !!(persona.nombre?.trim()), ")");
+        console.log("  - persona.apellido:", `"${persona.apellido}"`, "(trimmed válido:", !!(persona.apellido?.trim()), ")");
+      }
       
       // DEBUG: Intentar buscar datos de persona por otras vías
       if (equipo.unidades && equipo.unidades[0]) {
