@@ -149,7 +149,30 @@ namespace Backend.Controllers
                     nuevoPersonal.GradoId <= 0 ||
                     nuevoPersonal.ArmEspId <= 0)
                 {
-                    return BadRequest("Todos los campos son obligatorios");
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Todos los campos son obligatorios" 
+                    });
+                }
+
+                // Verificar si ya existe una persona con el mismo DNI
+                var personalExistente = _repository.Mostrar();
+                var personaConMismoDni = personalExistente.FirstOrDefault(p => p.dni == nuevoPersonal.dni);
+                
+                if (personaConMismoDni != null)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = $"El DNI {nuevoPersonal.dni} ya está registrado para {personaConMismoDni.Nombre} {personaConMismoDni.Apellido}. " +
+                                 "Verifique si es la misma persona y editela, o revise que el DNI ingresado sea correcto.",
+                        tipo = "dni_duplicado",
+                        personaExistente = new {
+                            id = personaConMismoDni.Id,
+                            nombre = personaConMismoDni.Nombre,
+                            apellido = personaConMismoDni.Apellido,
+                            dni = personaConMismoDni.dni
+                        }
+                    });
                 }
 
                 // Intenta insertar el nuevo personal (sin el ID)
@@ -163,18 +186,28 @@ namespace Backend.Controllers
                 if (resultado)
                 {
                     // Si la inserción fue exitosa, retorna HTTP 201 (Created)
-                    return StatusCode(201, new { message = "Personal insertado correctamente" });
+                    return StatusCode(201, new { 
+                        success = true, 
+                        message = "Personal insertado correctamente" 
+                    });
                 }
                 else
                 {
                     // Si hubo error, retorna HTTP 400 (Bad Request)
-                    return BadRequest("Error al insertar el personal");
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Error al insertar el personal" 
+                    });
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al insertar personal: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor al insertar el personal" });
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Error interno del servidor al insertar el personal",
+                    details = ex.Message 
+                });
             }
         }
 
@@ -241,6 +274,26 @@ namespace Backend.Controllers
                         success = false, 
                         message = errorMessage,
                         errors = missingFields.ToDictionary(f => f, f => $"El campo {f} es requerido")
+                    });
+                }
+
+                // Verificar si ya existe otra persona con el mismo DNI
+                var personalExistente = _repository.Mostrar();
+                var personaConMismoDni = personalExistente.FirstOrDefault(p => p.dni == personaData.Dni && p.Id != id);
+                
+                if (personaConMismoDni != null)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = $"El DNI {personaData.Dni} ya está registrado para {personaConMismoDni.Nombre} {personaConMismoDni.Apellido}. " +
+                                 "Verifique si es la misma persona o revise que el DNI ingresado sea correcto.",
+                        tipo = "dni_duplicado",
+                        personaExistente = new {
+                            id = personaConMismoDni.Id,
+                            nombre = personaConMismoDni.Nombre,
+                            apellido = personaConMismoDni.Apellido,
+                            dni = personaConMismoDni.dni
+                        }
                     });
                 }
 

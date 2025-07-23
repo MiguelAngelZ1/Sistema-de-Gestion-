@@ -87,12 +87,18 @@ function validarFormulario(persona) {
     errores.push("El DNI debe tener 7 u 8 dígitos");
   } else {
     // Validar DNI duplicado
-    const dniExiste = validarDniDuplicado(
+    const resultadoDni = validarDniDuplicado(
       persona.dni,
       persona.id || persona.id_persona
     );
-    if (dniExiste) {
-      errores.push("Ya existe una persona registrada con este DNI");
+    if (resultadoDni.existe) {
+      const personaExistente = resultadoDni.persona;
+      const nombreCompleto = `${formatearNombre(personaExistente.nombre)} ${formatearApellido(personaExistente.apellido)}`;
+      errores.push(
+        `El DNI ${persona.dni} ya está registrado para ${nombreCompleto}. ` +
+        `Para continuar, puede: 1) Verificar si es la misma persona y editarla, ` +
+        `2) Revisar que el DNI ingresado sea correcto, o 3) Contactar al administrador si hay un error en el sistema.`
+      );
     }
   }
 
@@ -112,7 +118,7 @@ function validarFormulario(persona) {
 // Función para validar si el DNI ya existe en el sistema
 function validarDniDuplicado(dni, personaIdActual = null) {
   if (!listaPersonalActual || listaPersonalActual.length === 0) {
-    return false; // Si no hay lista cargada, no hay duplicados
+    return { existe: false, persona: null }; // Si no hay lista cargada, no hay duplicados
   }
 
   // Buscar si existe alguien con el mismo DNI
@@ -122,7 +128,10 @@ function validarDniDuplicado(dni, personaIdActual = null) {
     return persona.dni === dni && personaId !== personaIdActual;
   });
 
-  return personaConMismoDni !== undefined;
+  return {
+    existe: personaConMismoDni !== undefined,
+    persona: personaConMismoDni || null
+  };
 }
 
 // Función para formatear el nombre del grado
@@ -469,16 +478,29 @@ function configurarModalAgregarPersona() {
 
         if (!response.ok) {
           let errorMessage = "Error al guardar el personal";
+          let tipoError = "general";
           try {
             const errorData = await response.json();
-            errorMessage = errorData.message || errorData.title || errorMessage;
+            console.log("Error recibido del backend:", errorData);
+            
+            if (errorData.tipo === "dni_duplicado") {
+              tipoError = "dni_duplicado";
+              // Usar el mensaje detallado del backend que ya incluye las opciones
+              errorMessage = errorData.message;
+            } else {
+              errorMessage = errorData.message || errorData.title || errorMessage;
+            }
           } catch (parseError) {
             // Si no se puede parsear la respuesta JSON, usar el texto de respuesta
             const errorText = await response.text();
             errorMessage =
               errorText || `Error ${response.status}: ${response.statusText}`;
           }
-          throw new Error(errorMessage);
+          
+          // Crear error con tipo
+          const error = new Error(errorMessage);
+          error.tipo = tipoError;
+          throw error;
         }
 
         // Mostrar mensaje de éxito
@@ -499,11 +521,21 @@ function configurarModalAgregarPersona() {
         await cargarPersonal();
       } catch (error) {
         console.error("Error al guardar el personal:", error);
-        mostrarNotificacion(
-          "error",
-          "Error",
-          error.message || "No se pudo guardar el personal"
-        );
+        
+        // Mostrar notificación específica según el tipo de error
+        if (error.tipo === "dni_duplicado") {
+          mostrarNotificacion(
+            "warning",
+            "DNI Duplicado",
+            error.message
+          );
+        } else {
+          mostrarNotificacion(
+            "error",
+            "Error",
+            error.message || "No se pudo guardar el personal"
+          );
+        }
 
         // Restaurar el botón en caso de error
         const btnGuardar = form.querySelector('button[type="submit"]');
@@ -804,18 +836,30 @@ function configurarEventosModal() {
 
         if (!response.ok) {
           let errorMessage = "Error al guardar los datos";
+          let tipoError = "general";
           try {
             const errorData = await response.json();
             console.error("Error del servidor:", errorData);
-            errorMessage = errorData.message || errorMessage;
-            if (errorData.errors) {
-              errorMessage += " " + Object.values(errorData.errors).join(" ");
+            
+            if (errorData.tipo === "dni_duplicado") {
+              tipoError = "dni_duplicado";
+              // Usar el mensaje detallado del backend que ya incluye las opciones
+              errorMessage = errorData.message;
+            } else {
+              errorMessage = errorData.message || errorMessage;
+              if (errorData.errors) {
+                errorMessage += " " + Object.values(errorData.errors).join(" ");
+              }
             }
           } catch (e) {
             console.error("Error al procesar la respuesta de error:", e);
             errorMessage = `Error ${response.status}: ${response.statusText}`;
           }
-          throw new Error(errorMessage);
+          
+          // Crear error con tipo
+          const error = new Error(errorMessage);
+          error.tipo = tipoError;
+          throw error;
         }
 
         // Mostrar notificación de éxito
@@ -837,11 +881,21 @@ function configurarEventosModal() {
         await cargarPersonal();
       } catch (error) {
         console.error("Error al guardar:", error);
-        mostrarNotificacion(
-          "error",
-          "Error",
-          error.message || "Ocurrió un error al guardar los datos"
-        );
+        
+        // Mostrar notificación específica según el tipo de error
+        if (error.tipo === "dni_duplicado") {
+          mostrarNotificacion(
+            "warning",
+            "DNI Duplicado",
+            error.message
+          );
+        } else {
+          mostrarNotificacion(
+            "error",
+            "Error",
+            error.message || "Ocurrió un error al guardar los datos"
+          );
+        }
       } finally {
         btnGuardar.disabled = false;
         btnGuardar.innerHTML = originalText;

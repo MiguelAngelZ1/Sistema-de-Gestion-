@@ -179,7 +179,12 @@ class ArmEspService {
           responseData.message ||
           responseData.error ||
           `Error ${response.status}: ${response.statusText}`;
-        throw new Error(errorMessage);
+        
+        // Crear un error con información adicional
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.data = responseData;
+        throw error;
       }
 
       console.log("Eliminación exitosa:", responseData);
@@ -581,15 +586,23 @@ class ArmEspUI {
           loadingSwal.close();
         }
 
+        // Mostrar diferentes tipos de notificación según el error
+        let iconType = "error";
+        let titleText = "Error";
+        
+        // Si es un error 400 (Bad Request), probablemente sea por personal asociado
+        if (error.status === 400) {
+          iconType = "warning";
+          titleText = "No se puede eliminar";
+        }
+
         // Mostrar notificación de error
         await Swal.fire({
-          icon: "error",
-          title: "Error",
-          text:
-            error.message ||
-            "Ocurrió un error al intentar eliminar el registro",
+          icon: iconType,
+          title: titleText,
+          text: error.message || "Ocurrió un error al intentar eliminar el registro",
           confirmButtonText: "Entendido",
-          timer: 3000,
+          timer: iconType === "warning" ? 5000 : 3000, // Más tiempo para warnings
           timerProgressBar: true,
           showConfirmButton: false,
         });

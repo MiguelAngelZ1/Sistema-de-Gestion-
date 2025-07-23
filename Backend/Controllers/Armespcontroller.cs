@@ -3,6 +3,7 @@ using Backend.Data;
 using Backend.Models;
 using System;
 using System.Collections.Generic;
+using Npgsql;
 
 namespace Backend.Controllers
 {
@@ -47,7 +48,32 @@ namespace Backend.Controllers
                     });
                 }
 
-                // Intentar eliminar el registro
+                // Usar la conexión configurada correctamente
+                var dbConnection = new DB_Conexion();
+                var connectionString = dbConnection.GetConnectionString();
+                
+                // Primero verificamos si existen personas asociadas a esta arma/especialidad
+                using (var connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM persona WHERE id_armesp = @id", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        var result = cmd.ExecuteScalar();
+                        var count = result != null ? Convert.ToInt64(result) : 0L;
+                        
+                        if (count > 0)
+                        {
+                            // Si hay personas asociadas, no permitir la eliminación
+                            return BadRequest(new { 
+                                success = false, 
+                                message = $"No se puede eliminar el arma/especialidad porque hay {count} persona(s) asociada(s). Primero debe reasignar o eliminar el personal asociado." 
+                            });
+                        }
+                    }
+                }
+
+                // Si no hay personas asociadas, proceder con la eliminación
                 bool eliminado = _repository.Eliminar(id);
                 
                 if (eliminado)
