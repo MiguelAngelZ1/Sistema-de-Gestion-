@@ -177,21 +177,21 @@ class ArmEspService {
         console.error("Error en la respuesta:", responseData);
         console.error("Status code:", response.status);
         console.error("Response data completa:", responseData);
-        
+
         const errorMessage =
           responseData.message ||
           responseData.error ||
           `Error ${response.status}: ${response.statusText}`;
-        
+
         // Crear un error con información adicional
         const error = new Error(errorMessage);
         error.status = response.status;
         error.data = responseData;
-        
+
         console.error("Error creado:", error);
         console.error("Error status:", error.status);
         console.error("Error message:", error.message);
-        
+
         throw error;
       }
 
@@ -568,14 +568,13 @@ class ArmEspUI {
         toast: true,
         position: "top-end",
       });
-
     } catch (error) {
       console.error("Error al eliminar el registro:", error);
       console.error("Error completo:", {
         message: error.message,
         status: error.status,
         data: error.data,
-        stack: error.stack
+        stack: error.stack,
       });
 
       // Cerrar el diálogo de carga si hay un error
@@ -586,7 +585,7 @@ class ArmEspUI {
       // Mostrar diferentes tipos de notificación según el error
       let iconType = "error";
       let titleText = "Error";
-      
+
       // Si es un error 400 (Bad Request), probablemente sea por personal asociado
       if (error.status === 400) {
         console.log("Detectado error 400 - Personal asociado");
@@ -597,14 +596,15 @@ class ArmEspUI {
       console.log("Mostrando notificación:", {
         icon: iconType,
         title: titleText,
-        message: error.message
+        message: error.message,
       });
 
       // Mostrar notificación de error
       await Swal.fire({
         icon: iconType,
         title: titleText,
-        text: error.message || "Ocurrió un error al intentar eliminar el registro",
+        text:
+          error.message || "Ocurrió un error al intentar eliminar el registro",
         confirmButtonText: "Entendido",
         timer: iconType === "warning" ? 6000 : 4000, // Más tiempo para warnings
         timerProgressBar: true,
