@@ -312,11 +312,20 @@ async function obtenerEquipos() {
  * Obtiene la lista de estados de equipo y la carga en el select correspondiente.
  */
 async function cargarEstadosParaModal() {
+  console.log("[cargarEstadosParaModal] Iniciando carga de estados");
   const select = document.getElementById("crear-estado-equipo");
+  if (!select) {
+    console.error("[cargarEstadosParaModal] No se encontró el select crear-estado-equipo");
+    return;
+  }
+  
   try {
+    console.log("[cargarEstadosParaModal] Consultando API:", API_URL_ESTADOS);
     const estados = await fetch(API_URL_ESTADOS).then((res) =>
       res.ok ? res.json() : Promise.reject(res)
     );
+    console.log("[cargarEstadosParaModal] Estados obtenidos:", estados);
+    
     select.innerHTML =
       '<option value="" selected disabled>Seleccionar un estado...</option>';
     estados.forEach((estado) => {
@@ -324,9 +333,11 @@ async function cargarEstadosParaModal() {
       option.value = estado.id;
       option.textContent = estado.nombre;
       select.appendChild(option);
+      console.log(`[cargarEstadosParaModal] Agregado estado: ${estado.nombre} (ID: ${estado.id})`);
     });
+    console.log("[cargarEstadosParaModal] Carga completada. Total opciones:", select.options.length);
   } catch (error) {
-    console.error("Error al cargar los estados de equipo:", error);
+    console.error("[cargarEstadosParaModal] Error al cargar los estados de equipo:", error);
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }
@@ -389,15 +400,24 @@ async function obtenerTodoElPersonal() {
  * Abre el modal para crear un nuevo equipo, reseteando el formulario.
  */
 async function abrirModalCrearModelo() {
+  console.log("[abrirModalCrearModelo] Iniciando apertura del modal");
   const form = document.getElementById("formCrearModelo");
   form.reset();
   document.getElementById("especificaciones-dinamicas-container").innerHTML =
     "";
   agregarCampoEspecificacion();
 
+  console.log("[abrirModalCrearModelo] Cargando datos de estados y personal...");
   // Cargar datos para los desplegables ANTES de mostrar el modal
-  await Promise.all([cargarEstadosParaModal(), cargarPersonalParaModal()]);
-
+  try {
+    await Promise.all([cargarEstadosParaModal(), cargarPersonalParaModal()]);
+    console.log("[abrirModalCrearModelo] Datos cargados correctamente");
+  } catch (error) {
+    console.error("[abrirModalCrearModelo] Error al cargar datos:", error);
+    // Aún así mostramos el modal, aunque los selects puedan tener errores
+  }
+  
+  console.log("[abrirModalCrearModelo] Mostrando modal");
   modalCrearModelo.show();
 }
 
