@@ -336,11 +336,20 @@ async function cargarEstadosParaModal() {
  * Obtiene la lista de personal y la carga en el select de responsables.
  */
 async function cargarPersonalParaModal() {
+  console.log("[cargarPersonalParaModal] Iniciando carga de personal");
   const select = document.getElementById("unidad-responsable");
+  if (!select) {
+    console.error("[cargarPersonalParaModal] No se encontró el select unidad-responsable");
+    return;
+  }
+  
   try {
+    console.log("[cargarPersonalParaModal] Consultando API:", API_URL_PERSONA);
     const personal = await fetch(API_URL_PERSONA).then((res) =>
       res.ok ? res.json() : Promise.reject(res)
     );
+    console.log("[cargarPersonalParaModal] Personal obtenido:", personal);
+    
     select.innerHTML = '<option value="">Seleccionar responsable...</option>'; // Opción para no asignar a nadie
     personal.forEach((p) => {
       const option = document.createElement("option");
@@ -349,9 +358,11 @@ async function cargarPersonalParaModal() {
         p.nombre
       } ${p.apellido}`.trim();
       select.appendChild(option);
+      console.log(`[cargarPersonalParaModal] Agregada opción: ${option.textContent} (ID: ${option.value})`);
     });
+    console.log("[cargarPersonalParaModal] Carga completada. Total opciones:", select.options.length);
   } catch (error) {
-    console.error("Error al cargar el personal:", error);
+    console.error("[cargarPersonalParaModal] Error al cargar el personal:", error);
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }
@@ -633,7 +644,7 @@ async function cargarEstadosEquipos() {
 /**
  * Abre el modal para agregar una nueva unidad, asegurándose de que el ID del equipo esté establecido.
  */
-function abrirModalAgregarUnidad() {
+async function abrirModalAgregarUnidad() {
   if (!equipoIdActual) {
     mostrarAlerta("No se ha seleccionado un modelo de equipo válido.", "error");
     return;
@@ -641,6 +652,10 @@ function abrirModalAgregarUnidad() {
   const form = document.getElementById("formAgregarUnidad");
   form.reset();
   document.getElementById("unidad-equipo-id").value = equipoIdActual;
+  
+  // Cargar el personal disponible para el select
+  await cargarPersonalParaModal();
+  
   modalAgregarUnidad.show();
 }
 
