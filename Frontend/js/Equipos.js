@@ -3321,11 +3321,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "btn-abrir-modal-crear-modelo"
   );
   if (btnAbrirModalCrearModelo) {
-    btnAbrirModalCrearModelo.addEventListener("click", function () {
-      if (window.modalCrearModelo) {
-        window.modalCrearModelo.show();
-      }
-    });
+    btnAbrirModalCrearModelo.addEventListener("click", abrirModalCrearModelo);
     console.log(
       "[DOMContentLoaded] Event listener agregado para btn-abrir-modal-crear-modelo"
     );
