@@ -199,6 +199,11 @@ function configurarModalAgregarPersona() {
 
   // Función para cargar las armas/especialidades en el select
   const cargarArmasEnSelect = () => {
+    console.log("[cargarArmasEnSelect] Iniciando carga en select");
+    console.log("[cargarArmasEnSelect] window.armEsp disponible:", window.armEsp);
+    console.log("[cargarArmasEnSelect] Es array:", Array.isArray(window.armEsp));
+    console.log("[cargarArmasEnSelect] Longitud:", window.armEsp ? window.armEsp.length : "undefined");
+    
     const selectArmEsp = modal.querySelector("#nuevoArmEsp");
     if (selectArmEsp && window.armEsp && Array.isArray(window.armEsp)) {
       // Limpiar opciones existentes
@@ -209,6 +214,7 @@ function configurarModalAgregarPersona() {
         // No hay armas/especialidades disponibles
         selectArmEsp.innerHTML =
           '<option value="" disabled>⚠️ No hay armas/especialidades disponibles</option>';
+        console.log("[cargarArmasEnSelect] No hay armas/especialidades disponibles");
         return false; // Indica que no hay datos
       }
 
@@ -217,19 +223,42 @@ function configurarModalAgregarPersona() {
         (a, b) => parseInt(a.id_armesp) - parseInt(b.id_armesp)
       );
 
+      console.log("[cargarArmasEnSelect] Armas/especialidades ordenadas:", armEspOrdenadas);
+
       // Agregar opciones al select
       armEspOrdenadas.forEach((arma) => {
         const option = document.createElement("option");
         option.value = arma.id_armesp; // Usar id_armesp en lugar de id
 
-        // Usar los nombres de propiedades correctos
-        const textoMostrar =
-          arma.arma_especialidad || arma.nombre || `Arma/Esp ${arma.id_armesp}`;
+        // Usar los nombres de propiedades correctos del modelo ArmEsp
+        const abreviatura = arma.abreviatura || "";
+        const nombreCompleto = arma.armesp_completo || "";
+        
+        // Mostrar: "Abreviatura - Nombre Completo" o solo "Abreviatura" si no hay nombre completo
+        let textoMostrar;
+        if (abreviatura && nombreCompleto && nombreCompleto.trim() !== "") {
+          textoMostrar = `${abreviatura.trim()} - ${nombreCompleto.trim()}`;
+        } else if (abreviatura) {
+          textoMostrar = abreviatura.trim();
+        } else if (nombreCompleto) {
+          textoMostrar = nombreCompleto.trim();
+        } else {
+          textoMostrar = `Arma/Esp ${arma.id_armesp}`;
+        }
+        
+        console.log(`[cargarArmasEnSelect] Opción agregada: ${textoMostrar} (ID: ${arma.id_armesp})`);
         option.textContent = textoMostrar;
         selectArmEsp.appendChild(option);
       });
+      
+      console.log("[cargarArmasEnSelect] Select cargado exitosamente");
       return true; // Indica que hay datos disponibles
     }
+    
+    console.log("[cargarArmasEnSelect] Error: select no encontrado o window.armEsp no válido");
+    console.log("- selectArmEsp:", !!selectArmEsp);
+    console.log("- window.armEsp:", !!window.armEsp);
+    console.log("- es array:", Array.isArray(window.armEsp));
     return false;
   };
 
@@ -282,8 +311,15 @@ function configurarModalAgregarPersona() {
   };
 
   // Evento cuando se muestra el modal
-  modal.addEventListener("shown.bs.modal", () => {
+  modal.addEventListener("shown.bs.modal", async () => {
     console.log("Modal de agregar persona abierto, cargando datos...");
+
+    // Cargar armas/especialidades frescos desde el servidor
+    try {
+      await cargarArmEsp();
+    } catch (error) {
+      console.error("Error al cargar armas/especialidades en el modal:", error);
+    }
 
     // Verificar y cargar datos
     const gradosDisponibles = cargarGradosEnSelect();
