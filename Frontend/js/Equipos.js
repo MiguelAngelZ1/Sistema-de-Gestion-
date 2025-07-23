@@ -1737,6 +1737,17 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     console.log("[window.mostrarDetalles] ===== ANÁLISIS RESPONSABLE =====");
     console.log("[window.mostrarDetalles] PersonaId:", personaId);
     console.log("[window.mostrarDetalles] Objeto persona encontrado:", persona);
+    
+    // Debug adicional para entender la estructura completa
+    if (equipo.unidades && equipo.unidades[0]) {
+      console.log("[window.mostrarDetalles] DEBUG - Estructura completa de la primera unidad:");
+      console.log("[window.mostrarDetalles] DEBUG - unidades[0]:", equipo.unidades[0]);
+      console.log("[window.mostrarDetalles] DEBUG - unidades[0].personaId:", equipo.unidades[0].personaId);
+      console.log("[window.mostrarDetalles] DEBUG - unidades[0].idPersona:", equipo.unidades[0].idPersona);
+      console.log("[window.mostrarDetalles] DEBUG - unidades[0].persona:", equipo.unidades[0].persona);
+      console.log("[window.mostrarDetalles] DEBUG - Todas las propiedades de unidades[0]:", Object.keys(equipo.unidades[0]));
+    }
+    
     let responsable = "Sin asignar";
 
     // Solo procesar si hay personaId y persona con datos válidos
@@ -1760,6 +1771,33 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       console.log(
         "[window.mostrarDetalles] No hay responsable asignado (personaId es null o persona sin datos)"
       );
+      
+      // DEBUG: Intentar buscar datos de persona por otras vías
+      if (equipo.unidades && equipo.unidades[0]) {
+        const unidad = equipo.unidades[0];
+        console.log("[window.mostrarDetalles] DEBUG - Intentando encontrar datos de persona por otras vías:");
+        
+        // Verificar si el personaId está en otra propiedad
+        const altPersonaId = unidad.idPersona || unidad.id_persona || unidad.persona_id;
+        console.log("[window.mostrarDetalles] DEBUG - IDs alternativos encontrados:", {
+          idPersona: unidad.idPersona,
+          id_persona: unidad.id_persona,
+          persona_id: unidad.persona_id
+        });
+        
+        // Verificar si los datos de persona están directamente en la unidad
+        console.log("[window.mostrarDetalles] DEBUG - Propiedades relacionadas con persona en unidad:", {
+          personaNombre: unidad.personaNombre,
+          persona_nombre: unidad.persona_nombre,
+          nombrePersona: unidad.nombrePersona,
+          nombre: unidad.nombre,
+          apellido: unidad.apellido,
+          grado: unidad.grado,
+          nombreGrado: unidad.nombreGrado,
+          armEsp: unidad.armEsp,
+          nombreArmEsp: unidad.nombreArmEsp
+        });
+      }
     }
     const elResponsable = document.getElementById("detalle-responsable");
     if (elResponsable) elResponsable.textContent = responsable;
