@@ -512,6 +512,18 @@ async function guardarModelo(event) {
   const estadoEquipoId = document.getElementById("crear-estado-equipo").value;
   const ubicacion = document.getElementById("crear-ubicacion").value.trim();
 
+  // Debug: imprimir valores
+  console.log("Valores capturados:", {
+    nne: `"${nne}"`,
+    ni: `"${ni}"`,
+    nroSerie: `"${nroSerie}"`,
+    marca: `"${marca}"`,
+    modelo: `"${modelo}"`,
+    tipoEquipoId: `"${tipoEquipoId}"`,
+    estadoEquipoId: `"${estadoEquipoId}"`,
+    ubicacion: `"${ubicacion}"`
+  });
+
   // Validaciones obligatorias
   const errores = [];
 
@@ -592,21 +604,24 @@ async function guardarModelo(event) {
     }
   });
 
-  // 2. Recolectar datos de la Primera Unidad
-  const primeraUnidad = {
-    NumeroSerie: nroSerie,
-    EstadoId: parseInt(estadoEquipoId, 10),
-    IdPersona:
-      parseInt(document.getElementById("unidad-responsable").value, 10) || null,
-  };
+  // 2. Recolectar datos de la Primera Unidad (solo si hay número de serie)
+  let primeraUnidad = null;
+  if (nroSerie) {
+    primeraUnidad = {
+      NumeroSerie: nroSerie,
+      EstadoId: parseInt(estadoEquipoId, 10),
+      IdPersona:
+        parseInt(document.getElementById("unidad-responsable").value, 10) || null,
+    };
+  }
 
   // 3. Recolectar datos del Modelo
   const modeloData = {
-    Ine: document.getElementById("crear-ine").value.trim(),
-    Nne: nne,
-    NI: ni,
+    Ine: document.getElementById("crear-ine").value.trim() || null,
+    Nne: nne || null,
+    NI: ni || null,
     TipoEquipoId: tipoEquipoId,
-    Observaciones: document.getElementById("crear-observaciones").value.trim(),
+    Observaciones: document.getElementById("crear-observaciones").value.trim() || null,
     Marca: marca,
     Modelo: modelo,
     Ubicacion: ubicacion,
@@ -642,9 +657,13 @@ async function guardarModelo(event) {
     if (window.modalCrearModelo) {
       window.modalCrearModelo.hide();
     }
+    
+    // Determinar qué identificador usar para el mensaje
+    const identificador = nne || ni || nroSerie || "nuevo equipo";
+    
     Swal.fire({
       title: "✅ ¡Equipo Creado!",
-      text: `El equipo ${nne} ha sido registrado exitosamente`,
+      text: `El equipo ${identificador} ha sido registrado exitosamente`,
       icon: "success",
       confirmButtonText: "Continuar",
       confirmButtonColor: "#28a745",

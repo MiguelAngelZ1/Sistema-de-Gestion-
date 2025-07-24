@@ -253,9 +253,35 @@ namespace Backend.Data
                         return await ObtenerEquipoPorNroSerie(data.PrimeraUnidad.NumeroSerie);
                     }
                     
-                    // Como último recurso, obtener por ID (aunque esto no debería pasar)
-                    Console.WriteLine($"[LOG] Obteniendo por ID como último recurso: {equipoId}");
-                    return await ObtenerEquipoDetalladoPorNNE($"{equipoId}"); // Esto puede fallar, pero es mejor que null
+                    // Como último recurso, crear un objeto mínimo con los datos que tenemos
+                    Console.WriteLine($"[LOG] Creando objeto de respuesta con datos disponibles");
+                    return new Equipo
+                    {
+                        Id = equipoId,
+                        Ine = data.Ine ?? string.Empty,
+                        NNE = data.Nne ?? string.Empty,
+                        NI = data.NI ?? string.Empty,
+                        TipoEquipoId = !string.IsNullOrWhiteSpace(data.TipoEquipoId) ? data.TipoEquipoId[0] : 'G',
+                        Marca = data.Marca,
+                        Modelo = data.Modelo,
+                        Ubicacion = data.Ubicacion,
+                        Observaciones = data.Observaciones ?? string.Empty,
+                        Especificaciones = data.Especificaciones?.Select(e => new EspecificacionEquipo 
+                        { 
+                            Clave = e.Clave, 
+                            Valor = e.Valor 
+                        }).ToList() ?? new List<EspecificacionEquipo>(),
+                        Unidades = data.PrimeraUnidad != null ? new List<UnidadEquipo> 
+                        { 
+                            new UnidadEquipo 
+                            { 
+                                NroSerie = data.PrimeraUnidad.NumeroSerie ?? string.Empty,
+                                EstadoId = data.PrimeraUnidad.EstadoId,
+                                PersonaId = data.PrimeraUnidad.IdPersona
+                            } 
+                        } : new List<UnidadEquipo>(),
+                        CantidadUnidades = data.PrimeraUnidad != null ? 1 : 0
+                    };
                 }
                 catch (Exception ex)
                 {
