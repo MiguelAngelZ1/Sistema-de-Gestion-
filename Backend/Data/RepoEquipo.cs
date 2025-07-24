@@ -149,12 +149,13 @@ namespace Backend.Data
             {
                 try
                 {
-                    Console.WriteLine($"[LOG] Iniciando CrearEquipoCompleto con NNE: {data.Nne}");
+                    Console.WriteLine($"[LOG] Iniciando CrearEquipoCompleto con NI: {data.NI}");
                     
                     // Log de todos los datos recibidos
                     Console.WriteLine($"[LOG] === DATOS RECIBIDOS ===");
                     Console.WriteLine($"[LOG] Ine: '{data.Ine}'");
                     Console.WriteLine($"[LOG] Nne: '{data.Nne}'");
+                    Console.WriteLine($"[LOG] NI: '{data.NI}'");
                     Console.WriteLine($"[LOG] TipoEquipoId: '{data.TipoEquipoId}' (tipo: {data.TipoEquipoId?.GetType().Name})");
                     Console.WriteLine($"[LOG] Marca: '{data.Marca}'");
                     Console.WriteLine($"[LOG] Modelo: '{data.Modelo}'");
@@ -171,19 +172,19 @@ namespace Backend.Data
                     Console.WriteLine($"[LOG] ========================");
                     
                     // Validaciones básicas
-                    if (string.IsNullOrWhiteSpace(data.Nne))
-                    {
-                        throw new ArgumentException("El NNE es obligatorio");
-                    }
-                    
                     if (string.IsNullOrWhiteSpace(data.TipoEquipoId))
                     {
                         throw new ArgumentException("El tipo de equipo es obligatorio");
                     }
                     
-                    if (data.PrimeraUnidad == null || string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie))
+                    // Validar que al menos uno de los identificadores esté presente
+                    bool tieneNNE = !string.IsNullOrWhiteSpace(data.Nne);
+                    bool tieneNI = !string.IsNullOrWhiteSpace(data.NI);
+                    bool tieneNumeroSerie = data.PrimeraUnidad != null && !string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie);
+                    
+                    if (!tieneNNE && !tieneNI && !tieneNumeroSerie)
                     {
-                        throw new ArgumentException("Los datos de la primera unidad son obligatorios");
+                        throw new ArgumentException("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie");
                     }
 
                     // 1. Insertar el equipo (modelo) y obtener su ID
@@ -227,9 +228,34 @@ namespace Backend.Data
                     transaction.Commit();
                     Console.WriteLine("[LOG] Transacción confirmada");
 
-                    // 4. Devolver el objeto completo recién creado
-                    Console.WriteLine($"[LOG] Obteniendo equipo detallado para NNE: {data.Nne}");
-                    return await ObtenerEquipoDetalladoPorNNE(data.Nne!);
+                    // 4. Devolver el objeto completo recién creado usando el identificador disponible
+                    Console.WriteLine($"[LOG] Obteniendo equipo detallado recién creado");
+                    
+                    // Intentar obtener por NNE primero (si está disponible)
+                    if (!string.IsNullOrWhiteSpace(data.Nne))
+                    {
+                        Console.WriteLine($"[LOG] Obteniendo por NNE: {data.Nne}");
+                        return await ObtenerEquipoDetalladoPorNNE(data.Nne);
+                    }
+                    
+                    // Si no hay NNE, intentar por NI
+                    if (!string.IsNullOrWhiteSpace(data.NI))
+                    {
+                        Console.WriteLine($"[LOG] Obteniendo por NI: {data.NI}");
+                        var equipoPorNI = await ObtenerEquipoPorNI(data.NI);
+                        if (equipoPorNI != null) return equipoPorNI;
+                    }
+                    
+                    // Si no hay NNE ni NI, intentar por número de serie
+                    if (data.PrimeraUnidad != null && !string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie))
+                    {
+                        Console.WriteLine($"[LOG] Obteniendo por Número de Serie: {data.PrimeraUnidad.NumeroSerie}");
+                        return await ObtenerEquipoPorNroSerie(data.PrimeraUnidad.NumeroSerie);
+                    }
+                    
+                    // Como último recurso, obtener por ID (aunque esto no debería pasar)
+                    Console.WriteLine($"[LOG] Obteniendo por ID como último recurso: {equipoId}");
+                    return await ObtenerEquipoDetalladoPorNNE($"{equipoId}"); // Esto puede fallar, pero es mejor que null
                 }
                 catch (Exception ex)
                 {

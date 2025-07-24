@@ -62,6 +62,24 @@ namespace Backend.Data
                         }
                     }
 
+                    // Verificar si la columna 'nne' permite NULL
+                    var checkNneNullableQuery = "SELECT is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND TABLE_NAME = 'equipos' AND COLUMN_NAME = 'nne';";
+                    using (var checkCmd = new NpgsqlCommand(checkNneNullableQuery, connection))
+                    {
+                        var isNullable = checkCmd.ExecuteScalar()?.ToString();
+                        if (isNullable == "NO")
+                        {
+                            // Cambiar la columna 'nne' para permitir NULL
+                            Console.WriteLine("Modificando columna 'nne' para permitir valores NULL...");
+                            var alterNneQuery = "ALTER TABLE equipos ALTER COLUMN nne DROP NOT NULL;";
+                            using (var alterCmd = new NpgsqlCommand(alterNneQuery, connection))
+                            {
+                                alterCmd.ExecuteNonQuery();
+                                Console.WriteLine("Migración completada: La columna 'nne' ahora permite valores NULL.");
+                            }
+                        }
+                    }
+
                     Console.WriteLine("Todas las migraciones completadas exitosamente.");
                 }
                 catch (Exception ex)
@@ -115,7 +133,7 @@ namespace Backend.Data
                 -- Crear tabla equipos (estructura original)
                 CREATE TABLE IF NOT EXISTS equipos (
                     id SERIAL PRIMARY KEY,
-                    nne VARCHAR(50) NOT NULL,
+                    nne VARCHAR(50) NULL,
                     ni VARCHAR(50) NULL,
                     id_tipo_equipo VARCHAR(1) NOT NULL REFERENCES tipos_equipo(id),
                     marca VARCHAR(100),

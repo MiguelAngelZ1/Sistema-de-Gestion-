@@ -117,10 +117,21 @@ namespace Backend.Controllers
                 var json = System.Text.Json.JsonSerializer.Serialize(data);
                 Console.WriteLine(json);
 
-                if (data == null || string.IsNullOrWhiteSpace(data.Nne) || data.PrimeraUnidad == null || string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie))
+                if (data == null)
                 {
-                    Console.WriteLine("[LOG] BAD REQUEST por datos nulos/incompletos");
-                    return BadRequest("Los datos para el alta completa del equipo son inválidos o están incompletos.");
+                    Console.WriteLine("[LOG] BAD REQUEST por datos nulos");
+                    return BadRequest("Los datos del equipo son requeridos.");
+                }
+
+                // Validar que al menos uno de los tres identificadores esté presente
+                bool tieneNNE = !string.IsNullOrWhiteSpace(data.Nne);
+                bool tieneNI = !string.IsNullOrWhiteSpace(data.NI);
+                bool tieneNumeroSerie = data.PrimeraUnidad != null && !string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie);
+                
+                if (!tieneNNE && !tieneNI && !tieneNumeroSerie)
+                {
+                    Console.WriteLine("[LOG] BAD REQUEST - debe tener al menos uno de los identificadores");
+                    return BadRequest("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie.");
                 }
 
                 var nuevoEquipo = await _repository.CrearEquipoCompleto(data);

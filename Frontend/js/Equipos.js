@@ -515,15 +515,11 @@ async function guardarModelo(event) {
   // Validaciones obligatorias
   const errores = [];
 
-  if (!nne) {
-    errores.push("El número NNE es obligatorio para las operaciones CRUD");
+  // Al menos uno de los tres identificadores debe estar presente
+  if (!nne && !ni && !nroSerie) {
+    errores.push("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie");
   }
-  if (!ni) {
-    errores.push("El número de identificación (NI) es obligatorio");
-  }
-  if (!nroSerie) {
-    errores.push("El número de serie es obligatorio para las operaciones CRUD");
-  }
+
   if (!marca) {
     errores.push("La marca del equipo es obligatoria");
   }
@@ -540,12 +536,12 @@ async function guardarModelo(event) {
     errores.push("La ubicación del equipo es obligatoria");
   }
 
-  // Validación de formato NNE (ejemplo: números)
+  // Validación de formato NNE solo si se proporciona
   if (nne && !/^\d+$/.test(nne)) {
     errores.push("El NNE debe contener solo números");
   }
 
-  // Validación de longitud mínima
+  // Validación de longitud mínima solo si se proporciona
   if (nne && nne.length < 8) {
     errores.push("El NNE debe tener al menos 8 dígitos");
   }
