@@ -1057,6 +1057,28 @@
   }
 }
 
+/* Ajustes específicos para el modal de crear equipo */
+#modalCrearModelo .modal-dialog {
+  max-width: 900px;
+}
+
+#modalCrearModelo .card {
+  margin-bottom: 1.5rem;
+}
+
+#modalCrearModelo .card-body {
+  padding: 1.5rem;
+}
+
+#modalCrearModelo .row.g-3 {
+  margin-top: 0;
+}
+
+#modalCrearModelo .col-md-6 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
 /* Estados de validación mejorados */
 .was-validated .form-control:valid,
 .form-control.is-valid {
