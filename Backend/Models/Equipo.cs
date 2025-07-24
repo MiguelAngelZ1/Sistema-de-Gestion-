@@ -9,6 +9,7 @@ namespace Backend.Models
         public int Id { get; set; }
         public string NNE { get; set; } = string.Empty;
         public string Ine { get; set; } = string.Empty; // Mapea la columna 'ine'
+        public string NI { get; set; } = string.Empty; // Número de Identificación
         public char TipoEquipoId { get; set; }
         public string? TipoNombre { get; set; } // Para mostrar en el frontend
         public string? Marca { get; set; }

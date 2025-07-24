@@ -6,6 +6,7 @@ namespace Backend.Models.Dtos
     {
         public string Ine { get; set; } = string.Empty;
         public string? Nne { get; set; } = string.Empty;
+        public string NI { get; set; } = string.Empty;
         public string TipoEquipoId { get; set; } = string.Empty;
         public string Marca { get; set; } = string.Empty;
         public string Modelo { get; set; } = string.Empty;

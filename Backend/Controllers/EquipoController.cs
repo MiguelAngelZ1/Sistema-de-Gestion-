@@ -282,5 +282,93 @@ namespace Backend.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtiene el detalle de un equipo por su NI (Número de Identificación).
+        /// </summary>
+        [HttpGet("ni/{ni}")]
+        public async Task<IActionResult> GetEquipoPorNI(string ni)
+        {
+            try
+            {
+                var equipo = await _repository.ObtenerEquipoPorNI(ni);
+                if (equipo == null)
+                {
+                    return NotFound("No se encontró el equipo con el NI especificado.");
+                }
+                return Ok(equipo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el resumen de inventario por NI (Número de Identificación).
+        /// </summary>
+        [HttpGet("ni/{ni}/inventarioresumen")]
+        public async Task<IActionResult> GetInventarioResumenPorNI(string ni)
+        {
+            try
+            {
+                var resumen = await _repository.ObtenerResumenInventarioPorNI(ni);
+                if (resumen == null)
+                {
+                    return NotFound("No se encontró el equipo con el NI especificado.");
+                }
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Actualiza un modelo de equipo por su NI (Número de Identificación).
+        /// </summary>
+        [HttpPut("ni/{ni}")]
+        public async Task<IActionResult> ActualizarEquipoPorNI(string ni, [FromBody] EquipoAltaCompletaDto data)
+        {
+            try
+            {
+                Console.WriteLine($"[LOG] ActualizarEquipoPorNI - ni: {ni}");
+                Console.WriteLine($"[LOG] ActualizarEquipoPorNI - data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+                
+                var actualizado = await _repository.ActualizarEquipoPorNI(ni, data);
+                if (!actualizado)
+                {
+                    return NotFound("No se encontró el equipo para actualizar.");
+                }
+                return Ok(new { message = "Equipo actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] ActualizarEquipoPorNI: {ex.Message}");
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Elimina un modelo de equipo y todas sus unidades y especificaciones por su NI.
+        /// </summary>
+        [HttpDelete("ni/{ni}")]
+        public async Task<IActionResult> DeleteEquipoPorNI(string ni)
+        {
+            try
+            {
+                var success = await _repository.EliminarEquipoPorNI(ni);
+                if (success)
+                {
+                    return Ok(new { message = "Modelo de equipo y todas sus unidades han sido eliminados." });
+                }
+                return NotFound("No se encontró el modelo de equipo para eliminar.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
     }
 }

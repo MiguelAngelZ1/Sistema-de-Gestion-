@@ -504,6 +504,7 @@ async function guardarModelo(event) {
 
   // VALIDACIONES CRÍTICAS ANTES DE PROCESAR
   const nne = document.getElementById("crear-nne").value.trim();
+  const ni = document.getElementById("crear-ni").value.trim();
   const nroSerie = document.getElementById("crear-nro-serie").value.trim();
   const marca = document.getElementById("crear-marca").value.trim();
   const modelo = document.getElementById("crear-modelo").value.trim();
@@ -516,6 +517,9 @@ async function guardarModelo(event) {
 
   if (!nne) {
     errores.push("El número NNE es obligatorio para las operaciones CRUD");
+  }
+  if (!ni) {
+    errores.push("El número de identificación (NI) es obligatorio");
   }
   if (!nroSerie) {
     errores.push("El número de serie es obligatorio para las operaciones CRUD");
@@ -604,6 +608,7 @@ async function guardarModelo(event) {
   const modeloData = {
     Ine: document.getElementById("crear-ine").value.trim(),
     Nne: nne,
+    NI: ni,
     TipoEquipoId: tipoEquipoId,
     Observaciones: document.getElementById("crear-observaciones").value.trim(),
     Marca: marca,
@@ -890,6 +895,7 @@ function activarModoEdicion() {
   datosOriginalesEdicion = {
     ine: document.getElementById("input-ine").value,
     nne: document.getElementById("input-nne").value,
+    ni: document.getElementById("input-ni").value,
     nroSerie: document.getElementById("input-nro-serie").value,
     estadoId: document.getElementById("input-estado").value,
     tipoEquipoId: document.getElementById("input-tipo").value,
@@ -1317,10 +1323,15 @@ async function guardarCambiosDetalles() {
   if (exito) {
     mostrarAlerta("Detalles actualizados con éxito.", "success");
     // Refresca los datos del modal antes de cerrar
-    if (nne && nne !== "-") {
-      await window.mostrarDetalles(nne);
-    } else if (nroSerie) {
-      await window.mostrarDetalles(null, nroSerie);
+    const equipoActual = window.__equipoDetallesActual;
+    if (equipoActual) {
+      if (equipoActual.nne && equipoActual.nne !== "-") {
+        await window.mostrarDetalles(equipoActual.nne);
+      } else if (equipoActual.nroSerie) {
+        await window.mostrarDetalles(null, equipoActual.nroSerie);
+      } else if (equipoActual.ni && equipoActual.ni !== "-") {
+        await window.mostrarDetalles(null, null, equipoActual.ni);
+      }
     }
     resetearModalDetalles(); // Vuelve a modo solo lectura antes de cerrar
     setTimeout(() => {
@@ -1507,6 +1518,7 @@ function cancelarEdicionDetalles() {
   // Restaurar los valores originales en los inputs
   document.getElementById("input-ine").value = datosOriginalesEdicion.ine || "";
   document.getElementById("input-nne").value = datosOriginalesEdicion.nne || "";
+  document.getElementById("input-ni").value = datosOriginalesEdicion.ni || "";
   document.getElementById("input-nro-serie").value =
     datosOriginalesEdicion.nroSerie || "";
   document.getElementById("input-estado").value =
@@ -1627,6 +1639,7 @@ async function cargarEquipos() {
                     <td>${idx + 1}</td>
                     <td>${equipo.ine || ""}</td>
                     <td>${equipo.nne || ""}</td>
+                    <td>${equipo.ni || ""}</td>
                     <td>${unidad.nroSerie || ""}</td>
                     <td class="fw-bold ${
                       estadoNombre.startsWith("E/S")
@@ -1639,7 +1652,7 @@ async function cargarEquipos() {
                     <td class="text-center">
                         <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${
                           equipo.nne || ""
-                        }', '${unidad.nroSerie || ""}')">
+                        }', '${unidad.nroSerie || ""}', '${equipo.ni || ""}')">
                             <i class="bi bi-eye"></i>
                         </button>
                         ${
@@ -1711,7 +1724,7 @@ async function cargarEquipos() {
 }
 
 // Función para mostrar el modal de detalles del equipo (nuevo diseño, robusta y solo con los IDs existentes)
-window.mostrarDetalles = async function (nne, nroSerie) {
+window.mostrarDetalles = async function (nne, nroSerie, ni) {
   resetearModalDetalles();
   try {
     let response, equipo;
@@ -1723,9 +1736,12 @@ window.mostrarDetalles = async function (nne, nroSerie) {
       response = await fetch(
         `${getApiBaseUrl()}/equipos/nroSerie/${encodeURIComponent(nroSerie)}`
       );
+    } else if (ni && ni !== "-") {
+      // 1c. Obtener datos del equipo por NI
+      response = await fetch(`${getApiBaseUrl()}/equipos/ni/${encodeURIComponent(ni)}`);
     } else {
       throw new Error(
-        "No se proporcionó NNE ni nroSerie para buscar el equipo"
+        "No se proporcionó NNE, nroSerie o NI para buscar el equipo"
       );
     }
     if (!response.ok)
@@ -1758,6 +1774,11 @@ window.mostrarDetalles = async function (nne, nroSerie) {
     const inputNne = document.getElementById("input-nne");
     if (elNne) elNne.textContent = equipo.nne || "-";
     if (inputNne) inputNne.value = equipo.nne || "";
+
+    const elNi = document.getElementById("detalle-ni");
+    const inputNi = document.getElementById("input-ni");
+    if (elNi) elNi.textContent = equipo.ni || "-";
+    if (inputNi) inputNi.value = equipo.ni || "";
 
     const elNroSerie = document.getElementById("detalle-nro-serie");
     const inputNroSerie = document.getElementById("input-nro-serie");
@@ -2084,6 +2105,7 @@ function poblarCamposEdicion() {
   // Obtener valores actuales de los elementos de solo lectura
   const ine = document.getElementById("detalle-ine")?.textContent || "";
   const nne = document.getElementById("detalle-nne")?.textContent || "";
+  const ni = document.getElementById("detalle-ni")?.textContent || "";
   const nroSerie =
     document.getElementById("detalle-nro-serie")?.textContent || "";
   const marca = document.getElementById("detalle-marca")?.textContent || "";
@@ -2099,6 +2121,9 @@ function poblarCamposEdicion() {
 
   const inputNne = document.getElementById("input-nne");
   if (inputNne) inputNne.value = nne === "-" ? "" : nne;
+
+  const inputNi = document.getElementById("input-ni");
+  if (inputNi) inputNi.value = ni === "-" ? "" : ni;
 
   const inputNroSerie = document.getElementById("input-nro-serie");
   if (inputNroSerie) inputNroSerie.value = nroSerie === "-" ? "" : nroSerie;
@@ -2311,6 +2336,7 @@ async function guardarCambiosDetalles() {
     // Obtener valores de los campos de edición
     const ine = document.getElementById("input-ine")?.value || "";
     const nne = document.getElementById("input-nne")?.value || "";
+    const ni = document.getElementById("input-ni")?.value || "";
     const nroSerie = document.getElementById("input-nro-serie")?.value || "";
     const marca = document.getElementById("input-marca")?.value || "";
     const modelo = document.getElementById("input-modelo")?.value || "";
@@ -2390,6 +2416,7 @@ async function guardarCambiosDetalles() {
     // Obtener valores originales del equipo actual para determinar endpoint
     const nneOriginal = window.__equipoDetallesActual?.nne; // NNE original del equipo
     const nroSerieOriginal = window.__equipoDetallesActual?.nroSerie; // Número de serie original
+    const niOriginal = window.__equipoDetallesActual?.ni; // NI original del equipo
 
     console.log("[guardarCambiosDetalles] Valores originales del equipo:");
     console.log(
@@ -2404,6 +2431,13 @@ async function guardarCambiosDetalles() {
       nroSerieOriginal,
       "(tipo:",
       typeof nroSerieOriginal,
+      ")"
+    );
+    console.log(
+      "- niOriginal:",
+      niOriginal,
+      "(tipo:",
+      typeof niOriginal,
       ")"
     );
     console.log(
@@ -2431,14 +2465,26 @@ async function guardarCambiosDetalles() {
         "[guardarCambiosDetalles] Actualizando por número de serie original:",
         nroSerieOriginal
       );
+    } else if (
+      niOriginal &&
+      niOriginal.trim() !== "" &&
+      niOriginal !== "-"
+    ) {
+      url = `${API_URL}/ni/${encodeURIComponent(niOriginal)}`;
+      identificador = niOriginal;
+      console.log(
+        "[guardarCambiosDetalles] Actualizando por NI original:",
+        niOriginal
+      );
     } else {
       console.error(
         "[guardarCambiosDetalles] No se puede determinar endpoint:"
       );
       console.error("- nneOriginal:", nneOriginal);
       console.error("- nroSerieOriginal:", nroSerieOriginal);
+      console.error("- niOriginal:", niOriginal);
       throw new Error(
-        "No se puede determinar cómo actualizar el equipo (sin NNE ni número de serie válido)"
+        "No se puede determinar cómo actualizar el equipo (sin NNE, número de serie o NI válido)"
       );
     }
 
@@ -2522,6 +2568,7 @@ async function guardarCambiosDetalles() {
     const payload = {
       ine: ine,
       nne: nne === "" || nne === "-" ? null : nne,
+      ni: ni,
       tipoEquipoId: idTipoEquipo, // Usar campo correcto sin prefijo id_
       marca: marca,
       modelo: modelo,

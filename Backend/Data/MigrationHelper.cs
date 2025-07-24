@@ -35,6 +35,33 @@ namespace Backend.Data
                         }
                     }
 
+                    // Verificar si la columna 'ni' ya existe en equipos
+                    var checkNiColumnQuery = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND TABLE_NAME = 'equipos' AND COLUMN_NAME = 'ni';";
+                    using (var checkCmd = new NpgsqlCommand(checkNiColumnQuery, connection))
+                    {
+                        var niColumnExists = Convert.ToInt64(checkCmd.ExecuteScalar()) > 0;
+                        if (!niColumnExists)
+                        {
+                            // Añadir la columna 'ni' si no existe
+                            Console.WriteLine("Agregando columna 'ni' a la tabla equipos...");
+                            var alterTableQuery = "ALTER TABLE equipos ADD COLUMN ni VARCHAR(50) NULL;";
+                            using (var alterCmd = new NpgsqlCommand(alterTableQuery, connection))
+                            {
+                                alterCmd.ExecuteNonQuery();
+                                Console.WriteLine("Migración completada: La columna 'ni' ha sido añadida a la tabla 'equipos'.");
+                            }
+
+                            // Crear índice único para la columna 'ni'
+                            Console.WriteLine("Creando índice único para la columna 'ni'...");
+                            var createIndexQuery = "CREATE UNIQUE INDEX CONCURRENTLY idx_equipos_ni ON equipos(ni) WHERE ni IS NOT NULL;";
+                            using (var indexCmd = new NpgsqlCommand(createIndexQuery, connection))
+                            {
+                                indexCmd.ExecuteNonQuery();
+                                Console.WriteLine("Índice único creado para la columna 'ni'.");
+                            }
+                        }
+                    }
+
                     Console.WriteLine("Todas las migraciones completadas exitosamente.");
                 }
                 catch (Exception ex)
@@ -89,6 +116,7 @@ namespace Backend.Data
                 CREATE TABLE IF NOT EXISTS equipos (
                     id SERIAL PRIMARY KEY,
                     nne VARCHAR(50) NOT NULL,
+                    ni VARCHAR(50) NULL,
                     id_tipo_equipo VARCHAR(1) NOT NULL REFERENCES tipos_equipo(id),
                     marca VARCHAR(100),
                     modelo VARCHAR(100),
