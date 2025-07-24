@@ -1738,7 +1738,9 @@ window.mostrarDetalles = async function (nne, nroSerie, ni) {
       );
     } else if (ni && ni !== "-") {
       // 1c. Obtener datos del equipo por NI
-      response = await fetch(`${getApiBaseUrl()}/equipos/ni/${encodeURIComponent(ni)}`);
+      response = await fetch(
+        `${getApiBaseUrl()}/equipos/ni/${encodeURIComponent(ni)}`
+      );
     } else {
       throw new Error(
         "No se proporcionó NNE, nroSerie o NI para buscar el equipo"
@@ -2433,13 +2435,7 @@ async function guardarCambiosDetalles() {
       typeof nroSerieOriginal,
       ")"
     );
-    console.log(
-      "- niOriginal:",
-      niOriginal,
-      "(tipo:",
-      typeof niOriginal,
-      ")"
-    );
+    console.log("- niOriginal:", niOriginal, "(tipo:", typeof niOriginal, ")");
     console.log(
       "- window.__equipoDetallesActual:",
       window.__equipoDetallesActual
@@ -2465,11 +2461,7 @@ async function guardarCambiosDetalles() {
         "[guardarCambiosDetalles] Actualizando por número de serie original:",
         nroSerieOriginal
       );
-    } else if (
-      niOriginal &&
-      niOriginal.trim() !== "" &&
-      niOriginal !== "-"
-    ) {
+    } else if (niOriginal && niOriginal.trim() !== "" && niOriginal !== "-") {
       url = `${API_URL}/ni/${encodeURIComponent(niOriginal)}`;
       identificador = niOriginal;
       console.log(
