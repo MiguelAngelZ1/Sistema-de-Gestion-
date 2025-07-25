@@ -189,7 +189,7 @@ namespace Backend.Data
 
                     // 1. Insertar el equipo (modelo) y obtener su ID
                     var equipoQuery = @"
-                        INSERT INTO equipos (INE, NNE, NI, id_tipo_equipo, marca, modelo, ubicacion, observaciones) 
+                        INSERT INTO equipos (ine, nne, ni, id_tipo_equipo, marca, modelo, ubicacion, observaciones) 
                         VALUES (@Ine, @Nne, @NI, @TipoEquipoId, @Marca, @Modelo, @Ubicacion, @Observaciones) 
                         RETURNING id;";
                         
