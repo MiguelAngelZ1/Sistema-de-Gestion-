@@ -358,6 +358,8 @@ async function cargarEstadosParaModal() {
  */
 async function cargarPersonalParaModal() {
   console.log("[cargarPersonalParaModal] Iniciando carga de personal");
+  console.log("[cargarPersonalParaModal] URL de API:", API_URL_PERSONA);
+  
   const select = document.getElementById("unidad-responsable");
   if (!select) {
     console.error(
@@ -368,9 +370,23 @@ async function cargarPersonalParaModal() {
 
   try {
     console.log("[cargarPersonalParaModal] Consultando API:", API_URL_PERSONA);
-    const response = await fetch(API_URL_PERSONA);
+    
+    // Agregar headers específicos para CORS
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'omit' // No enviar cookies para evitar problemas de CORS
+    };
+    
+    console.log("[cargarPersonalParaModal] Request options:", requestOptions);
+    
+    const response = await fetch(API_URL_PERSONA, requestOptions);
     console.log("[cargarPersonalParaModal] Response status:", response.status);
     console.log("[cargarPersonalParaModal] Response ok:", response.ok);
+    console.log("[cargarPersonalParaModal] Response headers:", response.headers);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -405,6 +421,21 @@ async function cargarPersonalParaModal() {
       error
     );
     console.error("[cargarPersonalParaModal] Error details:", error.message);
+    console.error("[cargarPersonalParaModal] Error stack:", error.stack);
+    
+    // Intentar con un endpoint de health check para ver si el backend está disponible
+    try {
+      console.log("[cargarPersonalParaModal] Probando health check...");
+      const healthResponse = await fetch(API_BASE_URL + '/health');
+      console.log("[cargarPersonalParaModal] Health check status:", healthResponse.status);
+      if (healthResponse.ok) {
+        const health = await healthResponse.json();
+        console.log("[cargarPersonalParaModal] Health check data:", health);
+      }
+    } catch (healthError) {
+      console.error("[cargarPersonalParaModal] Health check también falló:", healthError);
+    }
+    
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }

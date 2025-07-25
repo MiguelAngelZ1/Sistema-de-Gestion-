@@ -28,11 +28,13 @@ namespace Backend.Controllers
         {
             try
             {
+                Console.WriteLine("[PersonalController.Get] Iniciando obtención de personal...");
                 var personal = _repository.Mostrar();
-                Console.WriteLine($"Se encontraron {personal.Count} registros de personal");
+                Console.WriteLine($"[PersonalController.Get] Se encontraron {personal.Count} registros de personal");
+                
                 if (personal.Count > 0)
                 {
-                    Console.WriteLine("Primer registro:");
+                    Console.WriteLine("[PersonalController.Get] Primer registro:");
                     Console.WriteLine($"- Id: {personal[0].Id}");
                     Console.WriteLine($"- Nombre: {personal[0].Nombre}");
                     Console.WriteLine($"- Apellido: {personal[0].Apellido}");
@@ -41,13 +43,19 @@ namespace Backend.Controllers
                     Console.WriteLine($"- ArmEspId: {personal[0].ArmEspId}");
                     Console.WriteLine($"- NombreArmEsp: {personal[0].NombreArmEsp}");
                 }
+                
+                Console.WriteLine("[PersonalController.Get] Retornando resultado exitoso");
                 return Ok(personal);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error en el controlador: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, "Error interno del servidor al obtener el personal");
+                Console.WriteLine($"[PersonalController.Get] Error en el controlador: {ex.Message}");
+                Console.WriteLine($"[PersonalController.Get] Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, new { 
+                    error = "Error interno del servidor al obtener el personal",
+                    details = ex.Message,
+                    timestamp = DateTime.UtcNow
+                });
             }
         }
 

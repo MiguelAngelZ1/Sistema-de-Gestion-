@@ -2,9 +2,23 @@ using Backend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configurar CORS para permitir solicitudes desde cualquier origen.
+// 1. Configurar CORS para permitir solicitudes desde el frontend.
 builder.Services.AddCors(options =>
 {
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+            "https://sistema-control-frontend.onrender.com",
+            "http://localhost:3000",
+            "http://127.0.0.1:5500",
+            "http://localhost:5500"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
+
+    // Política más permisiva para desarrollo
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
@@ -64,11 +78,37 @@ catch (Exception ex)
 }
 
 // 4. Configurar el pipeline de la aplicación.
+Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"IsDevelopment: {app.Environment.IsDevelopment()}");
+
+// Middleware para logging de requests
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Request: {context.Request.Method} {context.Request.Path}");
+    Console.WriteLine($"Origin: {context.Request.Headers.Origin}");
+    Console.WriteLine($"User-Agent: {context.Request.Headers.UserAgent}");
+    
+    await next();
+    
+    Console.WriteLine($"Response: {context.Response.StatusCode}");
+});
+
+// Usar política específica en producción, AllowAll en desarrollo
+// TEMPORAL: Usar AllowAll en ambos entornos para debugging de CORS
+var isDevelopment = app.Environment.IsDevelopment();
+Console.WriteLine("TEMPORAL: Usando política CORS: AllowAll para debugging");
 app.UseCors("AllowAll");
 
 // app.UseHttpsRedirection(); // Comentado para simplificar el desarrollo local.
 
 app.UseAuthorization();
+
+// Health check endpoint
+app.MapGet("/health", () => new { 
+    status = "healthy", 
+    timestamp = DateTime.UtcNow,
+    environment = builder.Environment.EnvironmentName
+});
 
 app.MapControllers();
 
