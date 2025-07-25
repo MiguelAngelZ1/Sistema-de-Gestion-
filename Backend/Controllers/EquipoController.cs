@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Cors;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 namespace Backend.Controllers
 {
@@ -111,11 +112,31 @@ namespace Backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateEquipoCompleto([FromBody] EquipoAltaCompletaDto data)
         {
-            Console.WriteLine("[LOG] CreateEquipoCompleto - JSON recibido:");
+            Console.WriteLine("[LOG] CreateEquipoCompleto - Iniciando...");
+            
+            // Verificar ModelState
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("[LOG] ModelState no es válido:");
+                foreach (var error in ModelState)
+                {
+                    Console.WriteLine($"[LOG] Campo: {error.Key}, Errores: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
+                }
+                return BadRequest(ModelState);
+            }
+            
             try
             {
-                var json = System.Text.Json.JsonSerializer.Serialize(data);
-                Console.WriteLine(json);
+                // Log del JSON recibido
+                if (data != null)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(data);
+                    Console.WriteLine($"[LOG] JSON recibido: {json}");
+                }
+                else
+                {
+                    Console.WriteLine("[LOG] Data es NULL!");
+                }
 
                 if (data == null)
                 {
@@ -123,10 +144,13 @@ namespace Backend.Controllers
                     return BadRequest("Los datos del equipo son requeridos.");
                 }
 
-                // Validar que al menos uno de los tres identificadores esté presente
+                // Log detallado de validaciones
                 bool tieneNNE = !string.IsNullOrWhiteSpace(data.Nne);
                 bool tieneNI = !string.IsNullOrWhiteSpace(data.NI);
                 bool tieneNumeroSerie = data.PrimeraUnidad != null && !string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie);
+                
+                Console.WriteLine($"[LOG] Validaciones: tieneNNE={tieneNNE}, tieneNI={tieneNI}, tieneNumeroSerie={tieneNumeroSerie}");
+                Console.WriteLine($"[LOG] NNE='{data.Nne}', NI='{data.NI}', PrimeraUnidad={(data.PrimeraUnidad != null ? "presente" : "null")}");
                 
                 if (!tieneNNE && !tieneNI && !tieneNumeroSerie)
                 {
@@ -134,13 +158,35 @@ namespace Backend.Controllers
                     return BadRequest("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie.");
                 }
 
+                Console.WriteLine("[LOG] Validaciones pasadas, llamando al repositorio...");
                 var nuevoEquipo = await _repository.CrearEquipoCompleto(data);
+                
                 if (nuevoEquipo == null)
                 {
-                    Console.WriteLine("[LOG] Error al crear el equipo en la base de datos.");
+                    Console.WriteLine("[LOG] Error: el repositorio devolvió null");
                     return StatusCode(500, "No se pudo crear el equipo. La operación en el repositorio falló.");
                 }
-                return CreatedAtAction(nameof(GetEquipoDetallado), new { nne = nuevoEquipo.NNE }, nuevoEquipo);
+                
+                Console.WriteLine($"[LOG] Equipo creado exitosamente con ID: {nuevoEquipo.Id}");
+                
+                // Usar cualquier identificador disponible para la respuesta
+                object routeValues;
+                if (!string.IsNullOrWhiteSpace(nuevoEquipo.NNE))
+                {
+                    routeValues = new { nne = nuevoEquipo.NNE };
+                }
+                else if (!string.IsNullOrWhiteSpace(nuevoEquipo.NI))
+                {
+                    // Si no tenemos GetEquipoPorNI endpoint, usamos un approach más simple
+                    return Ok(nuevoEquipo);
+                }
+                else
+                {
+                    // Como último recurso, solo devolver el objeto
+                    return Ok(nuevoEquipo);
+                }
+                
+                return CreatedAtAction(nameof(GetEquipoDetallado), routeValues, nuevoEquipo);
             }
             catch (Exception ex)
             {
