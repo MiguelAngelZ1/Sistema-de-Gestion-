@@ -3,6 +3,34 @@ const apiUrl = CONFIG.API_BASE_URL + "/Personal";
 const apiGrados = CONFIG.API_BASE_URL + "/Grado";
 const apiArmEsp = CONFIG.API_BASE_URL + "/ArmEsp";
 
+// Clase para manejar las notificaciones
+class Notificacion {
+  static mostrar(icono, titulo, mensaje) {
+    Swal.fire({
+      icon: icono,
+      title: titulo,
+      text: mensaje,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  }
+
+  static error(mensaje) {
+    this.mostrar("error", "Error", mensaje);
+  }
+
+  static success(mensaje) {
+    this.mostrar("success", "Éxito", mensaje);
+  }
+
+  static warning(mensaje) {
+    this.mostrar("warning", "Advertencia", mensaje);
+  }
+}
+
 // Variables globales
 let grados = [];
 let armesp = [];
@@ -163,11 +191,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     configurarModalAgregarPersona();
   } catch (error) {
     console.error("Error al cargar los datos iniciales:", error);
-    mostrarNotificacion(
-      "error",
-      "Error",
-      "No se pudieron cargar los datos iniciales"
-    );
+    Notificacion.error("No se pudieron cargar los datos iniciales");
   }
 });
 
@@ -434,11 +458,7 @@ function configurarModalAgregarPersona() {
       );
 
       if (!gradoSeleccionado || !armEspSeleccionada) {
-        mostrarNotificacion(
-          "error",
-          "Error",
-          "No se encontró el grado o arma/especialidad seleccionado"
-        );
+        Notificacion.error("No se encontró el grado o arma/especialidad seleccionado");
         return;
       }
 
@@ -457,7 +477,7 @@ function configurarModalAgregarPersona() {
       // Validar los datos
       const errores = validarFormulario(persona);
       if (errores.length > 0) {
-        mostrarNotificacion("error", "Error de validación", errores.join("\n"));
+        Notificacion.error(errores.join("\n"));
         return;
       }
 
@@ -507,11 +527,7 @@ function configurarModalAgregarPersona() {
         }
 
         // Mostrar mensaje de éxito
-        mostrarNotificacion(
-          "success",
-          "Éxito",
-          "Personal guardado correctamente"
-        );
+        Notificacion.success("Personal guardado correctamente");
 
         // Cerrar el modal y actualizar la tabla
         const modalInstance = getModalInstance("agregarPersonaModal");
@@ -527,13 +543,9 @@ function configurarModalAgregarPersona() {
 
         // Mostrar notificación específica según el tipo de error
         if (error.tipo === "dni_duplicado") {
-          mostrarNotificacion("warning", "DNI Duplicado", error.message);
+          Notificacion.warning(error.message);
         } else {
-          mostrarNotificacion(
-            "error",
-            "Error",
-            error.message || "No se pudo guardar el personal"
-          );
+          Notificacion.error(error.message || "No se pudo guardar el personal");
         }
 
         // Restaurar el botón en caso de error
@@ -556,20 +568,6 @@ function configurarModalAgregarPersona() {
 function formatearTexto(texto) {
   if (!texto) return "";
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-}
-
-// Función para mostrar notificaciones
-function mostrarNotificacion(icono, titulo, mensaje) {
-  Swal.fire({
-    icon: icono,
-    title: titulo,
-    text: mensaje,
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-  });
 }
 
 // Cargar lista de grados desde la API
@@ -611,7 +609,7 @@ async function cargarGrados() {
     return data;
   } catch (error) {
     console.error("Error al cargar los grados:", error);
-    mostrarNotificacion("error", "Error", "No se pudieron cargar los grados");
+    Notificacion.error("No se pudieron cargar los grados");
     throw error;
   }
 }
@@ -713,11 +711,7 @@ async function cargarArmEsp() {
     return data;
   } catch (error) {
     console.error("Error al cargar las armas/especialidades:", error);
-    mostrarNotificacion(
-      "error",
-      "Error",
-      "No se pudieron cargar las armas/especialidades"
-    );
+    Notificacion.error("No se pudieron cargar las armas/especialidades");
     throw error;
   }
 }
@@ -862,11 +856,7 @@ function configurarEventosModal() {
         }
 
         // Mostrar notificación de éxito
-        mostrarNotificacion(
-          "success",
-          "¡Éxito!",
-          "Los datos se guardaron correctamente"
-        );
+        Notificacion.success("Los datos se guardaron correctamente");
 
         // Cerrar el modal
         const modalInstance = getModalInstance("personalModal");
@@ -883,13 +873,9 @@ function configurarEventosModal() {
 
         // Mostrar notificación específica según el tipo de error
         if (error.tipo === "dni_duplicado") {
-          mostrarNotificacion("warning", "DNI Duplicado", error.message);
+          Notificacion.warning(error.message);
         } else {
-          mostrarNotificacion(
-            "error",
-            "Error",
-            error.message || "Ocurrió un error al guardar los datos"
-          );
+          Notificacion.error(error.message || "Ocurrió un error al guardar los datos");
         }
       } finally {
         btnGuardar.disabled = false;
@@ -1484,11 +1470,7 @@ async function mostrarDetallesPersona(persona) {
     );
   } catch (error) {
     console.error("Error al mostrar los detalles de la persona:", error);
-    mostrarNotificacion(
-      "error",
-      "Error",
-      "No se pudieron cargar los detalles del personal"
-    );
+    Notificacion.error("No se pudieron cargar los detalles del personal");
   }
 }
 
@@ -1702,11 +1684,7 @@ function mostrarDatosEnModal(persona, editar = false) {
             }
           } catch (error) {
             console.error("Error al cargar los datos para edición:", error);
-            mostrarNotificacion(
-              "error",
-              "Error",
-              "No se pudieron cargar los datos necesarios para la edición"
-            );
+            Notificacion.error("No se pudieron cargar los datos necesarios para la edición");
           }
         }
 
@@ -1745,11 +1723,7 @@ function mostrarDatosEnModal(persona, editar = false) {
       modal.show();
     } catch (error) {
       console.error("Error al cargar los datos completos:", error);
-      mostrarNotificacion(
-        "error",
-        "Error",
-        "No se pudieron cargar los datos completos del personal"
-      );
+      Notificacion.error("No se pudieron cargar los datos completos del personal");
     }
   })();
 

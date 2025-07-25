@@ -26,11 +26,11 @@ class Notificacion {
     this.mostrar("error", "Error", mensaje);
   }
 
-  static exito(mensaje) {
+  static success(mensaje) {
     this.mostrar("success", "Éxito", mensaje);
   }
 
-  static advertencia(mensaje) {
+  static warning(mensaje) {
     this.mostrar("warning", "Advertencia", mensaje);
   }
 }
@@ -465,7 +465,7 @@ class ArmEspUI {
       // Si hay errores, mostrarlos y lanzar excepción
       if (errores.length > 0) {
         console.error("Errores de validación:", errores);
-        Notificacion.advertencia(errores.join("\n"));
+        Notificacion.warning(errores.join("\n"));
         throw new Error("Validación de formulario fallida");
       }
 
@@ -622,7 +622,7 @@ class ArmEspUI {
 
       // Validar que se haya seleccionado un tipo
       if (!formData.tipo) {
-        Notificacion.advertencia(
+        Notificacion.warning(
           "Por favor seleccione un tipo (Arma o Especialidad)"
         );
         return false;
@@ -630,19 +630,19 @@ class ArmEspUI {
 
       // Validar que la abreviatura no esté vacía
       if (!formData.abreviatura || formData.abreviatura.trim() === "") {
-        Notificacion.advertencia("La abreviatura es obligatoria");
+        Notificacion.warning("La abreviatura es obligatoria");
         return false;
       }
 
       // Validar que el nombre completo no esté vacío
       if (!formData.armesp_completo || formData.armesp_completo.trim() === "") {
-        Notificacion.advertencia("El nombre completo es obligatorio");
+        Notificacion.warning("El nombre completo es obligatorio");
         return false;
       }
 
       // Validar longitud de la abreviatura
       if (formData.abreviatura.trim().length > 20) {
-        Notificacion.advertencia(
+        Notificacion.warning(
           "La abreviatura no puede tener más de 20 caracteres"
         );
         return false;
@@ -650,7 +650,7 @@ class ArmEspUI {
 
       // Validar longitud del nombre completo
       if (formData.armesp_completo.trim().length > 100) {
-        Notificacion.advertencia(
+        Notificacion.warning(
           "El nombre completo no puede tener más de 100 caracteres"
         );
         return false;
@@ -671,7 +671,7 @@ class ArmEspUI {
         const resultado = await ArmEspService.guardar(formData);
 
         // Mostrar mensaje de éxito
-        Notificacion.exito("Los datos se guardaron correctamente");
+        Notificacion.success("Los datos se guardaron correctamente");
 
         // Cerrar el modal de manera forzada
         const modalElement = document.getElementById("agregarArmEspModal");

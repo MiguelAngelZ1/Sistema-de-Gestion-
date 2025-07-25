@@ -17,6 +17,34 @@ function getApiBaseUrl() {
     : "https://sistema-control-gestion-backend.onrender.com/api";
 }
 
+// Clase para manejar las notificaciones
+class Notificacion {
+  static mostrar(icono, titulo, mensaje) {
+    Swal.fire({
+      icon: icono,
+      title: titulo,
+      text: mensaje,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  }
+
+  static error(mensaje) {
+    this.mostrar("error", "Error", mensaje);
+  }
+
+  static success(mensaje) {
+    this.mostrar("success", "Éxito", mensaje);
+  }
+
+  static warning(mensaje) {
+    this.mostrar("warning", "Advertencia", mensaje);
+  }
+}
+
 // URL base de la API - Usar configuración centralizada
 const API_URL = getApiBaseUrl() + "/equipos";
 const API_URL_PERSONA = getApiBaseUrl() + "/personal";
@@ -199,7 +227,7 @@ async function eliminarEquipo(nne, nroSerie) {
     return true;
   } catch (error) {
     console.error(`Error al eliminar el equipo:`, error);
-    mostrarAlerta("No se pudo eliminar el equipo.", "error");
+    Notificacion.error("No se pudo eliminar el equipo.");
     return false;
   }
 }
@@ -213,13 +241,13 @@ async function crearModelo(equipo) {
   try {
     console.log("[crearModelo] Datos del equipo antes de enviar:");
     console.log(JSON.stringify(equipo, null, 2));
-    
+
     const respuesta = await fetch(API_URL, {
       // Llama a POST /api/equipos
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(equipo),
     });
@@ -235,7 +263,7 @@ async function crearModelo(equipo) {
         // Intentar leer como JSON primero
         const errorData = await respuesta.json();
         console.log("[crearModelo] Error data from backend:", errorData);
-        
+
         if (errorData.message) {
           mensajeError = errorData.message;
         } else if (errorData.error) {
@@ -243,16 +271,23 @@ async function crearModelo(equipo) {
         } else if (errorData.errors) {
           // Para ModelState errors
           const modelErrors = Object.entries(errorData.errors || {})
-            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
-            .join('\n');
+            .map(
+              ([field, errors]) =>
+                `${field}: ${
+                  Array.isArray(errors) ? errors.join(", ") : errors
+                }`
+            )
+            .join("\n");
           mensajeError = `Errores de validación:\n${modelErrors}`;
-        } else if (typeof errorData === 'string') {
+        } else if (typeof errorData === "string") {
           mensajeError = errorData;
         }
-        
+
         detalleError = errorData;
       } catch (jsonError) {
-        console.log("[crearModelo] No se pudo parsear error como JSON, intentando texto...");
+        console.log(
+          "[crearModelo] No se pudo parsear error como JSON, intentando texto..."
+        );
         // Si no es JSON válido, intentar leer como texto
         try {
           const errorText = await respuesta.text();
@@ -264,7 +299,9 @@ async function crearModelo(equipo) {
                 : errorText;
           }
         } catch (textError) {
-          console.warn("[crearModelo] No se pudo leer el cuerpo de la respuesta de error");
+          console.warn(
+            "[crearModelo] No se pudo leer el cuerpo de la respuesta de error"
+          );
         }
       }
 
@@ -277,7 +314,7 @@ async function crearModelo(equipo) {
     return resultado;
   } catch (error) {
     console.error("[crearModelo] Error al crear el modelo de equipo:", error);
-    mostrarAlerta(`No se pudo crear el modelo: ${error.message}`, "error");
+    Notificacion.error(`No se pudo crear el modelo: ${error.message}`);
     return null;
   }
 }
@@ -302,7 +339,7 @@ async function obtenerEquipoDetalladoPorNNE(nne) {
     return await respuesta.json();
   } catch (error) {
     console.error(`Error CRÍTICO en fetch para NNE ${nne}:`, error);
-    mostrarAlerta("No se pudo obtener el detalle del equipo.", "error");
+    Notificacion.error("No se pudo obtener el detalle del equipo.");
     return null;
   }
 }
@@ -325,10 +362,7 @@ async function obtenerEquipos() {
     return await response.json();
   } catch (error) {
     console.error("Error al obtener los equipos:", error);
-    mostrarAlerta(
-      "Error al cargar los equipos. Por favor, intente más tarde.",
-      "error"
-    );
+    Notificacion.error("Error al cargar los equipos. Por favor, intente más tarde.");
     return [];
   }
 }
@@ -388,7 +422,7 @@ async function cargarEstadosParaModal() {
 async function cargarPersonalParaModal() {
   console.log("[cargarPersonalParaModal] Iniciando carga de personal");
   console.log("[cargarPersonalParaModal] URL de API:", API_URL_PERSONA);
-  
+
   const select = document.getElementById("unidad-responsable");
   if (!select) {
     console.error(
@@ -399,23 +433,26 @@ async function cargarPersonalParaModal() {
 
   try {
     console.log("[cargarPersonalParaModal] Consultando API:", API_URL_PERSONA);
-    
+
     // Agregar headers específicos para CORS
     const requestOptions = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-      credentials: 'omit' // No enviar cookies para evitar problemas de CORS
+      credentials: "omit", // No enviar cookies para evitar problemas de CORS
     };
-    
+
     console.log("[cargarPersonalParaModal] Request options:", requestOptions);
-    
+
     const response = await fetch(API_URL_PERSONA, requestOptions);
     console.log("[cargarPersonalParaModal] Response status:", response.status);
     console.log("[cargarPersonalParaModal] Response ok:", response.ok);
-    console.log("[cargarPersonalParaModal] Response headers:", response.headers);
+    console.log(
+      "[cargarPersonalParaModal] Response headers:",
+      response.headers
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -451,20 +488,26 @@ async function cargarPersonalParaModal() {
     );
     console.error("[cargarPersonalParaModal] Error details:", error.message);
     console.error("[cargarPersonalParaModal] Error stack:", error.stack);
-    
+
     // Intentar con un endpoint de health check para ver si el backend está disponible
     try {
       console.log("[cargarPersonalParaModal] Probando health check...");
-      const healthResponse = await fetch(API_BASE_URL + '/health');
-      console.log("[cargarPersonalParaModal] Health check status:", healthResponse.status);
+      const healthResponse = await fetch(API_BASE_URL + "/health");
+      console.log(
+        "[cargarPersonalParaModal] Health check status:",
+        healthResponse.status
+      );
       if (healthResponse.ok) {
         const health = await healthResponse.json();
         console.log("[cargarPersonalParaModal] Health check data:", health);
       }
     } catch (healthError) {
-      console.error("[cargarPersonalParaModal] Health check también falló:", healthError);
+      console.error(
+        "[cargarPersonalParaModal] Health check también falló:",
+        healthError
+      );
     }
-    
+
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar</option>';
   }
@@ -478,7 +521,7 @@ async function obtenerTodoElPersonal() {
     return await respuesta.json();
   } catch (error) {
     console.error("Error al obtener personal:", error);
-    mostrarAlerta("No se pudo cargar la lista de personal.", "error");
+    Notificacion.error("No se pudo cargar la lista de personal.");
     return [];
   }
 }
@@ -581,7 +624,7 @@ async function guardarModelo(event) {
     modelo: `"${modelo}"`,
     tipoEquipoId: `"${tipoEquipoId}"`,
     estadoEquipoId: `"${estadoEquipoId}"`,
-    ubicacion: `"${ubicacion}"`
+    ubicacion: `"${ubicacion}"`,
   });
 
   // Debug: verificar estados booleanos
@@ -589,7 +632,11 @@ async function guardarModelo(event) {
     nnePresent: Boolean(nne && nne.length > 0),
     niPresent: Boolean(ni && ni.length > 0),
     nroSeriePresent: Boolean(nroSerie && nroSerie.length > 0),
-    alMenosUno: Boolean((nne && nne.length > 0) || (ni && ni.length > 0) || (nroSerie && nroSerie.length > 0))
+    alMenosUno: Boolean(
+      (nne && nne.length > 0) ||
+        (ni && ni.length > 0) ||
+        (nroSerie && nroSerie.length > 0)
+    ),
   });
 
   // Validaciones obligatorias
@@ -599,9 +646,11 @@ async function guardarModelo(event) {
   const tieneNNE = nne && nne.length > 0;
   const tieneNI = ni && ni.length > 0;
   const tieneNroSerie = nroSerie && nroSerie.length > 0;
-  
+
   if (!tieneNNE && !tieneNI && !tieneNroSerie) {
-    errores.push("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie");
+    errores.push(
+      "Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie"
+    );
   }
 
   if (!marca) {
@@ -687,7 +736,8 @@ async function guardarModelo(event) {
       NumeroSerie: nroSerie,
       EstadoId: parseInt(estadoEquipoId, 10),
       IdPersona:
-        parseInt(document.getElementById("unidad-responsable").value, 10) || null,
+        parseInt(document.getElementById("unidad-responsable").value, 10) ||
+        null,
     };
   }
 
@@ -697,7 +747,8 @@ async function guardarModelo(event) {
     Nne: tieneNNE ? nne : null,
     NI: tieneNI ? ni : null,
     TipoEquipoId: tipoEquipoId,
-    Observaciones: document.getElementById("crear-observaciones").value.trim() || null,
+    Observaciones:
+      document.getElementById("crear-observaciones").value.trim() || null,
     Marca: marca,
     Modelo: modelo,
     Ubicacion: ubicacion,
@@ -733,26 +784,14 @@ async function guardarModelo(event) {
     if (window.modalCrearModelo) {
       window.modalCrearModelo.hide();
     }
-    
+
     // Determinar qué identificador usar para el mensaje
     const identificador = nne || ni || nroSerie || "nuevo equipo";
-    
-    Swal.fire({
-      title: "✅ ¡Equipo Creado!",
-      text: `El equipo ${identificador} ha sido registrado exitosamente`,
-      icon: "success",
-      confirmButtonText: "Continuar",
-      confirmButtonColor: "#28a745",
-    });
+
+    Notificacion.success(`El equipo ${identificador} ha sido registrado exitosamente`);
     cargarEquipos(); // Recargar la tabla para mostrar el nuevo equipo
   } else {
-    Swal.fire({
-      title: "❌ Error al Crear",
-      text: "No se pudo crear el equipo. Verifique los datos e intente nuevamente.",
-      icon: "error",
-      confirmButtonText: "Reintentar",
-      confirmButtonColor: "#dc3545",
-    });
+    Notificacion.error("No se pudo crear el equipo. Verifique los datos e intente nuevamente.");
   }
 }
 
@@ -778,7 +817,7 @@ async function cargarTiposEquipo() {
     const select = document.getElementById("modelo-tipo");
     select.innerHTML =
       '<option value="" selected disabled>Error al cargar categorías</option>';
-    mostrarAlerta("No se pudieron cargar las categorías de equipo.", "error");
+    Notificacion.error("No se pudieron cargar las categorías de equipo.");
   }
 }
 
@@ -800,7 +839,7 @@ async function cargarEstadosEquipos() {
     });
   } catch (error) {
     console.error("Error al cargar los estados de equipo:", error);
-    mostrarAlerta("No se pudieron cargar los estados de equipo.", "error");
+    Notificacion.error("No se pudieron cargar los estados de equipo.");
   }
 }
 
@@ -809,7 +848,7 @@ async function cargarEstadosEquipos() {
  */
 async function abrirModalAgregarUnidad() {
   if (!equipoIdActual) {
-    mostrarAlerta("No se ha seleccionado un modelo de equipo válido.", "error");
+    Notificacion.error("No se ha seleccionado un modelo de equipo válido.");
     return;
   }
   const form = document.getElementById("formAgregarUnidad");
@@ -841,7 +880,7 @@ async function crearUnidad(unidad) {
     return await respuesta.json();
   } catch (error) {
     console.error("Error al crear la unidad:", error);
-    mostrarAlerta(`No se pudo crear la unidad: ${error.message}`, "error");
+    Notificacion.error(`No se pudo crear la unidad: ${error.message}`);
     return null;
   }
 }
@@ -861,7 +900,7 @@ async function guardarUnidad(event) {
   };
 
   if (!unidad.id_equipo || !unidad.nro_serie || !unidad.id_estado) {
-    mostrarAlerta("Por favor, complete todos los campos requeridos.", "error");
+    Notificacion.error("Por favor, complete todos los campos requeridos.");
     return;
   }
 
@@ -878,11 +917,11 @@ async function guardarUnidad(event) {
     }
 
     modalAgregarUnidad.hide();
-    mostrarAlerta("Unidad agregada con éxito.", "success");
+    Notificacion.success("Unidad agregada con éxito.");
     cargarModelos(); // Recargamos la tabla principal para reflejar el cambio en el contador de unidades.
   } catch (error) {
     console.error("Error al guardar la unidad:", error);
-    mostrarAlerta(`No se pudo crear la unidad: ${error.message}`, "error");
+    Notificacion.error(`No se pudo crear la unidad: ${error.message}`);
   }
 }
 
@@ -1406,13 +1445,10 @@ async function guardarCambiosDetalles() {
     console.error(
       "[guardarCambiosDetalles] No hay identificador válido para actualizar (ni NNE ni nroSerieOriginal)"
     );
-    mostrarAlerta(
-      "No se pudo determinar el identificador del equipo para actualizar. Contacte al administrador.",
-      "error"
-    );
+    Notificacion.error("No se pudo determinar el identificador del equipo para actualizar. Contacte al administrador.");
   }
   if (exito) {
-    mostrarAlerta("Detalles actualizados con éxito.", "success");
+    Notificacion.success("Detalles actualizados con éxito.");
     // Refresca los datos del modal antes de cerrar
     const equipoActual = window.__equipoDetallesActual;
     if (equipoActual) {
@@ -1430,7 +1466,7 @@ async function guardarCambiosDetalles() {
     }, 1200);
     cargarEquipos();
   } else {
-    mostrarAlerta("No se pudieron guardar los cambios.", "error");
+    Notificacion.error("No se pudieron guardar los cambios.");
   }
 }
 
@@ -1654,7 +1690,7 @@ function cancelarEdicionDetalles() {
 async function cargarEquipos() {
   try {
     console.log("[cargarEquipos] Iniciando carga de equipos...");
-    
+
     // 1. Obtener todos los datos necesarios de la API
     const [equipos, unidades, estados] = await Promise.all([
       fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
@@ -1666,7 +1702,11 @@ async function cargarEquipos() {
       ),
     ]);
 
-    console.log("[cargarEquipos] Datos obtenidos:", { equipos: equipos.length, unidades: unidades.length, estados: estados.length });
+    console.log("[cargarEquipos] Datos obtenidos:", {
+      equipos: equipos.length,
+      unidades: unidades.length,
+      estados: estados.length,
+    });
 
     // Guardar datos globalmente para exportación
     window.equipos = equipos;
@@ -1716,10 +1756,10 @@ async function cargarEquipos() {
 
     // Crear mapas para acceso rápido
     const estadosMap = new Map(estados.map((e) => [e.id, e.nombre]));
-    
+
     // Crear mapa de unidades por equipo ID
     const unidadesPorEquipo = new Map();
-    unidades.forEach(unidad => {
+    unidades.forEach((unidad) => {
       if (!unidadesPorEquipo.has(unidad.equipoId)) {
         unidadesPorEquipo.set(unidad.equipoId, []);
       }
@@ -1729,17 +1769,23 @@ async function cargarEquipos() {
     // Logs de depuración
     console.log("[cargarEquipos] equipos:", equipos);
     console.log("[cargarEquipos] unidades:", unidades);
-    console.log("[cargarEquipos] unidadesPorEquipo:", Array.from(unidadesPorEquipo.entries()));
+    console.log(
+      "[cargarEquipos] unidadesPorEquipo:",
+      Array.from(unidadesPorEquipo.entries())
+    );
 
     let filaIndex = 1;
 
     // Renderizar equipos - tanto con unidades como sin unidades
     equipos.forEach((equipo) => {
       console.log(`[cargarEquipos] Procesando equipo ID ${equipo.id}:`, equipo);
-      
+
       const unidadesDelEquipo = unidadesPorEquipo.get(equipo.id) || [];
-      console.log(`[cargarEquipos] Unidades del equipo ${equipo.id}:`, unidadesDelEquipo);
-      
+      console.log(
+        `[cargarEquipos] Unidades del equipo ${equipo.id}:`,
+        unidadesDelEquipo
+      );
+
       if (unidadesDelEquipo.length === 0) {
         // Equipo sin unidades físicas (solo modelo)
         const fila = `
@@ -1751,20 +1797,27 @@ async function cargarEquipos() {
             <td class="text-muted fst-italic">Sin unidades físicas</td>
             <td class="text-muted">-</td>
             <td class="text-center">
-              <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${equipo.nne || ""}', '', '${equipo.ni || ""}')">
+              <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${
+                equipo.nne || ""
+              }', '', '${equipo.ni || ""}')">
                 <i class="bi bi-eye"></i>
               </button>
-              ${equipo.nne ? `
+              ${
+                equipo.nne
+                  ? `
                 <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
                   <i class="bi bi-box-seam"></i>
                 </button>
                 <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
                   <i class="bi bi-trash"></i>
-                </button>` : `
+                </button>`
+                  : `
                 <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
                   <i class="bi bi-box-seam"></i>
                 </button>
-                <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacionPorNI('${equipo.ni || ""}')">
+                <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacionPorNI('${
+                  equipo.ni || ""
+                }')">
                   <i class="bi bi-trash"></i>
                 </button>`
               }
@@ -1791,20 +1844,27 @@ async function cargarEquipos() {
                   : "text-warning"
               }">${estadoNombre}</td>
               <td class="text-center">
-                <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${equipo.nne || ""}', '${unidad.nroSerie || ""}', '${equipo.ni || ""}')">
+                <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${
+                  equipo.nne || ""
+                }', '${unidad.nroSerie || ""}', '${equipo.ni || ""}')">
                   <i class="bi bi-eye"></i>
                 </button>
-                ${equipo.nne ? `
+                ${
+                  equipo.nne
+                    ? `
                   <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
                     <i class="bi bi-box-seam"></i>
                   </button>
                   <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
                     <i class="bi bi-trash"></i>
-                  </button>` : `
+                  </button>`
+                    : `
                   <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
                     <i class="bi bi-box-seam"></i>
                   </button>
-                  <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacion('', '${unidad.nroSerie || ""}')">
+                  <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacion('', '${
+                    unidad.nroSerie || ""
+                  }')">
                     <i class="bi bi-trash"></i>
                   </button>`
                 }
@@ -1814,7 +1874,7 @@ async function cargarEquipos() {
         });
       }
     });
-    
+
     console.log(`[cargarEquipos] Tabla cargada con ${filaIndex - 1} filas`);
   } catch (error) {
     console.error("[cargarEquipos] Error al cargar los equipos:", error);
@@ -1853,7 +1913,7 @@ async function cargarEquipos() {
         </tr>`;
     }
 
-    mostrarAlerta("Error al cargar los equipos. Verifique la conexión al servidor.", "error");
+    Notificacion.error("Error al cargar los equipos. Verifique la conexión al servidor.");
   }
 }
 
@@ -2096,7 +2156,7 @@ window.mostrarDetalles = async function (nne, nroSerie, ni) {
       console.error("[window.mostrarDetalles] Modal no encontrado");
     }
   } catch (error) {
-    Swal.fire("Error", "No se pudo cargar el detalle del equipo.", "error");
+    Notificacion.error("No se pudo cargar el detalle del equipo.");
   }
 };
 
@@ -2124,15 +2184,10 @@ function confirmarEliminacion(nne, nroSerie) {
     if (result.isConfirmed) {
       const exito = await eliminarEquipo(nne, nroSerie);
       if (exito) {
-        mostrarAlerta(
-          `${
-            tipoEliminacion.charAt(0).toUpperCase() + tipoEliminacion.slice(1)
-          } eliminado con éxito.`,
-          "success"
-        );
+        Notificacion.success(`${tipoEliminacion.charAt(0).toUpperCase() + tipoEliminacion.slice(1)} eliminado con éxito.`);
         cargarEquipos();
       } else {
-        mostrarAlerta(`No se pudo eliminar el ${tipoEliminacion}.`, "error");
+        Notificacion.error(`No se pudo eliminar el ${tipoEliminacion}.`);
       }
     }
   });
@@ -2144,7 +2199,7 @@ function confirmarEliminacion(nne, nroSerie) {
  */
 function confirmarEliminacionPorNI(ni) {
   if (!ni || ni.trim() === "" || ni === "-") {
-    mostrarAlerta("No se puede eliminar: NI no válido.", "error");
+    Notificacion.error("No se puede eliminar: NI no válido.");
     return;
   }
 
@@ -2161,10 +2216,10 @@ function confirmarEliminacionPorNI(ni) {
     if (result.isConfirmed) {
       const exito = await eliminarEquipoPorNI(ni);
       if (exito) {
-        mostrarAlerta("Equipo eliminado con éxito.", "success");
+        Notificacion.success("Equipo eliminado con éxito.");
         cargarEquipos();
       } else {
-        mostrarAlerta("No se pudo eliminar el equipo.", "error");
+        Notificacion.error("No se pudo eliminar el equipo.");
       }
     }
   });
@@ -2178,7 +2233,7 @@ function confirmarEliminacionPorNI(ni) {
 async function eliminarEquipoPorNI(ni) {
   try {
     console.log(`[eliminarEquipoPorNI] Eliminando equipo con NI: ${ni}`);
-    
+
     const url = `${getApiBaseUrl()}/equipos/ni/${encodeURIComponent(ni)}`;
     const response = await fetch(url, {
       method: "DELETE",
@@ -2198,10 +2253,15 @@ async function eliminarEquipoPorNI(ni) {
       throw new Error(errorMessage);
     }
 
-    console.log(`[eliminarEquipoPorNI] Equipo con NI ${ni} eliminado exitosamente`);
+    console.log(
+      `[eliminarEquipoPorNI] Equipo con NI ${ni} eliminado exitosamente`
+    );
     return true;
   } catch (error) {
-    console.error(`[eliminarEquipoPorNI] Error al eliminar equipo con NI ${ni}:`, error);
+    console.error(
+      `[eliminarEquipoPorNI] Error al eliminar equipo con NI ${ni}:`,
+      error
+    );
     return false;
   }
 }
@@ -2257,17 +2317,6 @@ async function eliminarEquipo(nne, nroSerie) {
 /**
  * Muestra una alerta simple utilizando SweetAlert2.
  * @param {string} mensaje - El mensaje a mostrar.
- * @param {string} tipo - El tipo de alerta (e.g., 'success', 'error', 'warning').
- */
-function mostrarAlerta(mensaje, tipo) {
-  Swal.fire({
-    title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
-    text: mensaje,
-    icon: tipo,
-    confirmButtonText: "Aceptar",
-  });
-}
-
 /**
  * Activa el modo de edición en el modal de detalles
  */
@@ -2794,14 +2843,8 @@ async function guardarCambiosDetalles() {
 
     if (response.ok) {
       console.log("[guardarCambiosDetalles] Actualización exitosa");
-      // Mostrar alerta de éxito
-      await Swal.fire({
-        title: "Éxito",
-        text: "Los cambios se guardaron correctamente.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      // Mostrar notificación de éxito
+      Notificacion.success("Los cambios se guardaron correctamente.");
 
       // Recargar equipo actualizado desde la API
       const nneActual = payload.nne || equipoActual.nne;
@@ -2849,7 +2892,7 @@ function exportarEquiposPDF() {
   // Verificar que html2pdf esté disponible
   if (typeof html2pdf === "undefined") {
     console.error("[exportarEquiposPDF] html2pdf.js no está cargado");
-    mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
+    Notificacion.error("Error: La biblioteca de PDF no está disponible");
     return;
   }
 
@@ -2859,7 +2902,7 @@ function exportarEquiposPDF() {
     console.error(
       "[exportarEquiposPDF] No se encontró el elemento contenidoPDF"
     );
-    mostrarAlerta("Error: No se encontró el contenido para exportar", "error");
+    Notificacion.error("Error: No se encontró el contenido para exportar");
     return;
   }
 
@@ -2942,12 +2985,12 @@ function exportarEquiposPDF() {
     .then(() => {
       console.log("[exportarEquiposPDF] PDF generado exitosamente");
       loading.close();
-      mostrarAlerta("PDF exportado exitosamente", "success");
+      Notificacion.success("PDF exportado exitosamente");
     })
     .catch((error) => {
       console.error("[exportarEquiposPDF] Error al generar PDF:", error);
       loading.close();
-      mostrarAlerta("Error al generar el PDF", "error");
+      Notificacion.error("Error al generar el PDF");
     });
 }
 
@@ -2962,14 +3005,14 @@ function exportarDetalleEquipoPDF() {
   // Verificar que html2pdf esté disponible
   if (typeof html2pdf === "undefined") {
     console.error("[exportarDetalleEquipoPDF] html2pdf.js no está cargado");
-    mostrarAlerta("Error: La biblioteca de PDF no está disponible", "error");
+    Notificacion.error("Error: La biblioteca de PDF no está disponible");
     return;
   }
 
   // Verificar que tenemos el equipo actual
   if (!window.__equipoDetallesActual) {
     console.error("[exportarDetalleEquipoPDF] No hay datos del equipo actual");
-    mostrarAlerta("Error: No se encontraron los datos del equipo", "error");
+    Notificacion.error("Error: No se encontraron los datos del equipo");
     return;
   }
 
@@ -3015,7 +3058,7 @@ function exportarDetalleEquipoPDF() {
 
   if (!contenidoPDF) {
     console.error("[exportarDetalleEquipoPDF] Error al crear el contenido PDF");
-    mostrarAlerta("Error al generar el contenido del PDF", "error");
+    Notificacion.error("Error al generar el contenido del PDF");
     return;
   }
 
@@ -3062,7 +3105,7 @@ function exportarDetalleEquipoPDF() {
         "[exportarDetalleEquipoPDF] PDF del detalle generado exitosamente"
       );
       loading.close();
-      mostrarAlerta("PDF del detalle exportado exitosamente", "success");
+      Notificacion.success("PDF del detalle exportado exitosamente");
     })
     .catch((error) => {
       console.error(
@@ -3070,7 +3113,7 @@ function exportarDetalleEquipoPDF() {
         error
       );
       loading.close();
-      mostrarAlerta("Error al generar el PDF del detalle", "error");
+      Notificacion.error("Error al generar el PDF del detalle");
     });
 }
 

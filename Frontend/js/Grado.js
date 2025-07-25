@@ -2,6 +2,34 @@
 // const apiUrl = "http://localhost:5069/api/grado";
 const apiUrl = CONFIG.API_BASE_URL + "/Grado";
 
+// Clase para manejar las notificaciones
+class Notificacion {
+  static mostrar(icono, titulo, mensaje) {
+    Swal.fire({
+      icon: icono,
+      title: titulo,
+      text: mensaje,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  }
+
+  static error(mensaje) {
+    this.mostrar("error", "Error", mensaje);
+  }
+
+  static success(mensaje) {
+    this.mostrar("success", "Éxito", mensaje);
+  }
+
+  static warning(mensaje) {
+    this.mostrar("warning", "Advertencia", mensaje);
+  }
+}
+
 // Cargar los grados al iniciar la página
 document.addEventListener("DOMContentLoaded", () => {
   cargarGrados();
@@ -90,45 +118,11 @@ async function Eliminar(idGrado, button) {
     await cargarGrados();
 
     // Mostrar notificación de éxito
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener("mouseenter", Swal.stopTimer);
-        toast.addEventListener("mouseleave", Swal.resumeTimer);
-      },
-    });
-
-    await Toast.fire({
-      icon: "success",
-      title: "¡Eliminado!",
-      text: "El grado ha sido eliminado correctamente",
-    });
+    Notificacion.success("Los datos se guardaron correctamente");
   } catch (error) {
     console.error(`[Eliminar] Error al eliminar el grado ${idGrado}:`, error);
-    await Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error.message || "Ocurrió un error al intentar eliminar el grado",
-      confirmButtonText: "Entendido",
-      timer: 5000,
-      timerProgressBar: true,
-      showConfirmButton: true,
-    });
+    Notificacion.error(error.message || "Ocurrió un error al intentar eliminar el grado");
   }
-}
-
-// Función para mostrar notificaciones
-function mostrarNotificacion(icono, titulo, mensaje) {
-  return Swal.fire({
-    icon: icono,
-    title: titulo,
-    text: mensaje,
-    showConfirmButton: true,
-  });
 }
 
 // Función para guardar un nuevo grado
@@ -158,11 +152,7 @@ async function guardarGrado(abreviatura, descripcion) {
     modal.hide();
 
     // Mostrar mensaje de éxito
-    await mostrarNotificacion(
-      "success",
-      "¡Éxito!",
-      "Grado guardado correctamente"
-    );
+    Notificacion.success("Los datos se guardaron correctamente");
 
     // Recargar la tabla
     await cargarGrados();
@@ -173,12 +163,7 @@ async function guardarGrado(abreviatura, descripcion) {
     return await response.json();
   } catch (error) {
     console.error("Error al guardar el grado:", error);
-    await Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error.message || "Ocurrió un error al guardar el grado",
-      confirmButtonColor: "#dc3545",
-    });
+    Notificacion.error(error.message || "Ocurrió un error al guardar el grado");
     throw error;
   }
 }
