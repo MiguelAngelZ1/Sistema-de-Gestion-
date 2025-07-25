@@ -524,11 +524,23 @@ async function guardarModelo(event) {
     ubicacion: `"${ubicacion}"`
   });
 
+  // Debug: verificar estados booleanos
+  console.log("Estados de validación:", {
+    nnePresent: Boolean(nne && nne.length > 0),
+    niPresent: Boolean(ni && ni.length > 0),
+    nroSeriePresent: Boolean(nroSerie && nroSerie.length > 0),
+    alMenosUno: Boolean((nne && nne.length > 0) || (ni && ni.length > 0) || (nroSerie && nroSerie.length > 0))
+  });
+
   // Validaciones obligatorias
   const errores = [];
 
-  // Al menos uno de los tres identificadores debe estar presente
-  if (!nne && !ni && !nroSerie) {
+  // Al menos uno de los tres identificadores debe estar presente y no vacío
+  const tieneNNE = nne && nne.length > 0;
+  const tieneNI = ni && ni.length > 0;
+  const tieneNroSerie = nroSerie && nroSerie.length > 0;
+  
+  if (!tieneNNE && !tieneNI && !tieneNroSerie) {
     errores.push("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie");
   }
 
@@ -548,17 +560,21 @@ async function guardarModelo(event) {
     errores.push("La ubicación del equipo es obligatoria");
   }
 
-  // Validación de formato NNE solo si se proporciona
-  if (nne && !/^\d+$/.test(nne)) {
+  // Validación de formato NNE solo si se proporciona (no vacío y no solo espacios)
+  console.log(`[DEBUG] Validando NNE: tieneNNE=${tieneNNE}, nne="${nne}"`);
+  if (tieneNNE && !/^\d+$/.test(nne)) {
+    console.log("[DEBUG] Error: NNE no contiene solo números");
     errores.push("El NNE debe contener solo números");
   }
 
-  // Validación de longitud mínima solo si se proporciona
-  if (nne && nne.length < 8) {
+  // Validación de longitud mínima solo si se proporciona (no vacío y no solo espacios)
+  if (tieneNNE && nne.length < 8) {
+    console.log("[DEBUG] Error: NNE tiene menos de 8 dígitos");
     errores.push("El NNE debe tener al menos 8 dígitos");
   }
 
   if (errores.length > 0) {
+    console.log("[DEBUG] Errores encontrados:", errores);
     Swal.fire({
       title: "⚠️ Campos Obligatorios",
       html: `
@@ -606,7 +622,7 @@ async function guardarModelo(event) {
 
   // 2. Recolectar datos de la Primera Unidad (solo si hay número de serie)
   let primeraUnidad = null;
-  if (nroSerie) {
+  if (tieneNroSerie) {
     primeraUnidad = {
       NumeroSerie: nroSerie,
       EstadoId: parseInt(estadoEquipoId, 10),
@@ -618,8 +634,8 @@ async function guardarModelo(event) {
   // 3. Recolectar datos del Modelo
   const modeloData = {
     Ine: document.getElementById("crear-ine").value.trim() || null,
-    Nne: nne || null,
-    NI: ni || null,
+    Nne: tieneNNE ? nne : null,
+    NI: tieneNI ? ni : null,
     TipoEquipoId: tipoEquipoId,
     Observaciones: document.getElementById("crear-observaciones").value.trim() || null,
     Marca: marca,
