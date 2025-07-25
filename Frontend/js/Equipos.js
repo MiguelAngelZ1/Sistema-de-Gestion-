@@ -1653,6 +1653,8 @@ function cancelarEdicionDetalles() {
  */
 async function cargarEquipos() {
   try {
+    console.log("[cargarEquipos] Iniciando carga de equipos...");
+    
     // 1. Obtener todos los datos necesarios de la API
     const [equipos, unidades, estados] = await Promise.all([
       fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
@@ -1663,6 +1665,8 @@ async function cargarEquipos() {
         res.ok ? res.json() : Promise.reject(res)
       ),
     ]);
+
+    console.log("[cargarEquipos] Datos obtenidos:", { equipos: equipos.length, unidades: unidades.length, estados: estados.length });
 
     // Guardar datos globalmente para exportación
     window.equipos = equipos;
@@ -1676,8 +1680,8 @@ async function cargarEquipos() {
     // Limpiar la tabla
     cuerpoTabla.innerHTML = "";
 
-    // Si no hay unidades, mostrar mensaje de tabla vacía
-    if (!unidades || unidades.length === 0) {
+    // Si no hay equipos, mostrar mensaje de tabla vacía
+    if (!equipos || equipos.length === 0) {
       if (noEquipos && tablaEquipos) {
         // Ocultar la tabla y mostrar el mensaje
         tablaEquipos.style.display = "none";
@@ -1711,66 +1715,109 @@ async function cargarEquipos() {
     }
 
     // Crear mapas para acceso rápido
-    const equiposMap = new Map(equipos.map((e) => [e.id, e]));
     const estadosMap = new Map(estados.map((e) => [e.id, e.nombre]));
+    
+    // Crear mapa de unidades por equipo ID
+    const unidadesPorEquipo = new Map();
+    unidades.forEach(unidad => {
+      if (!unidadesPorEquipo.has(unidad.equipoId)) {
+        unidadesPorEquipo.set(unidad.equipoId, []);
+      }
+      unidadesPorEquipo.get(unidad.equipoId).push(unidad);
+    });
 
     // Logs de depuración
-    console.log("equipos:", equipos);
-    console.log("equiposMap:", Array.from(equiposMap.entries()));
-    console.log("unidades:", unidades);
-    console.log("estados:", estados);
+    console.log("[cargarEquipos] equipos:", equipos);
+    console.log("[cargarEquipos] unidades:", unidades);
+    console.log("[cargarEquipos] unidadesPorEquipo:", Array.from(unidadesPorEquipo.entries()));
 
-    // Renderizar una fila por unidad física
-    unidades.forEach((unidad, idx) => {
-      const equipo = equiposMap.get(unidad.equipoId) || {};
-      console.log(`unidad[${idx}]:`, unidad, "-> equipo encontrado:", equipo);
-      const estadoNombre = estadosMap.get(unidad.estadoId) || "";
-      const fila = `
-                <tr>
-                    <td>${idx + 1}</td>
-                    <td>${equipo.ine || ""}</td>
-                    <td>${equipo.nne || ""}</td>
-                    <td>${equipo.ni || ""}</td>
-                    <td>${unidad.nroSerie || ""}</td>
-                    <td class="fw-bold ${
-                      estadoNombre.startsWith("E/S")
-                        ? "text-success"
-                        : estadoNombre.startsWith("F/S") ||
-                          estadoNombre.startsWith("BAJA")
-                        ? "text-danger"
-                        : "text-warning"
-                    }">${estadoNombre}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${
-                          equipo.nne || ""
-                        }', '${unidad.nroSerie || ""}', '${equipo.ni || ""}')">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        ${
-                          equipo.nne
-                            ? `
-                        <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
-                            <i class="bi bi-box-seam"></i>
-                        </button>
-                        <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
-                            <i class="bi bi-trash"></i>
-                        </button>`
-                            : `
-                        <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
-                            <i class="bi bi-box-seam"></i>
-                        </button>
-                        <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacion('', '${
-                          unidad.nroSerie || ""
-                        }')">
-                            <i class="bi bi-trash"></i>
-                        </button>`
-                        }
-                    </td>
-                </tr>`;
-      cuerpoTabla.innerHTML += fila;
+    let filaIndex = 1;
+
+    // Renderizar equipos - tanto con unidades como sin unidades
+    equipos.forEach((equipo) => {
+      console.log(`[cargarEquipos] Procesando equipo ID ${equipo.id}:`, equipo);
+      
+      const unidadesDelEquipo = unidadesPorEquipo.get(equipo.id) || [];
+      console.log(`[cargarEquipos] Unidades del equipo ${equipo.id}:`, unidadesDelEquipo);
+      
+      if (unidadesDelEquipo.length === 0) {
+        // Equipo sin unidades físicas (solo modelo)
+        const fila = `
+          <tr>
+            <td>${filaIndex++}</td>
+            <td>${equipo.ine || ""}</td>
+            <td>${equipo.nne || ""}</td>
+            <td>${equipo.ni || ""}</td>
+            <td class="text-muted fst-italic">Sin unidades físicas</td>
+            <td class="text-muted">-</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${equipo.nne || ""}', '', '${equipo.ni || ""}')">
+                <i class="bi bi-eye"></i>
+              </button>
+              ${equipo.nne ? `
+                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
+                  <i class="bi bi-box-seam"></i>
+                </button>
+                <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
+                  <i class="bi bi-trash"></i>
+                </button>` : `
+                <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
+                  <i class="bi bi-box-seam"></i>
+                </button>
+                <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacionPorNI('${equipo.ni || ""}')">
+                  <i class="bi bi-trash"></i>
+                </button>`
+              }
+            </td>
+          </tr>`;
+        cuerpoTabla.innerHTML += fila;
+      } else {
+        // Equipo con unidades físicas
+        unidadesDelEquipo.forEach((unidad) => {
+          const estadoNombre = estadosMap.get(unidad.estadoId) || "";
+          const fila = `
+            <tr>
+              <td>${filaIndex++}</td>
+              <td>${equipo.ine || ""}</td>
+              <td>${equipo.nne || ""}</td>
+              <td>${equipo.ni || ""}</td>
+              <td>${unidad.nroSerie || ""}</td>
+              <td class="fw-bold ${
+                estadoNombre.startsWith("E/S")
+                  ? "text-success"
+                  : estadoNombre.startsWith("F/S") ||
+                    estadoNombre.startsWith("BAJA")
+                  ? "text-danger"
+                  : "text-warning"
+              }">${estadoNombre}</td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-warning me-1" title="Ver Detalles" onclick="mostrarDetalles('${equipo.nne || ""}', '${unidad.nroSerie || ""}', '${equipo.ni || ""}')">
+                  <i class="bi bi-eye"></i>
+                </button>
+                ${equipo.nne ? `
+                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
+                    <i class="bi bi-box-seam"></i>
+                  </button>
+                  <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
+                    <i class="bi bi-trash"></i>
+                  </button>` : `
+                  <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
+                    <i class="bi bi-box-seam"></i>
+                  </button>
+                  <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacion('', '${unidad.nroSerie || ""}')">
+                    <i class="bi bi-trash"></i>
+                  </button>`
+                }
+              </td>
+            </tr>`;
+          cuerpoTabla.innerHTML += fila;
+        });
+      }
     });
+    
+    console.log(`[cargarEquipos] Tabla cargada con ${filaIndex - 1} filas`);
   } catch (error) {
-    console.error("Error al cargar los equipos:", error);
+    console.error("[cargarEquipos] Error al cargar los equipos:", error);
 
     // Mostrar estado vacío en caso de error
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
@@ -1799,22 +1846,20 @@ async function cargarEquipos() {
       }
       cuerpoTabla.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-4 text-muted">
-            <i class="bi bi-exclamation-triangle fs-1 d-block mb-2 text-warning"></i>
-            <p>Error al cargar los equipos</p>
-            <p class="small">Verifique la conexión al servidor</p>
+          <td colspan="6" class="text-center py-4 text-warning">
+            <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+            Error al cargar los equipos. Verifique la conexión al servidor.
           </td>
         </tr>`;
     }
 
-    mostrarAlerta(
-      "No se pudo cargar la lista de equipos. Verifique la conexión al servidor.",
-      "error"
-    );
+    mostrarAlerta("Error al cargar los equipos. Verifique la conexión al servidor.", "error");
   }
 }
 
-// Función para mostrar el modal de detalles del equipo (nuevo diseño, robusta y solo con los IDs existentes)
+/**
+ * Función para mostrar el modal de detalles del equipo (nuevo diseño, robusta y solo con los IDs existentes)
+ */
 window.mostrarDetalles = async function (nne, nroSerie, ni) {
   resetearModalDetalles();
   try {
@@ -2091,6 +2136,74 @@ function confirmarEliminacion(nne, nroSerie) {
       }
     }
   });
+}
+
+/**
+ * Muestra una alerta de confirmación antes de eliminar un equipo por NI.
+ * @param {string} ni - El NI del equipo a eliminar.
+ */
+function confirmarEliminacionPorNI(ni) {
+  if (!ni || ni.trim() === "" || ni === "-") {
+    mostrarAlerta("No se puede eliminar: NI no válido.", "error");
+    return;
+  }
+
+  Swal.fire({
+    title: `¿Estás seguro que deseas eliminar este equipo?`,
+    text: `Se eliminarán todos los datos asociados al equipo con NI ${ni}.`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, ¡eliminar!",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const exito = await eliminarEquipoPorNI(ni);
+      if (exito) {
+        mostrarAlerta("Equipo eliminado con éxito.", "success");
+        cargarEquipos();
+      } else {
+        mostrarAlerta("No se pudo eliminar el equipo.", "error");
+      }
+    }
+  });
+}
+
+/**
+ * Elimina un equipo por NI.
+ * @param {string} ni - El NI del equipo a eliminar.
+ * @returns {Promise<boolean>} - True si se eliminó correctamente, false en caso contrario.
+ */
+async function eliminarEquipoPorNI(ni) {
+  try {
+    console.log(`[eliminarEquipoPorNI] Eliminando equipo con NI: ${ni}`);
+    
+    const url = `${getApiBaseUrl()}/equipos/ni/${encodeURIComponent(ni)}`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        // Si no se puede parsear como JSON, usar el mensaje por defecto
+      }
+      throw new Error(errorMessage);
+    }
+
+    console.log(`[eliminarEquipoPorNI] Equipo con NI ${ni} eliminado exitosamente`);
+    return true;
+  } catch (error) {
+    console.error(`[eliminarEquipoPorNI] Error al eliminar equipo con NI ${ni}:`, error);
+    return false;
+  }
 }
 
 /**
