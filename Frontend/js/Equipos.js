@@ -211,26 +211,52 @@ async function eliminarEquipo(nne, nroSerie) {
  */
 async function crearModelo(equipo) {
   try {
+    console.log("[crearModelo] Datos del equipo antes de enviar:");
+    console.log(JSON.stringify(equipo, null, 2));
+    
     const respuesta = await fetch(API_URL, {
       // Llama a POST /api/equipos
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
       },
       body: JSON.stringify(equipo),
     });
 
+    console.log(`[crearModelo] Response status: ${respuesta.status}`);
+    console.log(`[crearModelo] Response ok: ${respuesta.ok}`);
+
     if (!respuesta.ok) {
       let mensajeError = `Error HTTP ${respuesta.status}: ${respuesta.statusText}`;
+      let detalleError = null;
 
       try {
         // Intentar leer como JSON primero
         const errorData = await respuesta.json();
-        mensajeError = errorData.message || errorData.error || mensajeError;
+        console.log("[crearModelo] Error data from backend:", errorData);
+        
+        if (errorData.message) {
+          mensajeError = errorData.message;
+        } else if (errorData.error) {
+          mensajeError = errorData.error;
+        } else if (errorData.errors) {
+          // Para ModelState errors
+          const modelErrors = Object.entries(errorData.errors || {})
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+            .join('\n');
+          mensajeError = `Errores de validación:\n${modelErrors}`;
+        } else if (typeof errorData === 'string') {
+          mensajeError = errorData;
+        }
+        
+        detalleError = errorData;
       } catch (jsonError) {
+        console.log("[crearModelo] No se pudo parsear error como JSON, intentando texto...");
         // Si no es JSON válido, intentar leer como texto
         try {
           const errorText = await respuesta.text();
+          console.log("[crearModelo] Error text from backend:", errorText);
           if (errorText.trim()) {
             mensajeError =
               errorText.length > 200
@@ -238,16 +264,19 @@ async function crearModelo(equipo) {
                 : errorText;
           }
         } catch (textError) {
-          console.warn("No se pudo leer el cuerpo de la respuesta de error");
+          console.warn("[crearModelo] No se pudo leer el cuerpo de la respuesta de error");
         }
       }
 
+      console.error("[crearModelo] Detalle completo del error:", detalleError);
       throw new Error(mensajeError);
     }
 
-    return await respuesta.json();
+    const resultado = await respuesta.json();
+    console.log("[crearModelo] Equipo creado exitosamente:", resultado);
+    return resultado;
   } catch (error) {
-    console.error("Error al crear el modelo de equipo:", error);
+    console.error("[crearModelo] Error al crear el modelo de equipo:", error);
     mostrarAlerta(`No se pudo crear el modelo: ${error.message}`, "error");
     return null;
   }

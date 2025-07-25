@@ -114,48 +114,66 @@ namespace Backend.Controllers
         {
             Console.WriteLine("[LOG] CreateEquipoCompleto - Iniciando...");
             
-            // Verificar ModelState
-            if (!ModelState.IsValid)
-            {
-                Console.WriteLine("[LOG] ModelState no es válido:");
-                foreach (var error in ModelState)
-                {
-                    Console.WriteLine($"[LOG] Campo: {error.Key}, Errores: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
-                }
-                return BadRequest(ModelState);
-            }
-            
             try
             {
                 // Log del JSON recibido
                 if (data != null)
                 {
-                    var json = System.Text.Json.JsonSerializer.Serialize(data);
+                    var json = System.Text.Json.JsonSerializer.Serialize(data, new System.Text.Json.JsonSerializerOptions 
+                    { 
+                        WriteIndented = true,
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    });
                     Console.WriteLine($"[LOG] JSON recibido: {json}");
                 }
                 else
                 {
                     Console.WriteLine("[LOG] Data es NULL!");
+                    return BadRequest(new { error = "Los datos del equipo son requeridos." });
                 }
 
-                if (data == null)
+                // Verificar ModelState primero
+                if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("[LOG] BAD REQUEST por datos nulos");
-                    return BadRequest("Los datos del equipo son requeridos.");
+                    Console.WriteLine("[LOG] ModelState no es válido:");
+                    var modelErrors = new Dictionary<string, List<string>>();
+                    foreach (var error in ModelState)
+                    {
+                        var errorMessages = error.Value.Errors.Select(e => e.ErrorMessage).ToList();
+                        modelErrors[error.Key] = errorMessages;
+                        Console.WriteLine($"[LOG] Campo: {error.Key}, Errores: {string.Join(", ", errorMessages)}");
+                    }
+                    return BadRequest(new { 
+                        error = "Errores de validación en los datos", 
+                        errors = modelErrors,
+                        message = "Los datos enviados no cumplen con los requisitos de validación."
+                    });
                 }
 
-                // Log detallado de validaciones
+                // Log detallado de validaciones custom
                 bool tieneNNE = !string.IsNullOrWhiteSpace(data.Nne);
                 bool tieneNI = !string.IsNullOrWhiteSpace(data.NI);
                 bool tieneNumeroSerie = data.PrimeraUnidad != null && !string.IsNullOrWhiteSpace(data.PrimeraUnidad.NumeroSerie);
                 
-                Console.WriteLine($"[LOG] Validaciones: tieneNNE={tieneNNE}, tieneNI={tieneNI}, tieneNumeroSerie={tieneNumeroSerie}");
+                Console.WriteLine($"[LOG] Validaciones custom: tieneNNE={tieneNNE}, tieneNI={tieneNI}, tieneNumeroSerie={tieneNumeroSerie}");
                 Console.WriteLine($"[LOG] NNE='{data.Nne}', NI='{data.NI}', PrimeraUnidad={(data.PrimeraUnidad != null ? "presente" : "null")}");
+                if (data.PrimeraUnidad != null)
+                {
+                    Console.WriteLine($"[LOG] PrimeraUnidad.NumeroSerie='{data.PrimeraUnidad.NumeroSerie}'");
+                }
                 
                 if (!tieneNNE && !tieneNI && !tieneNumeroSerie)
                 {
                     Console.WriteLine("[LOG] BAD REQUEST - debe tener al menos uno de los identificadores");
-                    return BadRequest("Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie.");
+                    return BadRequest(new { 
+                        error = "Identificador requerido",
+                        message = "Debe proporcionar al menos uno de los siguientes identificadores: NNE, NI o Número de Serie.",
+                        details = new {
+                            nne = data.Nne,
+                            ni = data.NI,
+                            numeroSerie = data.PrimeraUnidad?.NumeroSerie
+                        }
+                    });
                 }
 
                 Console.WriteLine("[LOG] Validaciones pasadas, llamando al repositorio...");
@@ -164,7 +182,10 @@ namespace Backend.Controllers
                 if (nuevoEquipo == null)
                 {
                     Console.WriteLine("[LOG] Error: el repositorio devolvió null");
-                    return StatusCode(500, "No se pudo crear el equipo. La operación en el repositorio falló.");
+                    return StatusCode(500, new { 
+                        error = "Error en la creación", 
+                        message = "No se pudo crear el equipo. La operación en el repositorio falló." 
+                    });
                 }
                 
                 Console.WriteLine($"[LOG] Equipo creado exitosamente con ID: {nuevoEquipo.Id}");
@@ -191,7 +212,11 @@ namespace Backend.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine("[ERROR] Excepción en CreateEquipoCompleto: " + ex.ToString());
-                return StatusCode(500, "Error interno en el servidor: " + ex.Message);
+                return StatusCode(500, new { 
+                    error = "Error interno del servidor",
+                    message = ex.Message,
+                    timestamp = DateTime.UtcNow
+                });
             }
         }
 
