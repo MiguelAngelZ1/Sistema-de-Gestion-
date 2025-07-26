@@ -1791,9 +1791,9 @@ async function cargarEquipos() {
         const fila = `
           <tr>
             <td>${filaIndex++}</td>
-            <td>${equipo.ine || ""}</td>
-            <td>${equipo.nne || ""}</td>
-            <td>${equipo.ni || ""}</td>
+            <td>${equipo.ine || "-"}</td>
+            <td>${equipo.nne || "-"}</td>
+            <td>${equipo.ni || "-"}</td>
             <td class="text-muted fst-italic">Sin unidades físicas</td>
             <td class="text-muted">-</td>
             <td class="text-center">
@@ -1827,14 +1827,14 @@ async function cargarEquipos() {
       } else {
         // Equipo con unidades físicas
         unidadesDelEquipo.forEach((unidad) => {
-          const estadoNombre = estadosMap.get(unidad.estadoId) || "";
+          const estadoNombre = estadosMap.get(unidad.estadoId) || "-";
           const fila = `
             <tr>
               <td>${filaIndex++}</td>
-              <td>${equipo.ine || ""}</td>
-              <td>${equipo.nne || ""}</td>
-              <td>${equipo.ni || ""}</td>
-              <td>${unidad.nroSerie || ""}</td>
+              <td>${equipo.ine || "-"}</td>
+              <td>${equipo.nne || "-"}</td>
+              <td>${equipo.ni || "-"}</td>
+              <td>${unidad.nroSerie || "-"}</td>
               <td class="fw-bold ${
                 estadoNombre.startsWith("E/S")
                   ? "text-success"
