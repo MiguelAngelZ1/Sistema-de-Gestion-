@@ -1953,10 +1953,12 @@ async function cargarEquipos() {
                   }', ${!!equipo.nne})">
                     <i class="bi bi-box-seam"></i>
                   </button>
-                  <button class="btn btn-delete" title="Eliminar Modelo" onclick="
+                  <button class="btn btn-delete" title="Eliminar Equipo" onclick="
                     ${
                       equipo.nne
                         ? `confirmarEliminacion('${equipo.nne}', '')`
+                        : equipo.ni
+                        ? `confirmarEliminacionPorNI('${equipo.ni || ""}')`
                         : `confirmarEliminacion('', '${unidad.nroSerie || ""}')`
                     }
                   ">

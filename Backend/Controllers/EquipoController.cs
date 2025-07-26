@@ -484,5 +484,26 @@ namespace Backend.Controllers
             }
         }
 
+        /// <summary>
+        /// Elimina un modelo de equipo y todas sus unidades y especificaciones por su número de serie.
+        /// </summary>
+        [HttpDelete("nroSerie/{nroSerie}")]
+        public async Task<IActionResult> DeleteEquipoPorNroSerie(string nroSerie)
+        {
+            try
+            {
+                var success = await _repository.EliminarEquipoPorNroSerie(nroSerie);
+                if (success)
+                {
+                    return Ok(new { message = "Modelo de equipo y todas sus unidades han sido eliminados." });
+                }
+                return NotFound("No se encontró el modelo de equipo para eliminar.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
     }
 }
