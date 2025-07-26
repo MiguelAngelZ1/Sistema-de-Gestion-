@@ -931,16 +931,18 @@ async function guardarUnidad(event) {
 
 /**
  * Muestra el modal de inventario con el recuento de equipos por estado.
- * @param {string} nne - El NNE del grupo de equipos.
+ * @param {string} identificador - El NNE o NI del grupo de equipos.
  */
-async function mostrarInventario(nne) {
+async function mostrarInventario(identificador) {
   // Limpiar campos
   document.getElementById("totalEquiposNNE").textContent = "...";
   document.getElementById("enServicioNNE").textContent = "...";
   document.getElementById("fueraServicioNNE").textContent = "...";
-  document.getElementById(
-    "nneTitle"
-  ).textContent = `Inventario del NNE: ${nne}`;
+  
+  // Detectar si es NNE o NI y actualizar el título
+  const esNNE = identificador && identificador.trim() !== "" && !identificador.startsWith("NI");
+  const tipoIdentificador = esNNE ? "NNE" : "NI";
+  document.getElementById("nneTitle").textContent = `Inventario del ${tipoIdentificador}: ${identificador}`;
 
   // Limpiar y ocultar sección de motivos
   const seccionMotivos = document.getElementById("seccionMotivosFueraServicio");
@@ -949,11 +951,14 @@ async function mostrarInventario(nne) {
   listaMotivos.innerHTML = "";
 
   try {
-    const resp = await fetch(
-      `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(
-        nne
-      )}/inventarioresumen`
-    );
+    // Determinar el endpoint correcto según el tipo de identificador
+    const endpoint = esNNE 
+      ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(identificador)}/inventarioresumen`
+      : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(identificador)}/inventarioresumen`;
+    
+    console.log(`[DEBUG-Inventario] Usando endpoint: ${endpoint}`);
+    
+    const resp = await fetch(endpoint);
     console.log("[DEBUG-Inventario] Response status:", resp.status);
     if (!resp.ok)
       throw new Error("No se pudo obtener el resumen de inventario");
@@ -1804,21 +1809,24 @@ async function cargarEquipos() {
                 <i class="bi bi-eye"></i>
               </button>
               ${
-                equipo.nne
+                equipo.nne || equipo.ni
                   ? `
-                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
+                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}')">
                   <i class="bi bi-box-seam"></i>
                 </button>
-                <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
+                <button class="btn btn-delete" title="Eliminar Modelo" onclick="
+                  ${equipo.nne 
+                    ? `confirmarEliminacion('${equipo.nne}', '')` 
+                    : `confirmarEliminacionPorNI('${equipo.ni || ""}')`
+                  }
+                ">
                   <i class="bi bi-trash"></i>
                 </button>`
                   : `
                 <button class="btn btn-sm btn-info me-1" title="Inventario no disponible" disabled>
                   <i class="bi bi-box-seam"></i>
                 </button>
-                <button class="btn btn-delete" title="Eliminar Equipo" onclick="confirmarEliminacionPorNI('${
-                  equipo.ni || ""
-                }')">
+                <button class="btn btn-delete" title="Eliminar Equipo" disabled>
                   <i class="bi bi-trash"></i>
                 </button>`
               }
@@ -1853,12 +1861,17 @@ async function cargarEquipos() {
                   <i class="bi bi-eye"></i>
                 </button>
                 ${
-                  equipo.nne
+                  equipo.nne || equipo.ni
                     ? `
-                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne}')">
+                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}')">
                     <i class="bi bi-box-seam"></i>
                   </button>
-                  <button class="btn btn-delete" title="Eliminar Modelo" onclick="confirmarEliminacion('${equipo.nne}', '')">
+                  <button class="btn btn-delete" title="Eliminar Modelo" onclick="
+                    ${equipo.nne 
+                      ? `confirmarEliminacion('${equipo.nne}', '')` 
+                      : `confirmarEliminacion('', '${unidad.nroSerie || ""}')`
+                    }
+                  ">
                     <i class="bi bi-trash"></i>
                   </button>`
                     : `
