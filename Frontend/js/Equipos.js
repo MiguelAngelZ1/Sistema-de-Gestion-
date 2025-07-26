@@ -933,16 +933,29 @@ async function guardarUnidad(event) {
  * Muestra el modal de inventario con el recuento de equipos por estado.
  * @param {string} identificador - El NNE o NI del grupo de equipos.
  */
-async function mostrarInventario(identificador) {
+async function mostrarInventario(identificador, esNNE = null) {
   // Limpiar campos
   document.getElementById("totalEquiposNNE").textContent = "...";
   document.getElementById("enServicioNNE").textContent = "...";
   document.getElementById("fueraServicioNNE").textContent = "...";
   
-  // Detectar si es NNE o NI y actualizar el título
-  const esNNE = identificador && identificador.trim() !== "" && !identificador.startsWith("NI");
-  const tipoIdentificador = esNNE ? "NNE" : "NI";
+  // Detectar si es NNE o NI
+  // Si no se especifica explícitamente, usar heurística mejorada
+  let determinarEsNNE;
+  if (esNNE !== null) {
+    determinarEsNNE = esNNE;
+  } else {
+    // Heurística: si el identificador es puramente numérico y tiene 3 o menos dígitos, es probablemente NI
+    // Si tiene letras o más de 3 dígitos, es probablemente NNE
+    const soloNumeros = /^\d+$/.test(identificador);
+    const longitudCorta = identificador.length <= 3;
+    determinarEsNNE = !(soloNumeros && longitudCorta);
+  }
+  
+  const tipoIdentificador = determinarEsNNE ? "NNE" : "NI";
   document.getElementById("nneTitle").textContent = `Inventario del ${tipoIdentificador}: ${identificador}`;
+  
+  console.log(`[DEBUG-Inventario] Identificador: ${identificador}, Tipo detectado: ${tipoIdentificador}, esNNE: ${determinarEsNNE}`);
 
   // Limpiar y ocultar sección de motivos
   const seccionMotivos = document.getElementById("seccionMotivosFueraServicio");
@@ -952,7 +965,7 @@ async function mostrarInventario(identificador) {
 
   try {
     // Determinar el endpoint correcto según el tipo de identificador
-    const endpoint = esNNE 
+    const endpoint = determinarEsNNE 
       ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(identificador)}/inventarioresumen`
       : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(identificador)}/inventarioresumen`;
     
@@ -960,48 +973,35 @@ async function mostrarInventario(identificador) {
     
     const resp = await fetch(endpoint);
     console.log("[DEBUG-Inventario] Response status:", resp.status);
-    if (!resp.ok)
-      throw new Error("No se pudo obtener el resumen de inventario");
+    if (!resp.ok) {
+      // Si falla con el tipo detectado, intentar con el otro tipo
+      const endpointAlternativo = !determinarEsNNE 
+        ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(identificador)}/inventarioresumen`
+        : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(identificador)}/inventarioresumen`;
+      
+      console.log(`[DEBUG-Inventario] Primer endpoint falló, intentando alternativo: ${endpointAlternativo}`);
+      const respAlternativa = await fetch(endpointAlternativo);
+      
+      if (!respAlternativa.ok) {
+        throw new Error("No se pudo obtener el resumen de inventario");
+      }
+      
+      const resumenAlternativo = await respAlternativa.json();
+      console.log("[DEBUG-Inventario] Resumen recibido (alternativo):", resumenAlternativo);
+      
+      // Actualizar el título con el tipo correcto
+      const tipoCorregido = !determinarEsNNE ? "NNE" : "NI";
+      document.getElementById("nneTitle").textContent = `Inventario del ${tipoCorregido}: ${identificador}`;
+      
+      // Procesar respuesta alternativa
+      actualizarInterfazInventario(resumenAlternativo);
+      return;
+    }
+    
     const resumen = await resp.json();
     console.log("[DEBUG-Inventario] Resumen recibido:", resumen);
 
-    // Actualizar los números principales
-    document.getElementById("totalEquiposNNE").textContent = resumen.total;
-    document.getElementById("enServicioNNE").textContent = resumen.enServicio;
-    document.getElementById("fueraServicioNNE").textContent =
-      resumen.fueraDeServicio;
-
-    console.log("[DEBUG-Inventario] Valores asignados:", {
-      total: resumen.total,
-      enServicio: resumen.enServicio,
-      fueraDeServicio: resumen.fueraDeServicio,
-    });
-
-    // Mostrar detalle de motivos fuera de servicio si existen
-    if (
-      resumen.detalleFueraDeServicio &&
-      resumen.detalleFueraDeServicio.length > 0
-    ) {
-      // Mostrar la sección de motivos
-      seccionMotivos.style.display = "block";
-
-      // Crear la lista de motivos
-      const motivosHTML = resumen.detalleFueraDeServicio
-        .map(
-          (motivo) => `
-                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                    <span class="text-danger">
-                        <i class="bi bi-dot"></i>
-                        <strong>${motivo.estado}:</strong>
-                    </span>
-                    <span class="badge bg-danger">${motivo.cantidad}</span>
-                </div>
-            `
-        )
-        .join("");
-
-      listaMotivos.innerHTML = motivosHTML;
-    }
+    actualizarInterfazInventario(resumen);
   } catch (error) {
     document.getElementById("totalEquiposNNE").textContent = "0";
     document.getElementById("enServicioNNE").textContent = "0";
@@ -1015,6 +1015,52 @@ async function mostrarInventario(identificador) {
     );
   }
   modalInventario.show();
+}
+
+/**
+ * Actualiza la interfaz del modal de inventario con los datos recibidos
+ * @param {Object} resumen - Objeto con el resumen de inventario
+ */
+function actualizarInterfazInventario(resumen) {
+  // Actualizar los números principales
+  document.getElementById("totalEquiposNNE").textContent = resumen.total;
+  document.getElementById("enServicioNNE").textContent = resumen.enServicio;
+  document.getElementById("fueraServicioNNE").textContent = resumen.fueraDeServicio;
+
+  console.log("[DEBUG-Inventario] Valores asignados:", {
+    total: resumen.total,
+    enServicio: resumen.enServicio,
+    fueraDeServicio: resumen.fueraDeServicio,
+  });
+
+  // Limpiar y ocultar sección de motivos
+  const seccionMotivos = document.getElementById("seccionMotivosFueraServicio");
+  const listaMotivos = document.getElementById("listaMotivosFueraServicio");
+  seccionMotivos.style.display = "none";
+  listaMotivos.innerHTML = "";
+
+  // Mostrar detalle de motivos fuera de servicio si existen
+  if (resumen.detalleFueraDeServicio && resumen.detalleFueraDeServicio.length > 0) {
+    // Mostrar la sección de motivos
+    seccionMotivos.style.display = "block";
+
+    // Crear la lista de motivos
+    const motivosHTML = resumen.detalleFueraDeServicio
+      .map(
+        (motivo) => `
+              <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="text-danger">
+                      <i class="bi bi-dot"></i>
+                      <strong>${motivo.estado}:</strong>
+                  </span>
+                  <span class="badge bg-danger">${motivo.cantidad}</span>
+              </div>
+          `
+      )
+      .join("");
+
+    listaMotivos.innerHTML = motivosHTML;
+  }
 }
 
 /**
@@ -1811,7 +1857,7 @@ async function cargarEquipos() {
               ${
                 equipo.nne || equipo.ni
                   ? `
-                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}')">
+                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}', ${!!equipo.nne})">
                   <i class="bi bi-box-seam"></i>
                 </button>
                 <button class="btn btn-delete" title="Eliminar Modelo" onclick="
@@ -1863,7 +1909,7 @@ async function cargarEquipos() {
                 ${
                   equipo.nne || equipo.ni
                     ? `
-                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}')">
+                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}', ${!!equipo.nne})">
                     <i class="bi bi-box-seam"></i>
                   </button>
                   <button class="btn btn-delete" title="Eliminar Modelo" onclick="

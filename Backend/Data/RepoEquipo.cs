@@ -1082,16 +1082,18 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
         /// </summary>
         public async Task<ResumenInventarioDto?> ObtenerResumenInventarioPorNI(string ni)
         {
-            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            using (var connection = AbrirConexion())
             {
                 try
                 {
-                    await connection.OpenAsync();
+                    Console.WriteLine($"[DEBUG-Inventario] Iniciando consulta para NI: {ni}");
                     
                     // Verificar que el equipo existe
                     var equipoExiste = await connection.ExecuteScalarAsync<int>(
                         "SELECT COUNT(*) FROM equipos WHERE ni = @NI",
                         new { NI = ni });
+                    
+                    Console.WriteLine($"[DEBUG-Inventario] Equipos encontrados con NI {ni}: {equipoExiste}");
                     
                     if (equipoExiste == 0)
                     {
@@ -1127,17 +1129,46 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                     {
                         try
                         {
-                            string estadoNombre = stat.estadonombre?.ToString() ?? "N/A";
-                            int cantidad = Convert.ToInt32(stat.total);
+                            Console.WriteLine($"[DEBUG-Inventario] Procesando stat: {stat}");
                             
-                            resumen.Total += cantidad;
-                            
-                            if (estadoNombre.Contains("E/S") || estadoNombre.Contains("En Servicio"))
+                            if (stat == null)
                             {
+                                Console.WriteLine($"[WARNING-Inventario] stat es null, saltando");
+                                continue;
+                            }
+                            
+                            // Verificar que estadonombre no sea null
+                            if (stat.estadonombre == null)
+                            {
+                                Console.WriteLine($"[WARNING-Inventario] estadonombre es null, saltando");
+                                continue;
+                            }
+                            
+                            var estadoNombre = (string)stat.estadonombre;
+                            var cantidad = Convert.ToInt32(stat.total);
+                            
+                            Console.WriteLine($"[DEBUG-Inventario] Estado: '{estadoNombre}', Cantidad: {cantidad}");
+                            
+                            // Aplicar la lógica de clasificación según el requerimiento (igual que NNE)
+                            if (estadoNombre.StartsWith("E/S"))
+                            {
+                                // Solo "E/S (En Servicio)" se considera "En Servicio"
                                 resumen.EnServicio += cantidad;
+                            }
+                            else if (estadoNombre.StartsWith("F/S"))
+                            {
+                                // "F/S (Fuera de Servicio)" se muestra como "Fuera de Servicio" sin motivo específico
+                                resumen.FueraDeServicio += cantidad;
+                                detalleFueraServicio.Add(new DetalleFueraDeServicioDto
+                                {
+                                    Estado = "F/S (Fuera de Servicio)",
+                                    Cantidad = cantidad
+                                });
                             }
                             else
                             {
+                                // Cualquier otro estado (BAJA, MANT, CAMBIO ELON, EXT, etc.) 
+                                // se considera "Fuera de Servicio" pero se muestra el motivo real
                                 resumen.FueraDeServicio += cantidad;
                                 detalleFueraServicio.Add(new DetalleFueraDeServicioDto
                                 {
@@ -1145,6 +1176,8 @@ public async Task<Equipo> ObtenerEquipoPorNroSerie(string nroSerie)
                                     Cantidad = cantidad
                                 });
                             }
+                            
+                            resumen.Total += cantidad;
                         }
                         catch (Exception ex)
                         {
