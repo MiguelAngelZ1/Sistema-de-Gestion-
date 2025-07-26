@@ -121,7 +121,9 @@ async function Eliminar(idGrado, button) {
     Notificacion.success("Los datos se guardaron correctamente");
   } catch (error) {
     console.error(`[Eliminar] Error al eliminar el grado ${idGrado}:`, error);
-    Notificacion.error(error.message || "Ocurrió un error al intentar eliminar el grado");
+    Notificacion.error(
+      error.message || "Ocurrió un error al intentar eliminar el grado"
+    );
   }
 }
 

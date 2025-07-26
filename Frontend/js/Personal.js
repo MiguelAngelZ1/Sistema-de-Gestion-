@@ -458,7 +458,9 @@ function configurarModalAgregarPersona() {
       );
 
       if (!gradoSeleccionado || !armEspSeleccionada) {
-        Notificacion.error("No se encontró el grado o arma/especialidad seleccionado");
+        Notificacion.error(
+          "No se encontró el grado o arma/especialidad seleccionado"
+        );
         return;
       }
 
@@ -875,7 +877,9 @@ function configurarEventosModal() {
         if (error.tipo === "dni_duplicado") {
           Notificacion.warning(error.message);
         } else {
-          Notificacion.error(error.message || "Ocurrió un error al guardar los datos");
+          Notificacion.error(
+            error.message || "Ocurrió un error al guardar los datos"
+          );
         }
       } finally {
         btnGuardar.disabled = false;
@@ -1684,7 +1688,9 @@ function mostrarDatosEnModal(persona, editar = false) {
             }
           } catch (error) {
             console.error("Error al cargar los datos para edición:", error);
-            Notificacion.error("No se pudieron cargar los datos necesarios para la edición");
+            Notificacion.error(
+              "No se pudieron cargar los datos necesarios para la edición"
+            );
           }
         }
 
@@ -1723,7 +1729,9 @@ function mostrarDatosEnModal(persona, editar = false) {
       modal.show();
     } catch (error) {
       console.error("Error al cargar los datos completos:", error);
-      Notificacion.error("No se pudieron cargar los datos completos del personal");
+      Notificacion.error(
+        "No se pudieron cargar los datos completos del personal"
+      );
     }
   })();
 

@@ -362,7 +362,9 @@ async function obtenerEquipos() {
     return await response.json();
   } catch (error) {
     console.error("Error al obtener los equipos:", error);
-    Notificacion.error("Error al cargar los equipos. Por favor, intente más tarde.");
+    Notificacion.error(
+      "Error al cargar los equipos. Por favor, intente más tarde."
+    );
     return [];
   }
 }
@@ -788,10 +790,14 @@ async function guardarModelo(event) {
     // Determinar qué identificador usar para el mensaje
     const identificador = nne || ni || nroSerie || "nuevo equipo";
 
-    Notificacion.success(`El equipo ${identificador} ha sido registrado exitosamente`);
+    Notificacion.success(
+      `El equipo ${identificador} ha sido registrado exitosamente`
+    );
     cargarEquipos(); // Recargar la tabla para mostrar el nuevo equipo
   } else {
-    Notificacion.error("No se pudo crear el equipo. Verifique los datos e intente nuevamente.");
+    Notificacion.error(
+      "No se pudo crear el equipo. Verifique los datos e intente nuevamente."
+    );
   }
 }
 
@@ -938,7 +944,7 @@ async function mostrarInventario(identificador, esNNE = null) {
   document.getElementById("totalEquiposNNE").textContent = "...";
   document.getElementById("enServicioNNE").textContent = "...";
   document.getElementById("fueraServicioNNE").textContent = "...";
-  
+
   // Detectar si es NNE o NI
   // Si no se especifica explícitamente, usar heurística mejorada
   let determinarEsNNE;
@@ -951,11 +957,15 @@ async function mostrarInventario(identificador, esNNE = null) {
     const longitudCorta = identificador.length <= 3;
     determinarEsNNE = !(soloNumeros && longitudCorta);
   }
-  
+
   const tipoIdentificador = determinarEsNNE ? "NNE" : "NI";
-  document.getElementById("nneTitle").textContent = `Inventario del ${tipoIdentificador}: ${identificador}`;
-  
-  console.log(`[DEBUG-Inventario] Identificador: ${identificador}, Tipo detectado: ${tipoIdentificador}, esNNE: ${determinarEsNNE}`);
+  document.getElementById(
+    "nneTitle"
+  ).textContent = `Inventario del ${tipoIdentificador}: ${identificador}`;
+
+  console.log(
+    `[DEBUG-Inventario] Identificador: ${identificador}, Tipo detectado: ${tipoIdentificador}, esNNE: ${determinarEsNNE}`
+  );
 
   // Limpiar y ocultar sección de motivos
   const seccionMotivos = document.getElementById("seccionMotivosFueraServicio");
@@ -965,39 +975,54 @@ async function mostrarInventario(identificador, esNNE = null) {
 
   try {
     // Determinar el endpoint correcto según el tipo de identificador
-    const endpoint = determinarEsNNE 
-      ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(identificador)}/inventarioresumen`
-      : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(identificador)}/inventarioresumen`;
-    
+    const endpoint = determinarEsNNE
+      ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(
+          identificador
+        )}/inventarioresumen`
+      : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(
+          identificador
+        )}/inventarioresumen`;
+
     console.log(`[DEBUG-Inventario] Usando endpoint: ${endpoint}`);
-    
+
     const resp = await fetch(endpoint);
     console.log("[DEBUG-Inventario] Response status:", resp.status);
     if (!resp.ok) {
       // Si falla con el tipo detectado, intentar con el otro tipo
-      const endpointAlternativo = !determinarEsNNE 
-        ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(identificador)}/inventarioresumen`
-        : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(identificador)}/inventarioresumen`;
-      
-      console.log(`[DEBUG-Inventario] Primer endpoint falló, intentando alternativo: ${endpointAlternativo}`);
+      const endpointAlternativo = !determinarEsNNE
+        ? `${CONFIG.API_BASE_URL}/equipos/nne/${encodeURIComponent(
+            identificador
+          )}/inventarioresumen`
+        : `${CONFIG.API_BASE_URL}/equipos/ni/${encodeURIComponent(
+            identificador
+          )}/inventarioresumen`;
+
+      console.log(
+        `[DEBUG-Inventario] Primer endpoint falló, intentando alternativo: ${endpointAlternativo}`
+      );
       const respAlternativa = await fetch(endpointAlternativo);
-      
+
       if (!respAlternativa.ok) {
         throw new Error("No se pudo obtener el resumen de inventario");
       }
-      
+
       const resumenAlternativo = await respAlternativa.json();
-      console.log("[DEBUG-Inventario] Resumen recibido (alternativo):", resumenAlternativo);
-      
+      console.log(
+        "[DEBUG-Inventario] Resumen recibido (alternativo):",
+        resumenAlternativo
+      );
+
       // Actualizar el título con el tipo correcto
       const tipoCorregido = !determinarEsNNE ? "NNE" : "NI";
-      document.getElementById("nneTitle").textContent = `Inventario del ${tipoCorregido}: ${identificador}`;
-      
+      document.getElementById(
+        "nneTitle"
+      ).textContent = `Inventario del ${tipoCorregido}: ${identificador}`;
+
       // Procesar respuesta alternativa
       actualizarInterfazInventario(resumenAlternativo);
       return;
     }
-    
+
     const resumen = await resp.json();
     console.log("[DEBUG-Inventario] Resumen recibido:", resumen);
 
@@ -1025,7 +1050,8 @@ function actualizarInterfazInventario(resumen) {
   // Actualizar los números principales
   document.getElementById("totalEquiposNNE").textContent = resumen.total;
   document.getElementById("enServicioNNE").textContent = resumen.enServicio;
-  document.getElementById("fueraServicioNNE").textContent = resumen.fueraDeServicio;
+  document.getElementById("fueraServicioNNE").textContent =
+    resumen.fueraDeServicio;
 
   console.log("[DEBUG-Inventario] Valores asignados:", {
     total: resumen.total,
@@ -1040,7 +1066,10 @@ function actualizarInterfazInventario(resumen) {
   listaMotivos.innerHTML = "";
 
   // Mostrar detalle de motivos fuera de servicio si existen
-  if (resumen.detalleFueraDeServicio && resumen.detalleFueraDeServicio.length > 0) {
+  if (
+    resumen.detalleFueraDeServicio &&
+    resumen.detalleFueraDeServicio.length > 0
+  ) {
     // Mostrar la sección de motivos
     seccionMotivos.style.display = "block";
 
@@ -1496,7 +1525,9 @@ async function guardarCambiosDetalles() {
     console.error(
       "[guardarCambiosDetalles] No hay identificador válido para actualizar (ni NNE ni nroSerieOriginal)"
     );
-    Notificacion.error("No se pudo determinar el identificador del equipo para actualizar. Contacte al administrador.");
+    Notificacion.error(
+      "No se pudo determinar el identificador del equipo para actualizar. Contacte al administrador."
+    );
   }
   if (exito) {
     Notificacion.success("Detalles actualizados con éxito.");
@@ -1820,7 +1851,10 @@ async function cargarEquipos() {
     // Logs de depuración
     console.log("[cargarEquipos] equipos:", equipos);
     console.log("[cargarEquipos] unidades:", unidades);
-    console.log("[cargarEquipos] estadosMap:", Array.from(estadosMap.entries()));
+    console.log(
+      "[cargarEquipos] estadosMap:",
+      Array.from(estadosMap.entries())
+    );
     console.log(
       "[cargarEquipos] unidadesPorEquipo:",
       Array.from(unidadesPorEquipo.entries())
@@ -1857,13 +1891,16 @@ async function cargarEquipos() {
               ${
                 equipo.nne || equipo.ni
                   ? `
-                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}', ${!!equipo.nne})">
+                <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${
+                  equipo.nne || equipo.ni
+                }', ${!!equipo.nne})">
                   <i class="bi bi-box-seam"></i>
                 </button>
                 <button class="btn btn-delete" title="Eliminar Modelo" onclick="
-                  ${equipo.nne 
-                    ? `confirmarEliminacion('${equipo.nne}', '')` 
-                    : `confirmarEliminacionPorNI('${equipo.ni || ""}')`
+                  ${
+                    equipo.nne
+                      ? `confirmarEliminacion('${equipo.nne}', '')`
+                      : `confirmarEliminacionPorNI('${equipo.ni || ""}')`
                   }
                 ">
                   <i class="bi bi-trash"></i>
@@ -1883,8 +1920,10 @@ async function cargarEquipos() {
         // Equipo con unidades físicas
         unidadesDelEquipo.forEach((unidad) => {
           const estadoNombre = estadosMap.get(unidad.estadoId) || "-";
-          console.log(`[cargarEquipos] Unidad ${unidad.id} - EstadoId: ${unidad.estadoId} - EstadoNombre: ${estadoNombre}`);
-          
+          console.log(
+            `[cargarEquipos] Unidad ${unidad.id} - EstadoId: ${unidad.estadoId} - EstadoNombre: ${estadoNombre}`
+          );
+
           const fila = `
             <tr>
               <td>${filaIndex++}</td>
@@ -1909,13 +1948,16 @@ async function cargarEquipos() {
                 ${
                   equipo.nne || equipo.ni
                     ? `
-                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${equipo.nne || equipo.ni}', ${!!equipo.nne})">
+                  <button class="btn btn-sm btn-info me-1" title="Ver Inventario" onclick="mostrarInventario('${
+                    equipo.nne || equipo.ni
+                  }', ${!!equipo.nne})">
                     <i class="bi bi-box-seam"></i>
                   </button>
                   <button class="btn btn-delete" title="Eliminar Modelo" onclick="
-                    ${equipo.nne 
-                      ? `confirmarEliminacion('${equipo.nne}', '')` 
-                      : `confirmarEliminacion('', '${unidad.nroSerie || ""}')`
+                    ${
+                      equipo.nne
+                        ? `confirmarEliminacion('${equipo.nne}', '')`
+                        : `confirmarEliminacion('', '${unidad.nroSerie || ""}')`
                     }
                   ">
                     <i class="bi bi-trash"></i>
@@ -1975,7 +2017,9 @@ async function cargarEquipos() {
         </tr>`;
     }
 
-    Notificacion.error("Error al cargar los equipos. Verifique la conexión al servidor.");
+    Notificacion.error(
+      "Error al cargar los equipos. Verifique la conexión al servidor."
+    );
   }
 }
 
@@ -2246,7 +2290,11 @@ function confirmarEliminacion(nne, nroSerie) {
     if (result.isConfirmed) {
       const exito = await eliminarEquipo(nne, nroSerie);
       if (exito) {
-        Notificacion.success(`${tipoEliminacion.charAt(0).toUpperCase() + tipoEliminacion.slice(1)} eliminado con éxito.`);
+        Notificacion.success(
+          `${
+            tipoEliminacion.charAt(0).toUpperCase() + tipoEliminacion.slice(1)
+          } eliminado con éxito.`
+        );
         cargarEquipos();
       } else {
         Notificacion.error(`No se pudo eliminar el ${tipoEliminacion}.`);
