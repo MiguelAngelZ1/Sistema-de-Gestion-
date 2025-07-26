@@ -37,27 +37,37 @@ namespace Backend.Data
                             ORDER BY e.id DESC";
 
                 var equipos = await connection.QueryAsync<Equipo>(query);
+                Console.WriteLine($"[DEBUG] ObtenerEquiposAgrupados - Equipos obtenidos: {equipos.Count()}");
 
                 // Por cada modelo, obtenemos sus unidades para contar los estados.
                 foreach (var equipo in equipos)
                 {
-                    var unidadesQuery = @"SELECT u.*, u.nro_serie as NroSerie, e.id as Id, e.nombre as Nombre, p.id_persona as PersonaId, p.nombre as Nombre, p.apellido as Apellido, g.abreviatura as NombreGrado, a.abreviatura as NombreArmEsp
+                    Console.WriteLine($"[DEBUG] Procesando equipo ID {equipo.Id} - NNE: {equipo.NNE}");
+                    
+                    var unidadesQuery = @"SELECT u.id, u.id_equipo as EquipoId, u.nro_serie as NroSerie, u.id_estado as EstadoId, u.id_persona as PersonaId,
+                                         e.id as EstadoId_Estado, e.nombre as Nombre,
+                                         p.id_persona as PersonaId_Persona, p.nombre as Nombre, p.apellido as Apellido, g.abreviatura as NombreGrado, a.abreviatura as NombreArmEsp
                                       FROM unidades_equipo u
                                       JOIN estado_equipo e ON u.id_estado = e.id
                                       LEFT JOIN persona p ON u.id_persona = p.id_persona
                                       LEFT JOIN grado g ON p.id_grado = g.id_grado
                                       LEFT JOIN armesp a ON p.id_armesp = a.id_armesp
                                       WHERE u.id_equipo = @EquipoId";
-                    equipo.Unidades = (await connection.QueryAsync<UnidadEquipo, EstadoEquipo, Persona, UnidadEquipo>(
+                    
+                    var unidades = await connection.QueryAsync<UnidadEquipo, EstadoEquipo, Persona, UnidadEquipo>(
                         unidadesQuery,
                         (unidad, estado, persona) => {
+                            Console.WriteLine($"[DEBUG] Mapeo unidad ID {unidad.Id} - Estado: {estado?.Nombre} - Persona: {persona?.Nombre}");
                             unidad.Estado = estado;
                             unidad.Persona = persona;
                             return unidad;
                         },
                         new { EquipoId = equipo.Id },
-                        splitOn: "Id,PersonaId"
-                    )).ToList();
+                        splitOn: "EstadoId_Estado,PersonaId_Persona"
+                    );
+                    
+                    equipo.Unidades = unidades.ToList();
+                    Console.WriteLine($"[DEBUG] Equipo ID {equipo.Id} tiene {equipo.Unidades.Count} unidades");
                 }
                 
                 return equipos;
@@ -307,8 +317,10 @@ namespace Backend.Data
 
             using (var connection = AbrirConexion())
             {
-                var query = "INSERT INTO unidades_equipo (id_equipo, nro_serie, id_estado, id_persona) VALUES (@EquipoId, @Nro_serie, @Id_estado, @Id_persona);";
+                var query = @"INSERT INTO unidades_equipo (id_equipo, nro_serie, id_estado, id_persona) 
+                              VALUES (@EquipoId, @NroSerie, @EstadoId, @PersonaId);";
                 var result = await connection.ExecuteAsync(query, unidad);
+                Console.WriteLine($"[LOG] InsertarUnidad - Filas afectadas: {result}");
                 return result > 0;
             }
         }

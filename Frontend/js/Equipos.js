@@ -1691,17 +1691,27 @@ async function cargarEquipos() {
   try {
     console.log("[cargarEquipos] Iniciando carga de equipos...");
 
-    // Obtener equipos desde la API (ya incluye unidades y estados completos)
-    const response = await fetch(API_URL);
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-    
-    const equipos = await response.json();
-    console.log("[cargarEquipos] Equipos obtenidos:", equipos);
+    // 1. Obtener todos los datos necesarios de la API
+    const [equipos, unidades, estados] = await Promise.all([
+      fetch(API_URL).then((res) => (res.ok ? res.json() : Promise.reject(res))),
+      fetch(getApiBaseUrl() + "/unidadesequipo").then((res) =>
+        res.ok ? res.json() : Promise.reject(res)
+      ),
+      fetch(API_URL_ESTADOS).then((res) =>
+        res.ok ? res.json() : Promise.reject(res)
+      ),
+    ]);
+
+    console.log("[cargarEquipos] Datos obtenidos:", {
+      equipos: equipos.length,
+      unidades: unidades.length,
+      estados: estados.length,
+    });
 
     // Guardar datos globalmente para exportación
     window.equipos = equipos;
+    window.unidades = unidades;
+    window.estados = estados;
 
     const cuerpoTabla = document.getElementById("cuerpoTablaEquipos");
     const noEquipos = document.getElementById("no-equipos");
@@ -1744,14 +1754,38 @@ async function cargarEquipos() {
       }
     }
 
+    // Crear mapas para acceso rápido
+    const estadosMap = new Map(estados.map((e) => [e.id, e.nombre]));
+
+    // Crear mapa de unidades por equipo ID
+    const unidadesPorEquipo = new Map();
+    unidades.forEach((unidad) => {
+      if (!unidadesPorEquipo.has(unidad.equipoId)) {
+        unidadesPorEquipo.set(unidad.equipoId, []);
+      }
+      unidadesPorEquipo.get(unidad.equipoId).push(unidad);
+    });
+
+    // Logs de depuración
+    console.log("[cargarEquipos] equipos:", equipos);
+    console.log("[cargarEquipos] unidades:", unidades);
+    console.log("[cargarEquipos] estadosMap:", Array.from(estadosMap.entries()));
+    console.log(
+      "[cargarEquipos] unidadesPorEquipo:",
+      Array.from(unidadesPorEquipo.entries())
+    );
+
     let filaIndex = 1;
 
     // Renderizar equipos - tanto con unidades como sin unidades
     equipos.forEach((equipo) => {
       console.log(`[cargarEquipos] Procesando equipo ID ${equipo.id}:`, equipo);
 
-      const unidadesDelEquipo = equipo.unidades || [];
-      console.log(`[cargarEquipos] Unidades del equipo ${equipo.id}:`, unidadesDelEquipo);
+      const unidadesDelEquipo = unidadesPorEquipo.get(equipo.id) || [];
+      console.log(
+        `[cargarEquipos] Unidades del equipo ${equipo.id}:`,
+        unidadesDelEquipo
+      );
 
       if (unidadesDelEquipo.length === 0) {
         // Equipo sin unidades físicas (solo modelo)
@@ -1794,9 +1828,8 @@ async function cargarEquipos() {
       } else {
         // Equipo con unidades físicas
         unidadesDelEquipo.forEach((unidad) => {
-          // El estado ya viene completo desde el backend
-          const estadoNombre = unidad.estado?.nombre || "-";
-          console.log(`[cargarEquipos] Unidad ${unidad.id} - Estado: ${estadoNombre}`);
+          const estadoNombre = estadosMap.get(unidad.estadoId) || "-";
+          console.log(`[cargarEquipos] Unidad ${unidad.id} - EstadoId: ${unidad.estadoId} - EstadoNombre: ${estadoNombre}`);
           
           const fila = `
             <tr>

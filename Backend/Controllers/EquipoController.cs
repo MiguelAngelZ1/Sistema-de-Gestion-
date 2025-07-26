@@ -30,11 +30,28 @@ namespace Backend.Controllers
         {
             try
             {
+                Console.WriteLine("[LOG] GetEquipos - Iniciando...");
                 var equipos = await _repository.ObtenerEquiposAgrupados();
+                Console.WriteLine($"[LOG] GetEquipos - Equipos obtenidos: {equipos.Count()}");
+                
+                // Log detallado de cada equipo
+                foreach (var equipo in equipos)
+                {
+                    Console.WriteLine($"[LOG] Equipo ID {equipo.Id} - NNE: {equipo.NNE} - Unidades: {equipo.Unidades?.Count ?? 0}");
+                    if (equipo.Unidades != null)
+                    {
+                        foreach (var unidad in equipo.Unidades)
+                        {
+                            Console.WriteLine($"[LOG]   - Unidad ID {unidad.Id} - Serie: {unidad.NroSerie} - Estado: {unidad.Estado?.Nombre}");
+                        }
+                    }
+                }
+                
                 return Ok(equipos);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR] GetEquipos: {ex.Message}");
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
@@ -226,14 +243,27 @@ namespace Backend.Controllers
         [HttpPost("unidades")]
         public async Task<IActionResult> CreateUnidad([FromBody] UnidadEquipo nuevaUnidad)
         {
-            if (nuevaUnidad == null || nuevaUnidad.EquipoId <= 0)
+            Console.WriteLine("[LOG] CreateUnidad - Iniciando...");
+            
+            if (nuevaUnidad == null)
             {
-                return BadRequest("Datos de unidad inválidos.");
+                Console.WriteLine("[LOG] CreateUnidad - nuevaUnidad es null");
+                return BadRequest("Los datos de la unidad son requeridos.");
+            }
+
+            Console.WriteLine($"[LOG] CreateUnidad - EquipoId: {nuevaUnidad.EquipoId}, NroSerie: {nuevaUnidad.NroSerie}, EstadoId: {nuevaUnidad.EstadoId}");
+
+            if (nuevaUnidad.EquipoId <= 0)
+            {
+                Console.WriteLine("[LOG] CreateUnidad - EquipoId inválido");
+                return BadRequest("El ID del equipo debe ser un valor positivo.");
             }
 
             try
             {
                 var success = await _repository.InsertarUnidad(nuevaUnidad);
+                Console.WriteLine($"[LOG] CreateUnidad - Resultado: {success}");
+                
                 if (success)
                 {
                     return Ok(new { message = "Unidad creada exitosamente" });
@@ -242,6 +272,8 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR] CreateUnidad: {ex.Message}");
+                Console.WriteLine($"[ERROR] CreateUnidad Stack: {ex.StackTrace}");
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
